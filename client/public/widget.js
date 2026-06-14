@@ -2,7 +2,7 @@
  * yah.mobile Chat Widget - External Embed Script
  *
  * Usage:
- *   <script src="https://yahchatapp-wagyp22n.manus.space/widget.js"
+ *   <script src="https://chat.yah.mobi/widget.js"
  *           data-app-id="yah-mobile"
  *           data-lang="ja"
  *           data-position="bottom-right"
@@ -27,7 +27,7 @@
   var BASE_URL = (function () {
     var src = currentScript.src || "";
     var match = src.match(/^(https?:\/\/[^\/]+)/);
-    return match ? match[1] : "https://yahchatapp-wagyp22n.manus.space";
+    return match ? match[1] : "https://chat.yah.mobi";
   })();
 
   var config = {

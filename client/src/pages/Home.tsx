@@ -159,7 +159,7 @@ export default function Home() {
           </div>
           <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-green-400 overflow-x-auto">
             <pre className="whitespace-pre-wrap break-all">{`<script
-  src="https://yahchatapp-wagyp22n.manus.space/widget.js"
+  src="https://chat.yah.mobi/widget.js"
   data-lang="ja"
   data-position="bottom-right"
   data-color="#000000">

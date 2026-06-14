@@ -83,6 +83,13 @@ async function startServer() {
   registerStorageProxy(app);
   registerOAuthRoutes(app);
 
+  // Allow /widget-chat to be embedded in iframes on external sites
+  app.use("/widget-chat", (_req, res, next) => {
+    res.setHeader("X-Frame-Options", "ALLOWALL");
+    res.setHeader("Content-Security-Policy", "frame-ancestors *");
+    next();
+  });
+
   // Serve widget.js with proper CORS headers BEFORE Vite/SPA middleware
   app.get("/widget.js", (_req, res) => {
     const widgetPath = path.resolve(
