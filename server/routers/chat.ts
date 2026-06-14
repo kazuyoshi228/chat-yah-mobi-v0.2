@@ -9,6 +9,7 @@ import {
   updateChatSession,
   createSurvey,
   getSurveyBySessionId,
+  scheduleSessionDeletion,
 } from "../db";
 import { publicProcedure, router } from "../_core/trpc";
 import { generateAIResponse, generateSummary } from "./ai";
@@ -205,6 +206,9 @@ export const chatRouter = router({
 
       await updateChatSession(input.sessionId, { status: "ended", summary });
 
+      // Data retention: schedule deletion 2 years from now (GDPR/個人情報保護法対応)
+      await scheduleSessionDeletion(input.sessionId).catch(() => {});
+
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("session_ended", {
@@ -223,7 +227,9 @@ export const chatRouter = router({
         sessionId: z.number(),
         visitorId: z.string(),
         rating: z.number().min(1).max(5),
+        resolved: z.enum(["yes", "no"]).optional(),
         comment: z.string().optional(),
+        freeComment: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -240,7 +246,9 @@ export const chatRouter = router({
       await createSurvey({
         sessionId: input.sessionId,
         rating: input.rating,
+        resolved: input.resolved,
         comment: input.comment,
+        freeComment: input.freeComment,
       });
 
       return { success: true };

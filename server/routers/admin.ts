@@ -95,6 +95,7 @@ export const adminRouter = router({
       z.object({
         title: z.string().min(1),
         content: z.string().min(1),
+        expiresAt: z.string().datetime().optional(), // ISO 8601 string
       })
     )
     .mutation(async ({ input }) => {
@@ -104,6 +105,7 @@ export const adminRouter = router({
         title: input.title,
         content: input.content,
         embedding: embedding.length > 0 ? embedding : null,
+        expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
       });
       return { id };
     }),
@@ -114,10 +116,15 @@ export const adminRouter = router({
         id: z.number(),
         title: z.string().min(1).optional(),
         content: z.string().min(1).optional(),
+        expiresAt: z.string().datetime().nullable().optional(), // null = clear expiry
       })
     )
     .mutation(async ({ input }) => {
-      const { id, ...data } = input;
+      const { id, expiresAt, ...data } = input;
+      const updateData: Record<string, unknown> = { ...data };
+      if (expiresAt !== undefined) {
+        updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
+      }
       // Re-generate embedding if content changed
       if (data.content || data.title) {
         const doc = await listRagDocuments().then((docs) => docs.find((d) => d.id === id));
@@ -126,12 +133,12 @@ export const adminRouter = router({
           const content = data.content ?? doc.content;
           const embedding = await getEmbedding(`${title}\n${content}`);
           await updateRagDocument(id, {
-            ...data,
+            ...updateData,
             embedding: embedding.length > 0 ? embedding : undefined,
-          });
+          } as Parameters<typeof updateRagDocument>[1]);
         }
       } else {
-        await updateRagDocument(id, data);
+        await updateRagDocument(id, updateData as Parameters<typeof updateRagDocument>[1]);
       }
       return { success: true };
     }),

@@ -1,8 +1,8 @@
 import { invokeLLM } from "../_core/llm";
 import {
   createMessage,
-  getRagDocumentsWithEmbeddings,
-  listRagDocuments,
+  listActiveRagDocuments,
+  scheduleSessionDeletion,
   updateChatSession,
 } from "../db";
 
@@ -57,9 +57,9 @@ export async function getEmbedding(text: string): Promise<number[]> {
   }
 }
 
-// Search RAG documents by cosine similarity
+// Search RAG documents by cosine similarity (only non-expired docs)
 export async function searchRagDocuments(query: string, topK = 3): Promise<string> {
-  const docs = await listRagDocuments();
+  const docs = await listActiveRagDocuments();
   if (docs.length === 0) return "";
 
   const queryEmbedding = await getEmbedding(query);

@@ -41,6 +41,7 @@ export const chatSessions = mysqlTable("chat_sessions", {
   operatorId: int("operatorId"),
   language: varchar("language", { length: 8 }).default("ja"),
   summary: text("summary"),
+  scheduledDeleteAt: timestamp("scheduledDeleteAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -80,12 +81,14 @@ export type InsertQuickReply = typeof quickReplies.$inferInsert;
 /**
  * RAG documents - knowledge base for AI responses.
  * embedding stored as JSON array of floats.
+ * expiresAt: document expiry date; expired docs are excluded from RAG search.
  */
 export const ragDocuments = mysqlTable("rag_documents", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),
   content: text("content").notNull(),
   embedding: json("embedding").$type<number[]>(),
+  expiresAt: timestamp("expiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -94,12 +97,16 @@ export type InsertRagDocument = typeof ragDocuments.$inferInsert;
 
 /**
  * Surveys - post-chat satisfaction surveys.
+ * resolved: whether the visitor's issue was resolved (yes/no)
+ * freeComment: optional free-text feedback shown only for rating <= 3
  */
 export const surveys = mysqlTable("surveys", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: int("sessionId").notNull(),
   rating: int("rating").notNull(), // 1-5
+  resolved: mysqlEnum("resolved", ["yes", "no"]),
   comment: text("comment"),
+  freeComment: text("freeComment"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 

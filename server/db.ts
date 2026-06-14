@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -135,11 +135,51 @@ export async function listChatSessions(status?: "waiting" | "active" | "ended") 
 
 export async function updateChatSession(
   id: number,
-  data: Partial<Pick<ChatSession, "status" | "operatorId" | "summary" | "language">>
+  data: Partial<Pick<ChatSession, "status" | "operatorId" | "summary" | "language" | "scheduledDeleteAt">>
 ) {
   const db = await getDb();
   if (!db) return;
   await db.update(chatSessions).set(data).where(eq(chatSessions.id, id));
+}
+
+/**
+ * Data retention: set scheduledDeleteAt = 2 years from createdAt for ended sessions
+ * that don't yet have a scheduled delete date.
+ */
+export async function scheduleSessionDeletion(sessionId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const session = await getChatSession(sessionId);
+  if (!session || session.scheduledDeleteAt) return;
+  const deleteAt = new Date(session.createdAt);
+  deleteAt.setFullYear(deleteAt.getFullYear() + 2);
+  await db
+    .update(chatSessions)
+    .set({ scheduledDeleteAt: deleteAt })
+    .where(eq(chatSessions.id, sessionId));
+}
+
+/**
+ * Data retention: physically delete sessions and messages past their scheduled delete date.
+ * Called by the heartbeat job.
+ */
+export async function purgeExpiredSessions(): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const now = new Date();
+  const expired = await db
+    .select({ id: chatSessions.id })
+    .from(chatSessions)
+    .where(and(sql`${chatSessions.scheduledDeleteAt} IS NOT NULL`, lte(chatSessions.scheduledDeleteAt, now)));
+  if (expired.length === 0) return 0;
+  const ids = expired.map((s) => s.id);
+  // Delete messages first (FK dependency)
+  for (const id of ids) {
+    await db.delete(messages).where(eq(messages.sessionId, id));
+  }
+  await db.delete(chatSessions).where(inArray(chatSessions.id, ids));
+  console.log(`[DataRetention] Purged ${ids.length} expired sessions`);
+  return ids.length;
 }
 
 // ─── Messages ─────────────────────────────────────────────────────────────────
@@ -190,10 +230,23 @@ export async function deleteQuickReply(id: number) {
 
 // ─── RAG Documents ────────────────────────────────────────────────────────────
 
+/** List all RAG documents (admin view - includes expired). */
 export async function listRagDocuments() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(ragDocuments).orderBy(desc(ragDocuments.createdAt));
+}
+
+/** List only non-expired RAG documents (used for AI search). */
+export async function listActiveRagDocuments() {
+  const db = await getDb();
+  if (!db) return [];
+  const now = new Date();
+  return db
+    .select()
+    .from(ragDocuments)
+    .where(or(isNull(ragDocuments.expiresAt), sql`${ragDocuments.expiresAt} > ${now}`))
+    .orderBy(desc(ragDocuments.createdAt));
 }
 
 export async function createRagDocument(data: InsertRagDocument) {

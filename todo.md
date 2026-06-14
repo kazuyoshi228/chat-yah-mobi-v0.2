@@ -62,3 +62,14 @@
 - [x] server/_core/index.tsにwidgetルーターを追加（不要：iframeで対応）
 - [x] server/routers.tsにwidgetルーターを統合（不要：iframeで対応）
 - [x] 埋め込みコードのドキュメントをホームページに追加
+
+## Phase 7: リスク評価レポート対応実装
+- [x] rag_documentsテーブルにexpires_atカラムを追加（DBマイグレーション）
+- [x] chat_sessionsテーブルにscheduled_delete_atカラムを追加（DBマイグレーション）
+- [x] surveysテーブルにresolved（boolean）・free_comment（text）カラムを追加
+- [x] RAGクエリで期限切れドキュメントを除外するロジックを実装
+- [x] データ保持スケジュールジョブ実装（2年後アーカイブ・3年後物理削除）
+- [x] 管理画面のRAGドキュメント一覧にexpires_at表示・編集機能を追加
+- [x] アンケートに「解決しましたか？（はい/いいえ）」を追加
+- [x] ∅3以下の場合のみ自由記述欄を表示
+- [x] アンケートデータをDBに保存するスキーマ・ルーター更新

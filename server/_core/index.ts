@@ -11,6 +11,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { setIo } from "../socket";
+import { sdk } from "./sdk";
+import { purgeExpiredSessions } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -109,6 +111,19 @@ async function startServer() {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     res.status(204).end();
+  });
+
+  // Heartbeat: data retention purge (nightly)
+  app.post("/api/scheduled/data-retention", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+      const purged = await purgeExpiredSessions();
+      res.json({ ok: true, purged });
+    } catch (err: any) {
+      console.error("[DataRetention] Error:", err);
+      res.status(500).json({ error: err?.message ?? "unknown", timestamp: new Date().toISOString() });
+    }
   });
 
   // tRPC API

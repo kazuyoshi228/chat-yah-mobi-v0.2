@@ -60,7 +60,9 @@ function SurveyModal({
   onClose: () => void;
 }) {
   const [rating, setRating] = useState(0);
+  const [resolved, setResolved] = useState<"yes" | "no" | null>(null);
   const [comment, setComment] = useState("");
+  const [freeComment, setFreeComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const submitSurvey = trpc.chat.submitSurvey.useMutation({
@@ -91,7 +93,8 @@ function SurveyModal({
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex justify-center gap-2 mb-4">
+        {/* Star rating */}
+        <div className="flex justify-center gap-2 mb-5">
           {[1, 2, 3, 4, 5].map((s) => (
             <button key={s} onClick={() => setRating(s)}>
               <Star
@@ -103,16 +106,65 @@ function SurveyModal({
             </button>
           ))}
         </div>
+        {/* Resolved question */}
+        <div className="mb-4">
+          <p className="text-sm font-medium text-gray-700 mb-2">問題は解決しましたか？</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setResolved("yes")}
+              className={cn(
+                "flex-1 py-2 rounded-lg text-sm font-medium border transition-colors",
+                resolved === "yes"
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+              )}
+            >
+              ✔ はい
+            </button>
+            <button
+              onClick={() => setResolved("no")}
+              className={cn(
+                "flex-1 py-2 rounded-lg text-sm font-medium border transition-colors",
+                resolved === "no"
+                  ? "bg-black text-white border-black"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+              )}
+            >
+              ✖ いいえ
+            </button>
+          </div>
+        </div>
+        {/* Free comment: shown only for rating <= 3 */}
+        {rating > 0 && rating <= 3 && (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-700 mb-1">改善点を教えてください</p>
+            <Textarea
+              value={freeComment}
+              onChange={(e) => setFreeComment(e.target.value)}
+              placeholder="何が不満でしたか？ご意見をお聞かせください。"
+              rows={3}
+              className="resize-none border-gray-200"
+            />
+          </div>
+        )}
+        {/* Optional general comment */}
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="コメント（任意）"
-          rows={3}
+          placeholder="その他コメント（任意）"
+          rows={2}
           className="mb-4 resize-none border-gray-200"
         />
         <Button
           onClick={() =>
-            submitSurvey.mutate({ sessionId, visitorId, rating, comment: comment || undefined })
+            submitSurvey.mutate({
+              sessionId,
+              visitorId,
+              rating,
+              resolved: resolved ?? undefined,
+              comment: comment || undefined,
+              freeComment: freeComment || undefined,
+            })
           }
           disabled={rating === 0 || submitSurvey.isPending}
           className="w-full bg-black text-white hover:bg-gray-800"

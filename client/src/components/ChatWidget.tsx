@@ -53,6 +53,8 @@ export default function ChatWidget() {
   const [initialMessage, setInitialMessage] = useState("");
   const [typingInfo, setTypingInfo] = useState<boolean>(false);
   const [rating, setRating] = useState(0);
+  const [resolved, setResolved] = useState<"yes" | "no" | null>(null);
+  const [freeComment, setFreeComment] = useState("");
   const [surveySubmitted, setSurveySubmitted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -169,7 +171,13 @@ export default function ChatWidget() {
   const handleSurveySubmit = () => {
     if (!sessionId || rating === 0) return;
     const visitorId = getOrCreateVisitorId();
-    submitSurvey.mutate({ sessionId, visitorId, rating });
+    submitSurvey.mutate({
+      sessionId,
+      visitorId,
+      rating,
+      resolved: resolved ?? undefined,
+      freeComment: freeComment || undefined,
+    });
   };
 
   return (
@@ -319,12 +327,13 @@ export default function ChatWidget() {
 
           {/* Ended + Survey */}
           {widgetState === "ended" && (
-            <div className="flex-1 p-4 flex flex-col items-center justify-center gap-4">
+            <div className="flex-1 p-4 flex flex-col items-center justify-center gap-3 overflow-y-auto">
               {!surveySubmitted ? (
                 <>
                   <p className="text-sm font-medium text-gray-900 text-center">
                     チャットはいかがでしたか？
                   </p>
+                  {/* Star rating */}
                   <div className="flex gap-2">
                     {[1, 2, 3, 4, 5].map((s) => (
                       <button key={s} onClick={() => setRating(s)}>
@@ -335,6 +344,47 @@ export default function ChatWidget() {
                       </button>
                     ))}
                   </div>
+                  {/* Resolved question */}
+                  <div className="w-full">
+                    <p className="text-xs text-gray-500 mb-1.5 text-center">問題は解決しましたか？</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setResolved("yes")}
+                        className={cn(
+                          "flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors",
+                          resolved === "yes"
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+                        )}
+                      >
+                        ✔ はい
+                      </button>
+                      <button
+                        onClick={() => setResolved("no")}
+                        className={cn(
+                          "flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors",
+                          resolved === "no"
+                            ? "bg-black text-white border-black"
+                            : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
+                        )}
+                      >
+                        ✖ いいえ
+                      </button>
+                    </div>
+                  </div>
+                  {/* Low-rating free comment */}
+                  {rating > 0 && rating <= 3 && (
+                    <div className="w-full">
+                      <p className="text-xs text-gray-500 mb-1">改善点を教えてください</p>
+                      <textarea
+                        value={freeComment}
+                        onChange={(e) => setFreeComment(e.target.value)}
+                        placeholder="何が不満でしたか？"
+                        rows={2}
+                        className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
+                      />
+                    </div>
+                  )}
                   <Button
                     onClick={handleSurveySubmit}
                     disabled={rating === 0 || submitSurvey.isPending}
