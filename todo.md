@@ -54,3 +54,11 @@
 - [x] Write vitest tests for auth (existing auth.logout.test.ts)
 - [x] Verify all routes work in browser (TypeScript: no errors, tests: 9/9 passing, dev server: running)
 - [x] Create checkpoint
+
+## Phase 6: 外部サイト埋め込みウィジェット
+- [x] server/routers/widget.ts: CORS対応のウィジェット設定エンドポイント作成（不要：iframeで対応）
+- [x] client/public/widget.js: 外部サイト埋め込み用スクリプト（iframe方式）
+- [x] client/src/pages/WidgetChat.tsx: iframe内で表示する独立チャットページ
+- [x] server/_core/index.tsにwidgetルーターを追加（不要：iframeで対応）
+- [x] server/routers.tsにwidgetルーターを統合（不要：iframeで対応）
+- [x] 埋め込みコードのドキュメントをホームページに追加

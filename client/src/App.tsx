@@ -11,6 +11,7 @@ import AdminOperators from "@/pages/admin/AdminOperators";
 import AdminQuickReplies from "@/pages/admin/AdminQuickReplies";
 import AdminRag from "@/pages/admin/AdminRag";
 import NotFound from "@/pages/NotFound";
+import WidgetChat from "@/pages/WidgetChat";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/admin/operators" component={AdminOperators} />
         <Route path="/admin/quick-replies" component={AdminQuickReplies} />
         <Route path="/admin/rag" component={AdminRag} />
+        <Route path="/widget-chat" component={WidgetChat} />
         <Route component={NotFound} />
       </Switch>
       <Toaster richColors position="top-right" />

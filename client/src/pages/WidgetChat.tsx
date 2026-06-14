@@ -1,0 +1,436 @@
+/**
+ * WidgetChat - Standalone chat page rendered inside the embed iframe.
+ * URL: /widget-chat?lang=ja&color=%23000000&origin=https://example.com
+ */
+import { useState, useEffect, useRef, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import { trpc } from "@/lib/trpc";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Send,
+  Bot,
+  Headphones,
+  Star,
+  CheckCircle,
+  Loader2,
+  X,
+  AlertCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { nanoid } from "nanoid";
+
+interface ChatMessage {
+  id?: number;
+  sessionId: number;
+  role: "visitor" | "operator" | "ai";
+  content: string;
+  createdAt: Date | string;
+}
+
+function getOrCreateVisitorId(): string {
+  const key = "yah_visitor_id";
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = nanoid();
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
+
+function useQueryParam(key: string): string {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key) ?? "";
+}
+
+type Stage = "start" | "chat" | "ended";
+
+export default function WidgetChat() {
+  const rawLang = useQueryParam("lang") || "ja";
+  const validLangs = ["ja", "en", "zh", "es", "ko"] as const;
+  type Lang = typeof validLangs[number];
+  const lang: Lang = (validLangs as readonly string[]).includes(rawLang) ? (rawLang as Lang) : "ja";
+  const accentColor = useQueryParam("color") || "#000000";
+  const parentOrigin = useQueryParam("origin") || "*";
+
+  const [stage, setStage] = useState<Stage>("start");
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [visitorName, setVisitorName] = useState("");
+  const [initialMessage, setInitialMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [shouldEscalate, setShouldEscalate] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [surveyDone, setSurveyDone] = useState(false);
+
+  const socketRef = useRef<Socket | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // ── tRPC ──────────────────────────────────────────────────────────────────
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [failedMessages, setFailedMessages] = useState<string[]>([]);
+
+  const startSession = trpc.chat.startSession.useMutation({
+    onSuccess: (data) => {
+      setSessionId(data.sessionId);
+      setStage("chat");
+      const msgs: ChatMessage[] = [
+        { sessionId: data.sessionId, role: "visitor", content: initialMessage, createdAt: new Date() },
+      ];
+      if (data.aiResponse) {
+        msgs.push({ sessionId: data.sessionId, role: "ai", content: data.aiResponse, createdAt: new Date() });
+      }
+      setMessages(msgs);
+    },
+    onError: () => {
+      // Keep form so user can retry
+    },
+  });
+
+  const sendMessage = trpc.chat.sendMessage.useMutation({
+    onSuccess: (data) => {
+      if (data.shouldEscalate) setShouldEscalate(true);
+      setSendError(null);
+    },
+    onError: (_err, variables) => {
+      // Roll back optimistic message and show retry option
+      setMessages((prev) => prev.filter((m) => m.content !== variables.content || m.role !== "visitor"));
+      setFailedMessages((prev) => [...prev, variables.content]);
+      setSendError("送信に失敗しました。再送信してください。");
+    },
+  });
+
+  const endSession = trpc.chat.endSession.useMutation({
+    onSuccess: () => setStage("ended"),
+    onError: () => {
+      // Silently ignore — user can retry
+    },
+  });
+
+  const requestEscalation = trpc.chat.requestEscalation.useMutation({
+    onSuccess: () => setShouldEscalate(false),
+  });
+
+  const submitSurvey = trpc.chat.submitSurvey.useMutation({
+    onSuccess: () => setSurveyDone(true),
+    onError: () => {
+      // Allow retry
+    },
+  });
+
+  // ── Socket ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!sessionId) return;
+    const socket = io(window.location.origin, { path: "/api/socket.io" });
+    socketRef.current = socket;
+    socket.emit("join_session", sessionId);
+
+    socket.on("new_message", (msg: ChatMessage) => {
+      if (msg.role !== "visitor") {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+        // Notify parent about unread
+        window.parent.postMessage({ type: "yah:unread", count: 1 }, parentOrigin);
+      }
+    });
+
+    socket.on("typing", (data: { role: string; isTyping: boolean }) => {
+      if (data.role !== "visitor") setIsTyping(data.isTyping);
+    });
+
+    socket.on("session_ended", () => setStage("ended"));
+
+    return () => { socket.disconnect(); };
+  }, [sessionId, parentOrigin]);
+
+  // Scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  // Listen for parent open event (reset unread)
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === "yah:open") {
+        // parent opened the widget — nothing special needed here
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleStart = () => {
+    if (!initialMessage.trim()) return;
+    startSession.mutate({
+      visitorId: getOrCreateVisitorId(),
+      visitorName: visitorName || undefined,
+      initialMessage,
+      language: lang,
+    });
+  };
+
+  const handleSend = useCallback(() => {
+    const content = input.trim();
+    if (!content || !sessionId) return;
+    setInput("");
+    setMessages((prev) => [
+      ...prev,
+      { sessionId, role: "visitor", content, createdAt: new Date() },
+    ]);
+    sendMessage.mutate({ sessionId, visitorId: getOrCreateVisitorId(), content });
+  }, [input, sessionId, sendMessage]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  const handleClose = () => {
+    window.parent.postMessage({ type: "yah:close" }, parentOrigin);
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  return (
+    <div className="flex flex-col h-screen bg-white font-sans select-none overflow-hidden">
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        style={{ background: accentColor }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <Headphones className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white leading-tight">yah.mobile サポート</p>
+            <p className="text-xs text-white/60 leading-tight">
+              {stage === "chat" ? "AI + オペレーター対応" : "チャットサポート"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleClose}
+          className="p-1.5 text-white/60 hover:text-white transition-colors rounded-full"
+          aria-label="閉じる"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* ── Start Form ── */}
+      {stage === "start" && (
+        <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
+          <p className="text-sm text-gray-500">
+            お気軽にお問い合わせください。AIが即座にお答えします。
+          </p>
+          <input
+            type="text"
+            value={visitorName}
+            onChange={(e) => setVisitorName(e.target.value)}
+            placeholder="お名前（任意）"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+          />
+          <Textarea
+            value={initialMessage}
+            onChange={(e) => setInitialMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleStart(); }
+            }}
+            placeholder="お問い合わせ内容を入力..."
+            rows={4}
+            className="resize-none border-gray-200 text-sm focus:ring-black/20"
+          />
+          {startSession.isError && (
+            <p className="text-xs text-red-500 text-center">
+              接続に失敗しました。もう一度お試しください。
+            </p>
+          )}
+          <button
+            onClick={handleStart}
+            disabled={!initialMessage.trim() || startSession.isPending}
+            className="w-full py-2.5 rounded-lg text-sm font-medium text-white transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{ background: accentColor }}
+          >
+            {startSession.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              "チャットを開始"
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* ── Chat ── */}
+      {stage === "chat" && (
+        <>
+          {/* Escalation banner */}
+          {shouldEscalate && (
+            <div className="bg-amber-50 border-b border-amber-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <p className="text-xs text-amber-700">オペレーターに繋ぎますか？</p>
+              </div>
+              <button
+                onClick={() => requestEscalation.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
+                className="text-xs text-amber-700 font-medium underline"
+              >
+                繋ぐ
+              </button>
+            </div>
+          )}
+
+          <ScrollArea className="flex-1 px-3 py-3">
+            <div className="space-y-2">
+              {messages.map((msg, i) => {
+                const isVisitor = msg.role === "visitor";
+                return (
+                  <div
+                    key={msg.id ?? i}
+                    className={cn("flex items-end gap-1.5", isVisitor ? "flex-row-reverse" : "flex-row")}
+                  >
+                    {!isVisitor && (
+                      <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        {msg.role === "ai"
+                          ? <Bot className="w-3 h-3 text-gray-400" />
+                          : <Headphones className="w-3 h-3 text-gray-400" />}
+                      </div>
+                    )}
+                    <div className={cn(
+                      "max-w-[78%] rounded-2xl px-3 py-2 text-xs leading-relaxed",
+                      isVisitor
+                        ? "rounded-br-sm text-white"
+                        : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                    )}
+                    style={isVisitor ? { background: accentColor } : undefined}
+                    >
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {isTyping && (
+                <div className="flex items-end gap-1.5">
+                  <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Bot className="w-3 h-3 text-gray-400" />
+                  </div>
+                  <div className="bg-gray-100 rounded-2xl rounded-bl-sm px-3 py-2">
+                    <div className="flex gap-1 items-center h-3">
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+          </ScrollArea>
+
+          {/* Send error + failed message retry */}
+          {sendError && (
+            <div className="px-3 pt-1 flex-shrink-0">
+              <p className="text-xs text-red-500">{sendError}</p>
+              {failedMessages.length > 0 && (
+                <button
+                  onClick={() => {
+                    const msg = failedMessages[failedMessages.length - 1];
+                    setFailedMessages((prev) => prev.slice(0, -1));
+                    setSendError(null);
+                    setMessages((prev) => [
+                      ...prev,
+                      { sessionId: sessionId!, role: "visitor", content: msg, createdAt: new Date() },
+                    ]);
+                    sendMessage.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId(), content: msg });
+                  }}
+                  className="text-xs text-blue-500 underline mt-0.5"
+                >
+                  再送信する
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Input */}
+          <div className="border-t border-gray-100 px-3 py-2 flex items-end gap-2 flex-shrink-0">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="メッセージを入力..."
+              rows={1}
+              className="flex-1 resize-none border-gray-200 text-xs min-h-[36px] max-h-[80px] py-2 focus:ring-black/20"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim()}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 disabled:opacity-40 transition-opacity"
+              style={{ background: accentColor }}
+            >
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="px-3 pb-2 flex-shrink-0">
+            <button
+              onClick={() => endSession.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
+              className="text-xs text-gray-400 hover:text-gray-600 w-full text-center transition-colors"
+            >
+              チャットを終了する
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── Ended + Survey ── */}
+      {stage === "ended" && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 gap-4">
+          {!surveyDone ? (
+            <>
+              <p className="text-sm font-medium text-gray-900 text-center">
+                チャットはいかがでしたか？
+              </p>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button key={s} onClick={() => setRating(s)}>
+                    <Star className={cn(
+                      "w-8 h-8 transition-colors",
+                      s <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300 hover:text-yellow-300"
+                    )} />
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  if (!sessionId || rating === 0) return;
+                  submitSurvey.mutate({ sessionId, visitorId: getOrCreateVisitorId(), rating });
+                }}
+                disabled={rating === 0 || submitSurvey.isPending}
+                className="w-full py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+                style={{ background: accentColor }}
+              >
+                送信する
+              </button>
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-12 h-12 text-green-500" />
+              <p className="text-sm text-gray-600 text-center">
+                フィードバックありがとうございました！
+              </p>
+              <button
+                onClick={handleClose}
+                className="text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                閉じる
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

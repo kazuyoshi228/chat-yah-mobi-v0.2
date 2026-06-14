@@ -145,6 +145,43 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Embed Section */}
+      <section className="max-w-4xl mx-auto px-6 pb-20">
+        <div className="bg-gray-950 rounded-2xl p-8 text-white">
+          <div className="mb-6">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">埋め込み</span>
+            <h2 className="text-xl font-semibold mt-2 mb-2" style={{ fontFamily: "'EB Garamond', serif" }}>
+              あなたのサイトに設置する
+            </h2>
+            <p className="text-sm text-gray-400">
+              以下のスクリプトを貼り付けるだけで、どのウェブサイトにもチャットウィジェットを設置できます。
+            </p>
+          </div>
+          <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-green-400 overflow-x-auto">
+            <pre className="whitespace-pre-wrap break-all">{`<script
+  src="https://yahchatapp-wagyp22n.manus.space/widget.js"
+  data-lang="ja"
+  data-position="bottom-right"
+  data-color="#000000">
+</script>`}</pre>
+          </div>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-400">
+            <div>
+              <span className="text-gray-300 font-medium">data-lang</span>
+              <p className="mt-0.5">ja / en / zh / es / ko</p>
+            </div>
+            <div>
+              <span className="text-gray-300 font-medium">data-position</span>
+              <p className="mt-0.5">bottom-right / bottom-left</p>
+            </div>
+            <div>
+              <span className="text-gray-300 font-medium">data-color</span>
+              <p className="mt-0.5">#000000（任意のHEXカラー）</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Chat Widget */}
       <ChatWidget />
 
