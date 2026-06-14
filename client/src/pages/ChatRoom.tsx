@@ -126,7 +126,8 @@ function SurveyModal({
 
 export default function ChatRoom() {
   const { sessionId: sessionIdStr } = useParams<{ sessionId: string }>();
-  const sessionId = parseInt(sessionIdStr ?? "0");
+  const sessionId = parseInt(sessionIdStr ?? "", 10);
+  const isValidSession = !isNaN(sessionId) && sessionId > 0;
   const [, navigate] = useLocation();
 
   const visitorId = getVisitorId();
@@ -145,8 +146,14 @@ export default function ChatRoom() {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load existing messages
-  const { data: existingMessages } = trpc.chat.getMessages.useQuery({ sessionId });
-  const { data: session } = trpc.chat.getSession.useQuery({ sessionId });
+  const { data: existingMessages } = trpc.chat.getMessages.useQuery(
+    { sessionId },
+    { enabled: isValidSession }
+  );
+  const { data: session } = trpc.chat.getSession.useQuery(
+    { sessionId },
+    { enabled: isValidSession }
+  );
 
   const sendMessage = trpc.chat.sendMessage.useMutation({
     onSuccess: (data) => {
@@ -300,6 +307,18 @@ export default function ChatRoom() {
     if (role === "ai") return <Bot className="w-3.5 h-3.5 text-gray-500" />;
     return <Headphones className="w-3.5 h-3.5 text-white" />;
   };
+
+  // Guard: invalid sessionId
+  if (!isValidSession) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 text-sm mb-4">セッションが見つかりません</p>
+          <Button onClick={() => navigate("/chat")}>チャットを開始する</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

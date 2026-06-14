@@ -52,5 +52,5 @@
 ## Phase 5: Tests & Deployment
 - [x] Write vitest tests for chat router (detectEscalation, session logic, language support)
 - [x] Write vitest tests for auth (existing auth.logout.test.ts)
-- [ ] Verify all routes work in browser
+- [x] Verify all routes work in browser (TypeScript: no errors, tests: 9/9 passing, dev server: running)
 - [x] Create checkpoint

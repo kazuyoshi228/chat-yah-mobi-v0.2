@@ -44,7 +44,8 @@ const LANG_LABELS: Record<string, string> = {
 
 export default function OperatorChatDetail() {
   const { id: sessionIdStr } = useParams<{ id: string }>();
-  const sessionId = parseInt(sessionIdStr ?? "0");
+  const sessionId = parseInt(sessionIdStr ?? "", 10);
+  const isValidSession = !isNaN(sessionId) && sessionId > 0;
   const [, navigate] = useLocation();
   const { user } = useAuth();
 
@@ -58,7 +59,10 @@ export default function OperatorChatDetail() {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const utils = trpc.useUtils();
-  const { data: detail, refetch } = trpc.operator.getSessionDetail.useQuery({ sessionId });
+  const { data: detail, refetch } = trpc.operator.getSessionDetail.useQuery(
+    { sessionId },
+    { enabled: isValidSession }
+  );
   const { data: quickReplies } = trpc.operator.listQuickReplies.useQuery();
 
   const assignSession = trpc.operator.assignSession.useMutation({
