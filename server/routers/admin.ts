@@ -1,0 +1,145 @@
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import {
+  createQuickReply,
+  createRagDocument,
+  deleteQuickReply,
+  deleteRagDocument,
+  getAllOperators,
+  getKpiStats,
+  listQuickReplies,
+  listRagDocuments,
+  updateQuickReply,
+  updateRagDocument,
+  updateUserRole,
+} from "../db";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getEmbedding } from "./ai";
+
+// Middleware: require admin role
+const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+  }
+  return next({ ctx });
+});
+
+export const adminRouter = router({
+  // KPI stats
+  getKpi: adminProcedure.query(async () => {
+    return getKpiStats();
+  }),
+
+  // Operator management
+  listOperators: adminProcedure.query(async () => {
+    return getAllOperators();
+  }),
+
+  setUserRole: adminProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        role: z.enum(["user", "admin", "operator"]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await updateUserRole(input.userId, input.role);
+      return { success: true };
+    }),
+
+  // Quick reply management
+  listQuickReplies: adminProcedure.query(async () => {
+    return listQuickReplies();
+  }),
+
+  createQuickReply: adminProcedure
+    .input(
+      z.object({
+        title: z.string().min(1),
+        content: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const id = await createQuickReply(input);
+      return { id };
+    }),
+
+  updateQuickReply: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1).optional(),
+        content: z.string().min(1).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      await updateQuickReply(id, data);
+      return { success: true };
+    }),
+
+  deleteQuickReply: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await deleteQuickReply(input.id);
+      return { success: true };
+    }),
+
+  // RAG document management
+  listRagDocuments: adminProcedure.query(async () => {
+    return listRagDocuments();
+  }),
+
+  createRagDocument: adminProcedure
+    .input(
+      z.object({
+        title: z.string().min(1),
+        content: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Generate embedding for the document
+      const embedding = await getEmbedding(`${input.title}\n${input.content}`);
+      const id = await createRagDocument({
+        title: input.title,
+        content: input.content,
+        embedding: embedding.length > 0 ? embedding : null,
+      });
+      return { id };
+    }),
+
+  updateRagDocument: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1).optional(),
+        content: z.string().min(1).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      // Re-generate embedding if content changed
+      if (data.content || data.title) {
+        const doc = await listRagDocuments().then((docs) => docs.find((d) => d.id === id));
+        if (doc) {
+          const title = data.title ?? doc.title;
+          const content = data.content ?? doc.content;
+          const embedding = await getEmbedding(`${title}\n${content}`);
+          await updateRagDocument(id, {
+            ...data,
+            embedding: embedding.length > 0 ? embedding : undefined,
+          });
+        }
+      } else {
+        await updateRagDocument(id, data);
+      }
+      return { success: true };
+    }),
+
+  deleteRagDocument: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await deleteRagDocument(input.id);
+      return { success: true };
+    }),
+});

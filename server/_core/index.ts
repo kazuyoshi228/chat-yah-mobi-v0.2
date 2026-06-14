@@ -3,11 +3,13 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { Server as SocketIOServer } from "socket.io";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { setIo } from "../socket";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -31,11 +33,55 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+
+  // Socket.io setup
+  const io = new SocketIOServer(server, {
+    path: "/api/socket.io",
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+
+  setIo(io);
+
+  // Socket.io connection handling
+  io.on("connection", (socket) => {
+    // Join operator room
+    socket.on("join_operators", () => {
+      socket.join("operators");
+    });
+
+    // Join specific session room
+    socket.on("join_session", (sessionId: number) => {
+      socket.join(`session:${sessionId}`);
+    });
+
+    // Leave session room
+    socket.on("leave_session", (sessionId: number) => {
+      socket.leave(`session:${sessionId}`);
+    });
+
+    // Visitor typing indicator
+    socket.on("visitor_typing", (data: { sessionId: number; isTyping: boolean }) => {
+      socket.to(`session:${data.sessionId}`).emit("typing", {
+        role: "visitor",
+        isTyping: data.isTyping,
+      });
+    });
+
+    socket.on("disconnect", () => {
+      // cleanup handled automatically by socket.io
+    });
+  });
+
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+
   // tRPC API
   app.use(
     "/api/trpc",
@@ -44,6 +90,7 @@ async function startServer() {
       createContext,
     })
   );
+
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);

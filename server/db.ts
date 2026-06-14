@@ -1,11 +1,25 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import {
+  InsertUser,
+  chatSessions,
+  messages,
+  quickReplies,
+  ragDocuments,
+  surveys,
+  users,
+  type ChatSession,
+  type InsertChatSession,
+  type InsertMessage,
+  type InsertQuickReply,
+  type InsertRagDocument,
+  type InsertSurvey,
+  type Message,
+} from "../drizzle/schema";
+import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -18,75 +32,229 @@ export async function getDb() {
   return _db;
 }
 
+// ─── Users ───────────────────────────────────────────────────────────────────
+
 export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
-
+  if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
+  if (!db) return;
+
+  const values: InsertUser = { openId: user.openId };
+  const updateSet: Record<string, unknown> = {};
+
+  const textFields = ["name", "email", "loginMethod"] as const;
+  for (const field of textFields) {
+    const value = user[field];
+    if (value === undefined) continue;
+    const normalized = value ?? null;
+    values[field] = normalized;
+    updateSet[field] = normalized;
   }
 
-  try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
+  if (user.lastSignedIn !== undefined) {
+    values.lastSignedIn = user.lastSignedIn;
+    updateSet.lastSignedIn = user.lastSignedIn;
   }
+  if (user.role !== undefined) {
+    values.role = user.role;
+    updateSet.role = user.role;
+  } else if (user.openId === ENV.ownerOpenId) {
+    values.role = "admin";
+    updateSet.role = "admin";
+  }
+
+  if (!values.lastSignedIn) values.lastSignedIn = new Date();
+  if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
+
+  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
+  if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  return result[0];
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getAllOperators() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(users)
+    .where(inArray(users.role, ["operator", "admin"]));
+}
+
+export async function updateUserRole(userId: number, role: "user" | "admin" | "operator") {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
+// ─── Chat Sessions ────────────────────────────────────────────────────────────
+
+export async function createChatSession(data: InsertChatSession): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(chatSessions).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getChatSession(id: number): Promise<ChatSession | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(chatSessions).where(eq(chatSessions.id, id)).limit(1);
+  return result[0];
+}
+
+export async function getChatSessionByVisitorId(visitorId: string): Promise<ChatSession | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(chatSessions)
+    .where(and(eq(chatSessions.visitorId, visitorId)))
+    .orderBy(desc(chatSessions.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function listChatSessions(status?: "waiting" | "active" | "ended") {
+  const db = await getDb();
+  if (!db) return [];
+  const query = db.select().from(chatSessions).orderBy(desc(chatSessions.updatedAt));
+  if (status) {
+    return db
+      .select()
+      .from(chatSessions)
+      .where(eq(chatSessions.status, status))
+      .orderBy(desc(chatSessions.updatedAt));
+  }
+  return query;
+}
+
+export async function updateChatSession(
+  id: number,
+  data: Partial<Pick<ChatSession, "status" | "operatorId" | "summary" | "language">>
+) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(chatSessions).set(data).where(eq(chatSessions.id, id));
+}
+
+// ─── Messages ─────────────────────────────────────────────────────────────────
+
+export async function createMessage(data: InsertMessage): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(messages).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getMessagesBySessionId(sessionId: number): Promise<Message[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(messages)
+    .where(eq(messages.sessionId, sessionId))
+    .orderBy(messages.createdAt);
+}
+
+// ─── Quick Replies ────────────────────────────────────────────────────────────
+
+export async function listQuickReplies() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(quickReplies).orderBy(quickReplies.createdAt);
+}
+
+export async function createQuickReply(data: InsertQuickReply) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(quickReplies).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function updateQuickReply(id: number, data: Partial<InsertQuickReply>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(quickReplies).set(data).where(eq(quickReplies.id, id));
+}
+
+export async function deleteQuickReply(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(quickReplies).where(eq(quickReplies.id, id));
+}
+
+// ─── RAG Documents ────────────────────────────────────────────────────────────
+
+export async function listRagDocuments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ragDocuments).orderBy(desc(ragDocuments.createdAt));
+}
+
+export async function createRagDocument(data: InsertRagDocument) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(ragDocuments).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function updateRagDocument(id: number, data: Partial<InsertRagDocument>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(ragDocuments).set(data).where(eq(ragDocuments.id, id));
+}
+
+export async function deleteRagDocument(id: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(ragDocuments).where(eq(ragDocuments.id, id));
+}
+
+export async function getRagDocumentsWithEmbeddings() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(ragDocuments).where(eq(ragDocuments.embedding, ragDocuments.embedding));
+}
+
+// ─── Surveys ──────────────────────────────────────────────────────────────────
+
+export async function createSurvey(data: InsertSurvey) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(surveys).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+export async function getSurveyBySessionId(sessionId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(surveys).where(eq(surveys.sessionId, sessionId)).limit(1);
+  return result[0];
+}
+
+// ─── KPI ──────────────────────────────────────────────────────────────────────
+
+export async function getKpiStats() {
+  const db = await getDb();
+  if (!db) return { total: 0, aiResolved: 0, avgRating: 0 };
+
+  const allSessions = await db.select().from(chatSessions);
+  const total = allSessions.length;
+  // AI resolved = sessions that ended without an operator
+  const aiResolved = allSessions.filter(
+    (s) => s.status === "ended" && !s.operatorId
+  ).length;
+
+  const allSurveys = await db.select().from(surveys);
+  const avgRating =
+    allSurveys.length > 0
+      ? allSurveys.reduce((sum, s) => sum + s.rating, 0) / allSurveys.length
+      : 0;
+
+  return { total, aiResolved, avgRating: Math.round(avgRating * 10) / 10 };
+}
