@@ -2,9 +2,28 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, Bot, Star, TrendingUp, Loader2 } from "lucide-react";
+import { MessageCircle, Bot, Star, Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+function RateBar({ rate, color }: { rate: number | null; color: string }) {
+  if (rate === null) return <p className="text-xs text-gray-300 mt-1">データなし</p>;
+  return (
+    <div className="mt-2">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs text-gray-400">{rate}%</span>
+        <span className="text-xs text-gray-300">100%</span>
+      </div>
+      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all duration-700", color)}
+          style={{ width: `${rate}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -41,9 +60,14 @@ export default function AdminDashboard() {
     );
   }
 
-  const aiResolvedRate = kpi && kpi.total > 0
-    ? Math.round((kpi.aiResolved / kpi.total) * 100)
-    : 0;
+  // AI-handled rate (sessions ended without operator / total ended)
+  const endedTotal = (kpi?.aiResolved ?? 0) + (kpi?.operatorResolved ?? 0);
+  const aiHandledRate = endedTotal > 0
+    ? Math.round(((kpi?.aiResolved ?? 0) / endedTotal) * 100)
+    : null;
+  const opHandledRate = endedTotal > 0
+    ? Math.round(((kpi?.operatorResolved ?? 0) / endedTotal) * 100)
+    : null;
 
   return (
     <DashboardLayout title="管理ダッシュボード">
@@ -60,50 +84,144 @@ export default function AdminDashboard() {
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="border-gray-100 shadow-none">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  総チャット数
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-semibold text-gray-900">{kpi?.total ?? 0}</p>
-                <p className="text-xs text-gray-400 mt-1">全期間</p>
-              </CardContent>
-            </Card>
+          <>
+            {/* Row 1: Volume KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    総チャット数
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">{kpi?.total ?? 0}</p>
+                  <p className="text-xs text-gray-400 mt-1">全期間</p>
+                </CardContent>
+              </Card>
 
-            <Card className="border-gray-100 shadow-none">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
-                  <Bot className="w-3.5 h-3.5" />
-                  AI解決率
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-semibold text-gray-900">{aiResolvedRate}%</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {kpi?.aiResolved ?? 0} / {kpi?.total ?? 0} 件
-                </p>
-              </CardContent>
-            </Card>
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <Bot className="w-3.5 h-3.5" />
+                    AI対応数
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">{kpi?.aiResolved ?? 0}</p>
+                  <RateBar rate={aiHandledRate} color="bg-blue-400" />
+                </CardContent>
+              </Card>
 
-            <Card className="border-gray-100 shadow-none">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
-                  <Star className="w-3.5 h-3.5" />
-                  平均満足度
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-semibold text-gray-900">
-                  {kpi?.avgRating ? `${kpi.avgRating} / 5` : "—"}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">アンケート回答より</p>
-              </CardContent>
-            </Card>
-          </div>
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <Users className="w-3.5 h-3.5" />
+                    オペレーター対応数
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">{kpi?.operatorResolved ?? 0}</p>
+                  <RateBar rate={opHandledRate} color="bg-purple-400" />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Row 2: Resolution KPIs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* Overall resolved rate */}
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                    総合解決率
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">
+                    {kpi?.resolvedRate !== null && kpi?.resolvedRate !== undefined ? `${kpi.resolvedRate}%` : "—"}
+                  </p>
+                  <RateBar rate={kpi?.resolvedRate ?? null} color="bg-green-400" />
+                  {kpi?.surveyCount ? (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      解決 {kpi.resolvedCount} / 未解決 {kpi.unresolvedCount}（回答 {kpi.surveyCount} 件）
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-300 mt-1.5">アンケート回答なし</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* AI resolved rate */}
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <Bot className="w-3.5 h-3.5 text-blue-500" />
+                    AI解決率
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">
+                    {kpi?.aiResolvedRate !== null && kpi?.aiResolvedRate !== undefined ? `${kpi.aiResolvedRate}%` : "—"}
+                  </p>
+                  <RateBar rate={kpi?.aiResolvedRate ?? null} color="bg-blue-400" />
+                  <p className="text-xs text-gray-400 mt-1.5">AI対応チャットのアンケートより</p>
+                </CardContent>
+              </Card>
+
+              {/* Operator resolved rate */}
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <Users className="w-3.5 h-3.5 text-purple-500" />
+                    オペレーター解決率
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">
+                    {kpi?.operatorResolvedRate !== null && kpi?.operatorResolvedRate !== undefined ? `${kpi.operatorResolvedRate}%` : "—"}
+                  </p>
+                  <RateBar rate={kpi?.operatorResolvedRate ?? null} color="bg-purple-400" />
+                  <p className="text-xs text-gray-400 mt-1.5">オペレーター対応チャットのアンケートより</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Row 3: Satisfaction */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="border-gray-100 shadow-none">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <Star className="w-3.5 h-3.5 text-yellow-500" />
+                    平均満足度
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">
+                    {kpi?.avgRating ? `${kpi.avgRating}` : "—"}
+                    {kpi?.avgRating ? <span className="text-base font-normal text-gray-400"> / 5</span> : null}
+                  </p>
+                  <RateBar rate={kpi?.avgRating ? Math.round((kpi.avgRating / 5) * 100) : null} color="bg-yellow-400" />
+                  <p className="text-xs text-gray-400 mt-1.5">アンケート {kpi?.surveyCount ?? 0} 件より</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-gray-100 shadow-none col-span-1 md:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <XCircle className="w-3.5 h-3.5 text-red-400" />
+                    未解決チャット
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-semibold text-gray-900">{kpi?.unresolvedCount ?? 0}</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    「解決しなかった」と回答したアンケート数。改善の優先課題として活用できます。
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </>
         )}
 
         {/* Quick links */}

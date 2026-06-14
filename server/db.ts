@@ -294,20 +294,62 @@ export async function getSurveyBySessionId(sessionId: number) {
 
 export async function getKpiStats() {
   const db = await getDb();
-  if (!db) return { total: 0, aiResolved: 0, avgRating: 0 };
+  if (!db) return {
+    total: 0, aiResolved: 0, operatorResolved: 0, avgRating: 0,
+    resolvedRate: 0, aiResolvedRate: 0, operatorResolvedRate: 0,
+    surveyCount: 0, resolvedCount: 0, unresolvedCount: 0,
+  };
 
   const allSessions = await db.select().from(chatSessions);
   const total = allSessions.length;
+  const endedSessions = allSessions.filter((s) => s.status === "ended");
   // AI resolved = sessions that ended without an operator
-  const aiResolved = allSessions.filter(
-    (s) => s.status === "ended" && !s.operatorId
-  ).length;
+  const aiResolved = endedSessions.filter((s) => !s.operatorId).length;
+  // Operator resolved = sessions that ended with an operator
+  const operatorResolved = endedSessions.filter((s) => !!s.operatorId).length;
 
   const allSurveys = await db.select().from(surveys);
+  const surveyCount = allSurveys.length;
   const avgRating =
-    allSurveys.length > 0
-      ? allSurveys.reduce((sum, s) => sum + s.rating, 0) / allSurveys.length
+    surveyCount > 0
+      ? allSurveys.reduce((sum, s) => sum + s.rating, 0) / surveyCount
       : 0;
 
-  return { total, aiResolved, avgRating: Math.round(avgRating * 10) / 10 };
+  // Resolution rate from survey answers
+  const surveysWithResolved = allSurveys.filter((s) => s.resolved !== null && s.resolved !== undefined);
+  const resolvedCount = surveysWithResolved.filter((s) => s.resolved === "yes").length;
+  const unresolvedCount = surveysWithResolved.filter((s) => s.resolved === "no").length;
+  const resolvedRate = surveysWithResolved.length > 0
+    ? Math.round((resolvedCount / surveysWithResolved.length) * 100)
+    : null;
+
+  // AI vs Operator resolved rate (from surveys joined with sessions)
+  const sessionMap = new Map(allSessions.map((s) => [s.id, s]));
+  const aiSurveys = surveysWithResolved.filter((sv) => {
+    const sess = sessionMap.get(sv.sessionId);
+    return sess && !sess.operatorId;
+  });
+  const opSurveys = surveysWithResolved.filter((sv) => {
+    const sess = sessionMap.get(sv.sessionId);
+    return sess && !!sess.operatorId;
+  });
+  const aiResolvedRate = aiSurveys.length > 0
+    ? Math.round((aiSurveys.filter((s) => s.resolved === "yes").length / aiSurveys.length) * 100)
+    : null;
+  const operatorResolvedRate = opSurveys.length > 0
+    ? Math.round((opSurveys.filter((s) => s.resolved === "yes").length / opSurveys.length) * 100)
+    : null;
+
+  return {
+    total,
+    aiResolved,
+    operatorResolved,
+    avgRating: Math.round(avgRating * 10) / 10,
+    surveyCount,
+    resolvedCount,
+    unresolvedCount,
+    resolvedRate,       // overall % resolved (null if no survey data)
+    aiResolvedRate,     // AI-handled sessions % resolved
+    operatorResolvedRate, // Operator-handled sessions % resolved
+  };
 }

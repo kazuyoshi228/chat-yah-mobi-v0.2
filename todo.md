@@ -73,3 +73,9 @@
 - [x] アンケートに「解決しましたか？（はい/いいえ）」を追加
 - [x] ∅3以下の場合のみ自由記述欄を表示
 - [x] アンケートデータをDBに保存するスキーマ・ルーター更新
+
+## Phase 8: 解決率KPI追加
+- [x] getKpiStatsに resolvedRate / aiResolvedRate / operatorResolvedRate / resolvedCount / unresolvedCount を追加
+- [x] AdminDashboard.tsxに解決率KPIカード（総合・AI・オペレーター）を追加
+- [x] 進捗バー（RateBar）コンポーネントで視覚的に解決率を表示
+- [x] 未解決チャット数カードを追加
