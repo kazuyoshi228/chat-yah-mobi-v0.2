@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { nanoid } from "nanoid";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ChatMessage {
   id?: number;
@@ -45,6 +46,7 @@ function getOrCreateVisitorId(): string {
 type WidgetState = "closed" | "start" | "chat" | "ended";
 
 export default function ChatWidget() {
+  const { t } = useLanguage();
   const [widgetState, setWidgetState] = useState<WidgetState>("closed");
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -213,19 +215,19 @@ export default function ChatWidget() {
           {widgetState === "start" && (
             <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
               <p className="text-sm text-gray-600">
-                Feel free to ask us anything. Our AI will respond instantly.
+                {t("widget_greeting")}
               </p>
               <input
                 type="text"
                 value={visitorName}
                 onChange={(e) => setVisitorName(e.target.value)}
-                placeholder="Your name (optional)"
+                placeholder={t("widget_name_placeholder")}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black"
               />
               <Textarea
                 value={initialMessage}
                 onChange={(e) => setInitialMessage(e.target.value)}
-                placeholder="How can we help you today?"
+                placeholder={t("widget_message_placeholder")}
                 rows={4}
                 className="resize-none border-gray-200 focus:border-black focus:ring-black text-sm"
               />
@@ -237,7 +239,7 @@ export default function ChatWidget() {
                 {startSession.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  "Start Chat"
+                  t("widget_start_button")
                 )}
               </Button>
             </div>
@@ -300,7 +302,7 @@ export default function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type a message..."
+                  placeholder={t("widget_placeholder")}
                   rows={1}
                   className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[36px] max-h-[80px] py-2 text-xs"
                 />
@@ -319,7 +321,7 @@ export default function ChatWidget() {
                   onClick={handleEndSession}
                   className="text-xs text-gray-400 hover:text-gray-600 w-full text-center"
                 >
-                  End chat
+                  {t("widget_ended")}
                 </button>
               </div>
             </>
@@ -331,7 +333,7 @@ export default function ChatWidget() {
               {!surveySubmitted ? (
                 <>
                   <p className="text-sm font-medium text-gray-900 text-center">
-                    How was your experience?
+                    {t("widget_survey_title")}
                   </p>
                   {/* Star rating */}
                   <div className="flex gap-2">
@@ -346,7 +348,7 @@ export default function ChatWidget() {
                   </div>
                   {/* Resolved question */}
                   <div className="w-full">
-                    <p className="text-xs text-gray-500 mb-1.5 text-center">Was your issue resolved?</p>
+                    <p className="text-xs text-gray-500 mb-1.5 text-center">{t("survey_resolved_question")}</p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setResolved("yes")}
@@ -357,7 +359,7 @@ export default function ChatWidget() {
                             : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
                         )}
                       >
-                        ✔ Yes
+                        ✔ {t("widget_survey_yes")}
                       </button>
                       <button
                         onClick={() => setResolved("no")}
@@ -368,18 +370,18 @@ export default function ChatWidget() {
                             : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
                         )}
                       >
-                        ✖ No
+                        ✖ {t("widget_survey_no")}
                       </button>
                     </div>
                   </div>
                   {/* Low-rating free comment */}
                   {rating > 0 && rating <= 3 && (
                     <div className="w-full">
-                      <p className="text-xs text-gray-500 mb-1">What could we improve?</p>
+                      <p className="text-xs text-gray-500 mb-1">{t("survey_improve")}</p>
                       <textarea
                         value={freeComment}
                         onChange={(e) => setFreeComment(e.target.value)}
-                        placeholder="Tell us what went wrong..."
+                        placeholder={t("survey_improve_placeholder")}
                         rows={2}
                         className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
                       />
@@ -390,14 +392,14 @@ export default function ChatWidget() {
                     disabled={rating === 0 || submitSurvey.isPending}
                     className="w-full bg-black text-white hover:bg-gray-800 text-sm"
                   >
-                    Submit
+                    {t("widget_survey_submit")}
                   </Button>
                 </>
               ) : (
                 <>
                   <CheckCircle className="w-10 h-10 text-green-500" />
                   <p className="text-sm text-gray-600 text-center">
-                    Thank you for your feedback!
+                    {t("widget_survey_thanks")}
                   </p>
                 </>
               )}

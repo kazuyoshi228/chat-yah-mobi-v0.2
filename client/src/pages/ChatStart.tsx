@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MessageCircle, Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const LANGUAGES = [
   { value: "ja", label: "日本語" },
@@ -29,10 +30,11 @@ function getOrCreateVisitorId(): string {
 
 export default function ChatStart() {
   const [, navigate] = useLocation();
+  const { lang, t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [language, setLanguage] = useState<"ja" | "en" | "zh" | "es" | "ko">("en");
+  const [language, setLanguage] = useState<"ja" | "en" | "zh" | "es" | "ko">(lang as "ja" | "en" | "zh" | "es" | "ko");
 
   const startSession = trpc.chat.startSession.useMutation({
     onSuccess: (data) => {
@@ -62,10 +64,10 @@ export default function ChatStart() {
             <MessageCircle className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
-            yah.mobile Support
+            {t("chat_start_title")}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Chat with us — we're here to help
+            {t("chat_start_subtitle")}
           </p>
         </div>
 
@@ -73,33 +75,33 @@ export default function ChatStart() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              Name (optional)
+              {t("chat_start_name_label")}
             </Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
+              placeholder={t("chat_start_name_placeholder")}
               className="border-gray-200 focus:border-black focus:ring-black"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email (optional)
+              {t("chat_start_email_label")}
             </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@email.com"
+              placeholder={t("chat_start_email_placeholder")}
               className="border-gray-200 focus:border-black focus:ring-black"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Language</Label>
+            <Label className="text-sm font-medium text-gray-700">{t("chat_start_lang_label")}</Label>
             <Select value={language} onValueChange={(v) => setLanguage(v as typeof language)}>
               <SelectTrigger className="border-gray-200">
                 <SelectValue />
@@ -116,13 +118,13 @@ export default function ChatStart() {
 
           <div className="space-y-2">
             <Label htmlFor="message" className="text-sm font-medium text-gray-700">
-              Message <span className="text-red-500">*</span>
+              {t("chat_start_message_label")} <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="How can we help you today?"
+              placeholder={t("chat_start_message_placeholder")}
               rows={4}
               required
               className="border-gray-200 focus:border-black focus:ring-black resize-none"
@@ -137,10 +139,10 @@ export default function ChatStart() {
             {startSession.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Connecting...
+                {t("chat_start_submitting")}
               </>
             ) : (
-              "Start Chat"
+              t("chat_start_submit")
             )}
           </Button>
         </form>

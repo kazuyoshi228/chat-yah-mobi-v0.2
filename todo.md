@@ -79,3 +79,16 @@
 - [x] AdminDashboard.tsxに解決率KPIカード（総合・AI・オペレーター）を追加
 - [x] 進捗バー（RateBar）コンポーネントで視覚的に解決率を表示
 - [x] 未解決チャット数カードを追加
+
+## Phase 9: 言語切り替えボタン + KPI期間フィルター
+- [ ] shared/i18n.ts: 日本語・英語・中国語・スペイン語・韓国語の翻訳辞書を作成
+- [ ] client/src/contexts/LanguageContext.tsx: 言語コンテキストを作成
+- [ ] client/src/main.tsx: LanguageProviderをラップ
+- [ ] Home.tsx: ヘッダーに言語切り替えドロップダウンを追加
+- [ ] ChatStart.tsx: 言語コンテキストに対応
+- [ ] ChatRoom.tsx: 言語コンテキストに対応
+- [ ] ChatWidget.tsx: 言語コンテキストに対応
+- [ ] WidgetChat.tsx: 言語コンテキストに対応
+- [ ] AdminDashboard.tsx: KPIに期間フィルター（今日・今週・今月）を追加
+- [ ] server/routers/admin.ts: getKpiにperiodパラメーターを追加
+- [ ] server/db.ts: getKpiStatsに期間フィルターロジックを追加

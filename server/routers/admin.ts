@@ -26,9 +26,24 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 export const adminRouter = router({
   // KPI stats
-  getKpi: adminProcedure.query(async () => {
-    return getKpiStats();
-  }),
+  getKpi: adminProcedure
+    .input(
+      z.object({
+        period: z.enum(["all", "today", "week", "month"]).default("all"),
+      })
+    )
+    .query(async ({ input }) => {
+      let since: Date | undefined;
+      const now = new Date();
+      if (input.period === "today") {
+        since = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      } else if (input.period === "week") {
+        since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (input.period === "month") {
+        since = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+      return getKpiStats(since);
+    }),
 
   // Operator management
   listOperators: adminProcedure.query(async () => {

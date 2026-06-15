@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -6,6 +7,15 @@ import { MessageCircle, Bot, Star, Users, CheckCircle, XCircle, Loader2 } from "
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+type Period = "all" | "today" | "week" | "month";
+
+const PERIOD_LABELS: Record<Period, string> = {
+  all: "All Time",
+  today: "Today",
+  week: "Last 7 Days",
+  month: "This Month",
+};
 
 function RateBar({ rate, color }: { rate: number | null; color: string }) {
   if (rate === null) return <p className="text-xs text-gray-300 mt-1">No data</p>;
@@ -27,9 +37,12 @@ function RateBar({ rate, color }: { rate: number | null; color: string }) {
 
 export default function AdminDashboard() {
   const { user, loading, isAuthenticated } = useAuth();
-  const { data: kpi, isLoading } = trpc.admin.getKpi.useQuery(undefined, {
-    enabled: isAuthenticated && user?.role === "admin",
-  });
+  const [period, setPeriod] = useState<Period>("all");
+
+  const { data: kpi, isLoading } = trpc.admin.getKpi.useQuery(
+    { period },
+    { enabled: isAuthenticated && user?.role === "admin" }
+  );
 
   if (loading) {
     return (
@@ -72,11 +85,31 @@ export default function AdminDashboard() {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
-            Dashboard
-          </h1>
-          <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
+        {/* Header with period filter */}
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
+              Dashboard
+            </h1>
+            <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
+          </div>
+          {/* Period filter buttons */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            {(["all", "today", "week", "month"] as Period[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
+                  period === p
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                {PERIOD_LABELS[p]}
+              </button>
+            ))}
+          </div>
         </div>
 
         {isLoading ? (
@@ -96,7 +129,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-semibold text-gray-900">{kpi?.total ?? 0}</p>
-                  <p className="text-xs text-gray-400 mt-1">All time</p>
+                  <p className="text-xs text-gray-400 mt-1">{PERIOD_LABELS[period]}</p>
                 </CardContent>
               </Card>
 

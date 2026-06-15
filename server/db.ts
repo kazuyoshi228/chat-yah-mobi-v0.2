@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -292,7 +292,7 @@ export async function getSurveyBySessionId(sessionId: number) {
 
 // ─── KPI ──────────────────────────────────────────────────────────────────────
 
-export async function getKpiStats() {
+export async function getKpiStats(since?: Date) {
   const db = await getDb();
   if (!db) return {
     total: 0, aiResolved: 0, operatorResolved: 0, avgRating: 0,
@@ -300,7 +300,9 @@ export async function getKpiStats() {
     surveyCount: 0, resolvedCount: 0, unresolvedCount: 0,
   };
 
-  const allSessions = await db.select().from(chatSessions);
+  const allSessions = since
+    ? await db.select().from(chatSessions).where(gte(chatSessions.createdAt, since))
+    : await db.select().from(chatSessions);
   const total = allSessions.length;
   const endedSessions = allSessions.filter((s) => s.status === "ended");
   // AI resolved = sessions that ended without an operator
@@ -308,7 +310,9 @@ export async function getKpiStats() {
   // Operator resolved = sessions that ended with an operator
   const operatorResolved = endedSessions.filter((s) => !!s.operatorId).length;
 
-  const allSurveys = await db.select().from(surveys);
+  const allSurveys = since
+    ? await db.select().from(surveys).where(gte(surveys.createdAt, since))
+    : await db.select().from(surveys);
   const surveyCount = allSurveys.length;
   const avgRating =
     surveyCount > 0
