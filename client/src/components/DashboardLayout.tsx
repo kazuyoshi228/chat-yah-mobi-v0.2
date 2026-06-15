@@ -180,20 +180,6 @@ function DashboardLayoutContent({
               >
                 <PanelLeft className="h-4 w-4 text-muted-foreground" />
               </button>
-              {!isCollapsed && (
-                <img
-                  src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
-                  alt="yah.mobile"
-                  className="h-6 w-auto object-contain"
-                />
-              )}
-              {isCollapsed && (
-                <img
-                  src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
-                  alt="yah.mobile"
-                  className="h-5 w-auto object-contain"
-                />
-              )}
             </div>
           </SidebarHeader>
 
