@@ -42,36 +42,62 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-black flex items-center justify-center">
-            <MessageCircle className="w-3.5 h-3.5 text-white" />
+      {/* Nav — yah.mobi style: transparent bg, uppercase tracking, white text on scroll */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 px-8 py-0 flex items-center justify-between h-14">
+        {/* Logo */}
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 focus:outline-none"
+        >
+          <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center">
+            <MessageCircle className="w-3 h-3 text-white" />
           </div>
-          <span className="font-semibold text-sm" style={{ fontFamily: "'EB Garamond', serif" }}>
+          <span
+            className="text-[0.8125rem] font-medium tracking-[0.14em] uppercase text-gray-900"
+          >
             yah.mobile
           </span>
-        </div>
-        <div className="flex items-center gap-2">
+        </button>
+
+        {/* Right nav items */}
+        <div className="flex items-center gap-8">
+          {/* Staff nav links */}
+          {isAuthenticated && (
+            <div className="hidden sm:flex items-center gap-8">
+              {(user?.role === "operator" || user?.role === "admin") && (
+                <button
+                  onClick={() => navigate("/operator/chats")}
+                  className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-gray-700 hover:text-black transition-colors border-b border-transparent hover:border-black pb-0.5"
+                >
+                  {t("home_nav_operator")}
+                </button>
+              )}
+              {user?.role === "admin" && (
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-gray-700 hover:text-black transition-colors border-b border-transparent hover:border-black pb-0.5"
+                >
+                  {t("home_nav_admin")}
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Language switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-sm text-gray-600 gap-1.5 px-2.5"
-              >
+              <button className="flex items-center gap-1 text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-gray-700 hover:text-black transition-colors focus:outline-none">
                 <span>{currentLangOption.flag}</span>
-                <span className="hidden sm:inline">{currentLangOption.label}</span>
-                <ChevronDown className="w-3 h-3 text-gray-400" />
-              </Button>
+                <span className="hidden sm:inline ml-1">{currentLangOption.label}</span>
+                <ChevronDown className="w-3 h-3 ml-0.5 text-gray-400" />
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36">
               {LANG_OPTIONS.map((option) => (
                 <DropdownMenuItem
                   key={option.value}
                   onClick={() => setLang(option.value)}
-                  className={`gap-2 cursor-pointer ${lang === option.value ? "font-semibold" : ""}`}
+                  className={`gap-2 cursor-pointer text-xs ${lang === option.value ? "font-semibold" : ""}`}
                 >
                   <span>{option.flag}</span>
                   <span>{option.label}</span>
@@ -81,45 +107,21 @@ export default function Home() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {isAuthenticated ? (
-            <>
-              {(user?.role === "operator" || user?.role === "admin") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/operator/chats")}
-                  className="text-sm text-gray-600"
-                >
-                  {t("home_nav_operator")}
-                </Button>
-              )}
-              {user?.role === "admin" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="text-sm text-gray-600"
-                >
-                  {t("home_nav_admin")}
-                </Button>
-              )}
-            </>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
+          {/* Staff login / CTA */}
+          {!isAuthenticated && (
+            <button
               onClick={() => { window.location.href = getLoginUrl(); }}
-              className="text-sm text-gray-600"
+              className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-gray-700 hover:text-black transition-colors border-b border-transparent hover:border-black pb-0.5"
             >
               Staff Login
-            </Button>
+            </button>
           )}
-          <Button
+          <button
             onClick={() => navigate("/chat")}
-            className="bg-black hover:bg-gray-800 text-white text-sm px-4 py-2 h-auto rounded-full"
+            className="bg-black hover:bg-gray-800 text-white text-[0.6875rem] font-medium tracking-[0.12em] uppercase px-5 py-2 rounded-full transition-colors"
           >
             {t("home_start_chat")}
-          </Button>
+          </button>
         </div>
       </nav>
 
@@ -131,7 +133,6 @@ export default function Home() {
         </div>
         <h1
           className="text-5xl md:text-6xl font-medium text-gray-900 leading-tight mb-6"
-          style={{ fontFamily: "'EB Garamond', serif" }}
         >
           {t("home_hero_title1")}
           <br />
@@ -177,7 +178,7 @@ export default function Home() {
         <div className="bg-gray-950 rounded-2xl p-8 text-white">
           <div className="mb-6">
             <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">Embed</span>
-            <h2 className="text-xl font-semibold mt-2 mb-2" style={{ fontFamily: "'EB Garamond', serif" }}>
+            <h2 className="text-xl font-semibold mt-2 mb-2">
               {t("home_embed_title")}
             </h2>
             <p className="text-sm text-gray-400">

@@ -92,3 +92,16 @@
 - [ ] AdminDashboard.tsx: KPIに期間フィルター（今日・今週・今月）を追加
 - [ ] server/routers/admin.ts: getKpiにperiodパラメーターを追加
 - [ ] server/db.ts: getKpiStatsに期間フィルターロジックを追加
+
+## Phase 10: フォント差し替え・ナビゲーションバーデザイン統一
+- [ ] National2フォントをindex.cssに@font-faceで定義
+- [ ] bodyにNational2を適用
+- [ ] Home.tsxのナビゲーションバーをyah.mobiデザイン（透明背景・大文字・letter-spacing）に変更
+- [ ] EB Garamondの参照を全て削除しNational2に統一
+
+## Phase 11: Operatorページのカード表示・追加機能
+- [ ] server/db.tsにcreateOperatorUser（名・姓・メールでユーザー作成）ヘルパーを追加
+- [ ] server/routers/admin.tsにcreateOperatorミューテーションを追加
+- [ ] AdminOperators.tsxをカード表示に変更（名・姓・メール・ID・openId・role・作成日など）
+- [ ] 「Add Operator」ダイアログを追加（名・姓・メールアドレス入力）
+- [ ] TypeScriptエラー確認・チェックポイント保存

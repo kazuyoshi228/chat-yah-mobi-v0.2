@@ -179,7 +179,7 @@ function DashboardLayoutContent({
                 <PanelLeft className="h-4 w-4 text-muted-foreground" />
               </button>
               {!isCollapsed && (
-                <span className="font-semibold text-sm tracking-tight truncate" style={{ fontFamily: "'EB Garamond', serif" }}>
+                <span className="font-semibold text-sm tracking-tight truncate" >
                   {title ?? "yah.mobile"}
                 </span>
               )}
