@@ -349,6 +349,48 @@ export async function getSurveyBySessionId(sessionId: number) {
   return result[0];
 }
 
+/** List all surveys with their associated session info (for admin feedback view). */
+export async function listSurveys(limit = 100) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: surveys.id,
+      sessionId: surveys.sessionId,
+      rating: surveys.rating,
+      resolved: surveys.resolved,
+      comment: surveys.comment,
+      freeComment: surveys.freeComment,
+      createdAt: surveys.createdAt,
+      visitorName: chatSessions.visitorName,
+      language: chatSessions.language,
+      operatorId: chatSessions.operatorId,
+    })
+    .from(surveys)
+    .leftJoin(chatSessions, eq(surveys.sessionId, chatSessions.id))
+    .orderBy(desc(surveys.createdAt))
+    .limit(limit);
+  return rows;
+}
+
+/** Aggregate data for the Data Analysis page. */
+export async function getAnalysisData(since?: Date) {
+  const db = await getDb();
+  if (!db) return { sessions: [], messages: [] };
+
+  const sessionsQuery = since
+    ? db.select().from(chatSessions).where(gte(chatSessions.createdAt, since))
+    : db.select().from(chatSessions);
+  const allSessions = await sessionsQuery;
+
+  const messagesQuery = since
+    ? db.select().from(messages).where(gte(messages.createdAt, since))
+    : db.select().from(messages);
+  const allMessages = await messagesQuery;
+
+  return { sessions: allSessions, messages: allMessages };
+}
+
 // ─── KPI ──────────────────────────────────────────────────────────────────────
 
 export async function getKpiStats(since?: Date) {

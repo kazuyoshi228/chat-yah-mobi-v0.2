@@ -9,6 +9,8 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminOperators from "@/pages/admin/AdminOperators";
 import AdminQuickReplies from "@/pages/admin/AdminQuickReplies";
 import AdminRag from "@/pages/admin/AdminRag";
+import AdminFeedback from "@/pages/admin/AdminFeedback";
+import AdminDataAnalysis from "@/pages/admin/AdminDataAnalysis";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -27,6 +29,8 @@ export default function App() {
         <Route path="/admin/operators" component={AdminOperators} />
         <Route path="/admin/quick-replies" component={AdminQuickReplies} />
         <Route path="/admin/rag" component={AdminRag} />
+        <Route path="/admin/feedback" component={AdminFeedback} />
+        <Route path="/admin/data-analysis" component={AdminDataAnalysis} />
         <Route path="/portal" component={Portal} />
         <Route path="/widget-chat" component={WidgetChat} />
         <Route component={NotFound} />

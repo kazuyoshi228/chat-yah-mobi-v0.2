@@ -120,3 +120,12 @@
 - [x] Admin・Operatorそれぞれのログインボタンを配置
 - [x] ログイン済みの場合はrole別に自動リダイレクト（admin→/admin、operator→/operator/chats）
 - [x] App.tsxに/portalルートを追加
+
+## Phase 14: FeedbackページとData Analysisページ
+- [x] server/db.ts: listSurveys（全アンケート一覧+セッション情報）ヘルパーを追加
+- [x] server/db.ts: getAnalysisData（AI/有人別・言語別・時系列チャット数）ヘルパーを追加
+- [x] server/routers/admin.ts: listFeedback・getAnalysis クエリを追加
+- [x] client/src/pages/admin/AdminFeedback.tsx: アンケート自由記述一覧ページを作成
+- [x] client/src/pages/admin/AdminDataAnalysis.tsx: Data Analysisページを作成（グラフ・カテゴリ分析）
+- [x] DashboardLayout.tsx: Feedback・Data Analysisをサイドバーメニューに追加
+- [x] App.tsx: /admin/feedback・/admin/data-analysisルートを追加
