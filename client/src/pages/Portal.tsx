@@ -36,8 +36,7 @@ export default function Portal() {
         <div className="w-full max-w-sm">
           {/* Heading */}
           <div className="mb-10 text-center">
-            <p className="text-xs tracking-[0.2em] uppercase text-gray-400 mb-3">Staff Portal</p>
-            <h1 className="text-3xl font-semibold text-black leading-tight">Portal</h1>
+            <h1 className="text-3xl font-semibold text-black leading-tight">chat.yah.mobile Portal</h1>
           </div>
 
           {/* Error message */}
@@ -67,11 +66,7 @@ export default function Portal() {
             </svg>
           </a>
 
-          {/* Note */}
-          <p className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
-            Staff accounts are managed by your administrator.<br />
-            Contact your admin if you need access.
-          </p>
+
         </div>
       </main>
 
