@@ -502,6 +502,19 @@ export default function ChatRoom() {
       {/* Input Area */}
       {!sessionEnded && (
         <div className="bg-white border-t border-gray-100 px-4 py-3">
+          {/* Connect to operator button - always visible when no operator yet */}
+          {!operatorJoined && (
+            <div className="max-w-2xl mx-auto mb-2">
+              <button
+                onClick={() => requestEscalation.mutate({ sessionId, visitorId })}
+                disabled={requestEscalation.isPending}
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-gray-200 text-xs text-gray-500 hover:border-black hover:text-black transition-colors duration-150 disabled:opacity-50"
+              >
+                <Headphones className="w-3.5 h-3.5" />
+                オペレーターに繋ぐ
+              </button>
+            </div>
+          )}
           <div className="max-w-2xl mx-auto flex items-end gap-2">
             <input
               ref={(el) => { fileInputRef.current = el; }}
