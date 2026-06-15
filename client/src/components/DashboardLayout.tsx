@@ -87,11 +87,11 @@ export default function DashboardLayout({
             </p>
           </div>
           <Button
-            onClick={() => { window.location.href = getLoginUrl(); }}
+            onClick={() => { window.location.href = "/portal"; }}
             size="lg"
             className="w-full bg-black hover:bg-gray-800 text-white"
           >
-            Sign In
+            Sign In with Google
           </Button>
         </div>
       </div>

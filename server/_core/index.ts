@@ -6,6 +6,7 @@ import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { Server as SocketIOServer } from "socket.io";
 import { registerOAuthRoutes } from "./oauth";
+import { registerGoogleOAuthRoutes } from "./googleOAuth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -84,6 +85,7 @@ async function startServer() {
 
   registerStorageProxy(app);
   registerOAuthRoutes(app);
+  registerGoogleOAuthRoutes(app);
 
   // Allow /widget-chat to be embedded in iframes on external sites
   app.use("/widget-chat", (_req, res, next) => {

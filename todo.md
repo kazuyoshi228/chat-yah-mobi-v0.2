@@ -129,3 +129,14 @@
 - [x] client/src/pages/admin/AdminDataAnalysis.tsx: Data Analysisページを作成（グラフ・カテゴリ分析）
 - [x] DashboardLayout.tsx: Feedback・Data Analysisをサイドバーメニューに追加
 - [x] App.tsx: /admin/feedback・/admin/data-analysisルートを追加
+
+## Phase 15: Google OAuth実装
+- [x] GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET をシークレットに設定
+- [x] server/_core/env.ts に googleClientId / googleClientSecret を追加
+- [x] server/db.ts に getUserByEmail ヘルパーを追加
+- [x] server/_core/googleOAuth.ts を作成（/api/auth/google・/api/auth/google/callback）
+- [x] server/_core/index.ts に registerGoogleOAuthRoutes を追加
+- [x] Portal.tsx をGoogle OAuthログインボタンに更新（Googleアイコン付き）
+- [x] DashboardLayout.tsx の Sign In ボタンを /portal へリダイレクトに変更
+- [x] useAuth.ts のデフォルトリダイレクト先を /portal に変更
+- [x] テスト 15/15 通過
