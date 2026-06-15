@@ -1,24 +1,12 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
 
 // Google OAuth login URL — server handles the redirect
 const GOOGLE_LOGIN_URL = "/api/auth/google";
 
 export default function Portal() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [, navigate] = useLocation();
-
-  // If already logged in, redirect to the appropriate dashboard
-  useEffect(() => {
-    if (!loading && user) {
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else if (user.role === "operator") {
-        navigate("/operator/chats");
-      }
-    }
-  }, [user, loading, navigate]);
 
   // Check for error params from OAuth callback
   const params = new URLSearchParams(window.location.search);
