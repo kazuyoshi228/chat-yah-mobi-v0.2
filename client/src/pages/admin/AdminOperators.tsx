@@ -306,11 +306,18 @@ export default function AdminOperators() {
       <div className="p-6 max-w-5xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">Operator Management</h1>
-            <p className="text-sm text-gray-400 mt-0.5">
-              {operators ? `${operators.length} staff member${operators.length !== 1 ? "s" : ""}` : "Loading..."}
-            </p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+              alt="yah.mobile"
+              className="h-8 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">Operator Management</h1>
+              <p className="text-sm text-gray-400 mt-0.5">
+                {operators ? `${operators.length} staff member${operators.length !== 1 ? "s" : ""}` : "Loading..."}
+              </p>
+            </div>
           </div>
           <Button size="sm" onClick={() => setShowAdd(true)} className="gap-1.5">
             <Plus className="w-4 h-4" />

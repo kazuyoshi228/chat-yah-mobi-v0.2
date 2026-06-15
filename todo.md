@@ -140,3 +140,15 @@
 - [x] DashboardLayout.tsx の Sign In ボタンを /portal へリダイレクトに変更
 - [x] useAuth.ts のデフォルトリダイレクト先を /portal に変更
 - [x] テスト 15/15 通過
+
+## Phase 16: yah.mobile ロゴを全ページタイトルに追加
+- [x] /manus-storage/yah-mobile-logo_ec15ef66.svg をアップロード済み
+- [x] DashboardLayout.tsx: サイドバーヘッダーにロゴを追加（展開時・折りたたみ時）
+- [x] AdminDashboard.tsx: h1「Dashboard」左にロゴを追加
+- [x] AdminOperators.tsx: h1「Operator Management」左にロゴを追加
+- [x] AdminQuickReplies.tsx: h1「Quick Replies」左にロゴを追加
+- [x] AdminRag.tsx: h1「RAG Documents」左にロゴを追加
+- [x] AdminFeedback.tsx: h1「Feedback」左にロゴを追加
+- [x] AdminDataAnalysis.tsx: h1「Data Analysis」左にロゴを追加
+- [x] OperatorChats.tsx: h1「Chat List」左にロゴを追加
+- [x] TypeScript: 0エラー確認

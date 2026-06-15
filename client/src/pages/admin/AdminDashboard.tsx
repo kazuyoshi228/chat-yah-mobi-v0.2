@@ -87,11 +87,18 @@ export default function AdminDashboard() {
       <div className="p-6">
         {/* Header with period filter */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">
-              Dashboard
-            </h1>
-            <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+              alt="yah.mobile"
+              className="h-8 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Dashboard
+              </h1>
+              <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
+            </div>
           </div>
           {/* Period filter buttons */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">

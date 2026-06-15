@@ -91,9 +91,16 @@ export default function AdminRag() {
     <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900">RAG Documents</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Manage the AI knowledge base</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+              alt="yah.mobile"
+              className="h-8 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">RAG Documents</h1>
+              <p className="text-sm text-gray-400 mt-0.5">Manage the AI knowledge base</p>
+            </div>
           </div>
           <Button
             onClick={() => setShowDialog(true)}

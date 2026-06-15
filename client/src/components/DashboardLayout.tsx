@@ -181,9 +181,18 @@ function DashboardLayoutContent({
                 <PanelLeft className="h-4 w-4 text-muted-foreground" />
               </button>
               {!isCollapsed && (
-                <span className="font-semibold text-sm tracking-tight truncate" >
-                  {title ?? "yah.mobile"}
-                </span>
+                <img
+                  src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+                  alt="yah.mobile"
+                  className="h-6 w-auto object-contain"
+                />
+              )}
+              {isCollapsed && (
+                <img
+                  src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+                  alt="yah.mobile"
+                  className="h-5 w-auto object-contain"
+                />
               )}
             </div>
           </SidebarHeader>

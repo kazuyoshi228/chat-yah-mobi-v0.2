@@ -83,9 +83,16 @@ export default function AdminDataAnalysis() {
       <div className="p-6 space-y-6">
         {/* Header + period filter */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-xl font-semibold">Data Analysis</h1>
-            <p className="text-sm text-muted-foreground mt-1">Inquiry trends and channel breakdown</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+              alt="yah.mobile"
+              className="h-8 w-auto object-contain"
+            />
+            <div>
+              <h1 className="text-xl font-semibold">Data Analysis</h1>
+              <p className="text-sm text-muted-foreground mt-1">Inquiry trends and channel breakdown</p>
+            </div>
           </div>
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
             {(["all", "today", "week", "month"] as Period[]).map((p) => (
