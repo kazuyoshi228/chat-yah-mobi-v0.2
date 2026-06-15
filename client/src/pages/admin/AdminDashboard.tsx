@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 function RateBar({ rate, color }: { rate: number | null; color: string }) {
-  if (rate === null) return <p className="text-xs text-gray-300 mt-1">データなし</p>;
+  if (rate === null) return <p className="text-xs text-gray-300 mt-1">No data</p>;
   return (
     <div className="mt-2">
       <div className="flex items-center justify-between mb-1">
@@ -43,9 +43,9 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">ログインが必要です</p>
+          <p className="text-gray-500 mb-4">Login required</p>
           <Button onClick={() => { window.location.href = getLoginUrl(); }} className="bg-black text-white">
-            ログイン
+            Login
           </Button>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   if (user?.role !== "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">管理者権限が必要です</p>
+        <p className="text-gray-500">Admin access required</p>
       </div>
     );
   }
@@ -70,13 +70,13 @@ export default function AdminDashboard() {
     : null;
 
   return (
-    <DashboardLayout title="管理ダッシュボード">
+    <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
-            ダッシュボード
+            Dashboard
           </h1>
-          <p className="text-sm text-gray-400 mt-0.5">チャットサポートの概要</p>
+          <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
         </div>
 
         {isLoading ? (
@@ -91,12 +91,12 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <MessageCircle className="w-3.5 h-3.5" />
-                    総チャット数
+                    Total Chats
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-semibold text-gray-900">{kpi?.total ?? 0}</p>
-                  <p className="text-xs text-gray-400 mt-1">全期間</p>
+                  <p className="text-xs text-gray-400 mt-1">All time</p>
                 </CardContent>
               </Card>
 
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <Bot className="w-3.5 h-3.5" />
-                    AI対応数
+                    AI Handled
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <Users className="w-3.5 h-3.5" />
-                    オペレーター対応数
+                    Operator Handled
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                    総合解決率
+                    Overall Resolution Rate
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -144,10 +144,10 @@ export default function AdminDashboard() {
                   <RateBar rate={kpi?.resolvedRate ?? null} color="bg-green-400" />
                   {kpi?.surveyCount ? (
                     <p className="text-xs text-gray-400 mt-1.5">
-                      解決 {kpi.resolvedCount} / 未解決 {kpi.unresolvedCount}（回答 {kpi.surveyCount} 件）
+                      Resolved {kpi.resolvedCount} / Unresolved {kpi.unresolvedCount} ({kpi.surveyCount} responses)
                     </p>
                   ) : (
-                    <p className="text-xs text-gray-300 mt-1.5">アンケート回答なし</p>
+                    <p className="text-xs text-gray-300 mt-1.5">No survey responses yet</p>
                   )}
                 </CardContent>
               </Card>
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <Bot className="w-3.5 h-3.5 text-blue-500" />
-                    AI解決率
+                    AI Resolution Rate
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
                     {kpi?.aiResolvedRate !== null && kpi?.aiResolvedRate !== undefined ? `${kpi.aiResolvedRate}%` : "—"}
                   </p>
                   <RateBar rate={kpi?.aiResolvedRate ?? null} color="bg-blue-400" />
-                  <p className="text-xs text-gray-400 mt-1.5">AI対応チャットのアンケートより</p>
+                  <p className="text-xs text-gray-400 mt-1.5">From surveys on AI-handled chats</p>
                 </CardContent>
               </Card>
 
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <Users className="w-3.5 h-3.5 text-purple-500" />
-                    オペレーター解決率
+                    Operator Resolution Rate
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
                     {kpi?.operatorResolvedRate !== null && kpi?.operatorResolvedRate !== undefined ? `${kpi.operatorResolvedRate}%` : "—"}
                   </p>
                   <RateBar rate={kpi?.operatorResolvedRate ?? null} color="bg-purple-400" />
-                  <p className="text-xs text-gray-400 mt-1.5">オペレーター対応チャットのアンケートより</p>
+                  <p className="text-xs text-gray-400 mt-1.5">From surveys on operator-handled chats</p>
                 </CardContent>
               </Card>
             </div>
@@ -193,7 +193,7 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <Star className="w-3.5 h-3.5 text-yellow-500" />
-                    平均満足度
+                    Avg. Satisfaction
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
                     {kpi?.avgRating ? <span className="text-base font-normal text-gray-400"> / 5</span> : null}
                   </p>
                   <RateBar rate={kpi?.avgRating ? Math.round((kpi.avgRating / 5) * 100) : null} color="bg-yellow-400" />
-                  <p className="text-xs text-gray-400 mt-1.5">アンケート {kpi?.surveyCount ?? 0} 件より</p>
+                  <p className="text-xs text-gray-400 mt-1.5">From {kpi?.surveyCount ?? 0} survey responses</p>
                 </CardContent>
               </Card>
 
@@ -210,13 +210,13 @@ export default function AdminDashboard() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-medium text-gray-500 flex items-center gap-2">
                     <XCircle className="w-3.5 h-3.5 text-red-400" />
-                    未解決チャット
+                    Unresolved Chats
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-semibold text-gray-900">{kpi?.unresolvedCount ?? 0}</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    「解決しなかった」と回答したアンケート数。改善の優先課題として活用できます。
+                    Number of surveys where visitors said the issue was not resolved. Use this as a priority for improvement.
                   </p>
                 </CardContent>
               </Card>
@@ -227,10 +227,10 @@ export default function AdminDashboard() {
         {/* Quick links */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
-            { title: "オペレーター管理", desc: "ロールの割り当て・管理", href: "/admin/operators" },
-            { title: "定型文管理", desc: "定型返答の追加・編集", href: "/admin/quick-replies" },
-            { title: "RAGドキュメント", desc: "AI知識ベースの管理", href: "/admin/rag" },
-            { title: "チャット一覧", desc: "全チャットの確認", href: "/operator/chats" },
+            { title: "Operators", desc: "Manage roles and assignments", href: "/admin/operators" },
+            { title: "Quick Replies", desc: "Add and edit canned responses", href: "/admin/quick-replies" },
+            { title: "RAG Documents", desc: "Manage AI knowledge base", href: "/admin/rag" },
+            { title: "Chat List", desc: "View all chats", href: "/operator/chats" },
           ].map((item) => (
             <a
               key={item.href}

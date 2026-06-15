@@ -22,18 +22,18 @@ export default function AdminQuickReplies() {
   const [content, setContent] = useState("");
 
   const createQR = trpc.admin.createQuickReply.useMutation({
-    onSuccess: () => { toast.success("定型文を追加しました"); refetch(); resetForm(); },
-    onError: () => toast.error("追加に失敗しました"),
+    onSuccess: () => { toast.success("Quick reply added"); refetch(); resetForm(); },
+    onError: () => toast.error("Failed to add"),
   });
 
   const updateQR = trpc.admin.updateQuickReply.useMutation({
-    onSuccess: () => { toast.success("定型文を更新しました"); refetch(); resetForm(); },
-    onError: () => toast.error("更新に失敗しました"),
+    onSuccess: () => { toast.success("Quick reply updated"); refetch(); resetForm(); },
+    onError: () => toast.error("Failed to update"),
   });
 
   const deleteQR = trpc.admin.deleteQuickReply.useMutation({
-    onSuccess: () => { toast.success("定型文を削除しました"); refetch(); },
-    onError: () => toast.error("削除に失敗しました"),
+    onSuccess: () => { toast.success("Quick reply deleted"); refetch(); },
+    onError: () => toast.error("Failed to delete"),
   });
 
   const resetForm = () => {
@@ -61,26 +61,26 @@ export default function AdminQuickReplies() {
 
   if (user?.role !== "admin") {
     return (
-      <DashboardLayout title="管理ダッシュボード">
-        <div className="p-6 text-gray-500">管理者権限が必要です</div>
+      <DashboardLayout title="Admin Dashboard">
+        <div className="p-6 text-gray-500">Admin access required</div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="管理ダッシュボード">
+    <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">定型文管理</h1>
-            <p className="text-sm text-gray-400 mt-0.5">オペレーター用の定型返答を管理します</p>
+            <h1 className="text-xl font-semibold text-gray-900">Quick Replies</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Manage canned responses for operators</p>
           </div>
           <Button
             onClick={() => setShowDialog(true)}
             className="bg-black hover:bg-gray-800 text-white gap-2 text-sm"
           >
             <Plus className="w-4 h-4" />
-            追加
+            Add
           </Button>
         </div>
 
@@ -93,7 +93,7 @@ export default function AdminQuickReplies() {
             {!quickReplies || quickReplies.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <Zap className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">定型文はありません</p>
+                <p className="text-sm">No quick replies found</p>
               </div>
             ) : (
               quickReplies.map((qr) => (
@@ -130,24 +130,24 @@ export default function AdminQuickReplies() {
       <Dialog open={showDialog} onOpenChange={(open) => { if (!open) resetForm(); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingId ? "定型文を編集" : "定型文を追加"}</DialogTitle>
+            <DialogTitle>{editingId ? "Edit Quick Reply" : "Add Quick Reply"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="text-sm">タイトル</Label>
+              <Label className="text-sm">Title</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例: ご挨拶"
+                placeholder="e.g. Greeting"
                 className="border-gray-200"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm">内容</Label>
+              <Label className="text-sm">Content</Label>
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="定型文の内容を入力..."
+                placeholder="Enter quick reply content..."
                 rows={4}
                 className="border-gray-200 resize-none"
               />
@@ -155,7 +155,7 @@ export default function AdminQuickReplies() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={resetForm} className="border-gray-200">
-              キャンセル
+              Cancel
             </Button>
             <Button
               onClick={handleSubmit}
@@ -164,7 +164,7 @@ export default function AdminQuickReplies() {
             >
               {createQR.isPending || updateQR.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : editingId ? "更新" : "追加"}
+              ) : editingId ? "Update" : "Add"}
             </Button>
           </DialogFooter>
         </DialogContent>

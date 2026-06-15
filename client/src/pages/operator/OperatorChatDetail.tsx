@@ -66,7 +66,7 @@ export default function OperatorChatDetail() {
   const { data: quickReplies } = trpc.operator.listQuickReplies.useQuery();
 
   const assignSession = trpc.operator.assignSession.useMutation({
-    onSuccess: () => { toast.success("セッションを引き受けました"); refetch(); },
+    onSuccess: () => { toast.success("Session assigned"); refetch(); },
   });
 
   const sendMessage = trpc.operator.sendMessage.useMutation({
@@ -74,11 +74,11 @@ export default function OperatorChatDetail() {
   });
 
   const endSession = trpc.operator.endSession.useMutation({
-    onSuccess: () => { toast.success("セッションを終了しました"); navigate("/operator/chats"); },
+    onSuccess: () => { toast.success("Session ended"); navigate("/operator/chats"); },
   });
 
   const generateSummary = trpc.operator.generateSummary.useMutation({
-    onSuccess: (data) => { toast.success("要約を生成しました"); refetch(); },
+    onSuccess: (data) => { toast.success("Summary generated"); refetch(); },
   });
 
   const sendTyping = trpc.operator.typing.useMutation();
@@ -102,7 +102,7 @@ export default function OperatorChatDetail() {
     });
 
     socket.on("session_ended", () => {
-      toast.info("セッションが終了されました");
+      toast.info("Session has ended");
       refetch();
     });
 
@@ -153,11 +153,11 @@ export default function OperatorChatDetail() {
   const isAssigned = session?.operatorId === user?.id;
 
   const sidebarItems = [
-    { title: "チャット一覧", href: "/operator/chats", icon: MessageCircle },
+    { title: "Chat List", href: "/operator/chats", icon: MessageCircle },
   ];
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} title="オペレーター">
+    <DashboardLayout sidebarItems={sidebarItems} title="Operator">
       <div className="flex h-[calc(100vh-0px)] overflow-hidden">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0">
@@ -173,7 +173,7 @@ export default function OperatorChatDetail() {
               <div>
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-gray-900">
-                    {session?.visitorName ?? "匿名ユーザー"}
+                    {session?.visitorName ?? "Anonymous"}
                   </p>
                   <span className="text-xs text-gray-400">
                     {LANG_LABELS[session?.language ?? "ja"]}
@@ -193,7 +193,7 @@ export default function OperatorChatDetail() {
                   "bg-gray-100 text-gray-500"
                 )}
               >
-                {session?.status === "waiting" ? "待機中" : session?.status === "active" ? "対応中" : "終了"}
+                {session?.status === "waiting" ? "Waiting" : session?.status === "active" ? "Active" : "Ended"}
               </Badge>
               {!isEnded && !isAssigned && (
                 <Button
@@ -202,7 +202,7 @@ export default function OperatorChatDetail() {
                   disabled={assignSession.isPending}
                   className="bg-black text-white hover:bg-gray-800 text-xs h-7"
                 >
-                  引き受ける
+                  Assign to me
                 </Button>
               )}
               {!isEnded && isAssigned && (
@@ -213,7 +213,7 @@ export default function OperatorChatDetail() {
                   disabled={endSession.isPending}
                   className="text-xs h-7 border-gray-200"
                 >
-                  終了する
+                  End session
                 </Button>
               )}
             </div>
@@ -248,7 +248,7 @@ export default function OperatorChatDetail() {
                       {isAI && <p className="text-xs text-gray-400 mb-1">AI</p>}
                       <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                       <p className="text-xs mt-1 opacity-60">
-                        {new Date(msg.createdAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                        {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                   </div>
@@ -306,7 +306,7 @@ export default function OperatorChatDetail() {
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
-                  placeholder="メッセージを入力... (Shift+Enterで改行)"
+                  placeholder="Type a message... (Shift+Enter for newline)"
                   rows={1}
                   className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[40px] max-h-[120px] py-2.5 text-sm"
                 />
@@ -325,13 +325,13 @@ export default function OperatorChatDetail() {
         {/* Right Panel: Summary */}
         <div className="w-72 border-l border-gray-100 bg-white flex flex-col">
           <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">会話サマリー</p>
+            <p className="text-sm font-semibold text-gray-900">Conversation Summary</p>
           </div>
           <div className="flex-1 p-4 overflow-y-auto">
             {session?.summary ? (
               <p className="text-sm text-gray-600 leading-relaxed">{session.summary}</p>
             ) : (
-              <p className="text-xs text-gray-400">まだ要約がありません</p>
+              <p className="text-xs text-gray-400">No summary yet</p>
             )}
           </div>
           {!isEnded && (
@@ -348,7 +348,7 @@ export default function OperatorChatDetail() {
                 ) : (
                   <RefreshCw className="w-3.5 h-3.5" />
                 )}
-                要約を更新
+                Update Summary
               </Button>
             </div>
           )}

@@ -37,18 +37,18 @@ export default function AdminRag() {
   const [expiresAt, setExpiresAt] = useState(""); // date input value (YYYY-MM-DD)
 
   const createDoc = trpc.admin.createRagDocument.useMutation({
-    onSuccess: () => { toast.success("ドキュメントを追加しました"); refetch(); resetForm(); },
-    onError: () => toast.error("追加に失敗しました"),
+    onSuccess: () => { toast.success("Document added"); refetch(); resetForm(); },
+    onError: () => toast.error("Failed to add"),
   });
 
   const updateDoc = trpc.admin.updateRagDocument.useMutation({
-    onSuccess: () => { toast.success("ドキュメントを更新しました"); refetch(); resetForm(); },
-    onError: () => toast.error("更新に失敗しました"),
+    onSuccess: () => { toast.success("Document updated"); refetch(); resetForm(); },
+    onError: () => toast.error("Failed to update"),
   });
 
   const deleteDoc = trpc.admin.deleteRagDocument.useMutation({
-    onSuccess: () => { toast.success("ドキュメントを削除しました"); refetch(); },
-    onError: () => toast.error("削除に失敗しました"),
+    onSuccess: () => { toast.success("Document deleted"); refetch(); },
+    onError: () => toast.error("Failed to delete"),
   });
 
   const resetForm = () => {
@@ -81,26 +81,26 @@ export default function AdminRag() {
 
   if (user?.role !== "admin") {
     return (
-      <DashboardLayout title="管理ダッシュボード">
-        <div className="p-6 text-gray-500">管理者権限が必要です</div>
+      <DashboardLayout title="Admin Dashboard">
+        <div className="p-6 text-gray-500">Admin access required</div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="管理ダッシュボード">
+    <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">RAGドキュメント</h1>
-            <p className="text-sm text-gray-400 mt-0.5">AIが参照する知識ベースを管理します</p>
+            <h1 className="text-xl font-semibold text-gray-900">RAG Documents</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Manage the AI knowledge base</p>
           </div>
           <Button
             onClick={() => setShowDialog(true)}
             className="bg-black hover:bg-gray-800 text-white gap-2 text-sm"
           >
             <Plus className="w-4 h-4" />
-            追加
+            Add
           </Button>
         </div>
 
@@ -113,8 +113,8 @@ export default function AdminRag() {
             {!docs || docs.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">ドキュメントはありません</p>
-                <p className="text-xs mt-1">FAQや製品情報を追加してAIの回答精度を上げましょう</p>
+                <p className="text-sm">No documents found</p>
+                <p className="text-xs mt-1">Add FAQs and product info to improve AI answer accuracy</p>
               </div>
             ) : (
               docs.map((doc) => {
@@ -134,24 +134,24 @@ export default function AdminRag() {
                         {expired && (
                           <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">
                             <AlertTriangle className="w-3 h-3" />
-                            期限切れ（AI検索から除外）
+                            Expired (excluded from AI search)
                           </span>
                         )}
                         {!expired && expiringSoon && (
                           <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
                             <Clock className="w-3 h-3" />
-                            まもなく期限切れ
+                            Expiring soon
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mt-1 line-clamp-3">{doc.content}</p>
                       <div className="flex items-center gap-3 mt-1.5">
                         <p className="text-xs text-gray-300">
-                          作成: {new Date(doc.createdAt).toLocaleDateString("ja-JP")}
+                          Created: {new Date(doc.createdAt).toLocaleDateString("en-US")}
                         </p>
                         {doc.expiresAt && (
                           <p className={cn("text-xs", expired ? "text-red-400" : expiringSoon ? "text-amber-500" : "text-gray-300")}>
-                            有効期限: {new Date(doc.expiresAt).toLocaleDateString("ja-JP")}
+                            Expires: {new Date(doc.expiresAt).toLocaleDateString("en-US")}
                           </p>
                         )}
                       </div>
@@ -182,24 +182,24 @@ export default function AdminRag() {
       <Dialog open={showDialog} onOpenChange={(open) => { if (!open) resetForm(); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingId ? "ドキュメントを編集" : "ドキュメントを追加"}</DialogTitle>
+            <DialogTitle>{editingId ? "Edit Document" : "Add Document"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="text-sm">タイトル</Label>
+              <Label className="text-sm">Title</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例: 返品ポリシー"
+                placeholder="e.g. Return Policy"
                 className="border-gray-200"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm">内容</Label>
+              <Label className="text-sm">Content</Label>
               <Textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="AIが参照するドキュメントの内容を入力..."
+                placeholder="Enter document content for AI to reference..."
                 rows={8}
                 className="border-gray-200 resize-none"
               />
@@ -207,7 +207,7 @@ export default function AdminRag() {
             <div className="space-y-1.5">
               <Label className="text-sm flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-gray-400" />
-                有効期限（任意）
+                Expiry Date (optional)
               </Label>
               <Input
                 type="date"
@@ -217,13 +217,13 @@ export default function AdminRag() {
                 className="border-gray-200"
               />
               <p className="text-xs text-gray-400">
-                設定した日付以降、このドキュメントはAI検索から除外されます。空欄の場合は無期限です。
+                After this date, the document will be excluded from AI search. Leave blank for no expiry.
               </p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={resetForm} className="border-gray-200">
-              キャンセル
+              Cancel
             </Button>
             <Button
               onClick={handleSubmit}
@@ -232,7 +232,7 @@ export default function AdminRag() {
             >
               {createDoc.isPending || updateDoc.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
-              ) : editingId ? "更新" : "追加"}
+              ) : editingId ? "Update" : "Add"}
             </Button>
           </DialogFooter>
         </DialogContent>

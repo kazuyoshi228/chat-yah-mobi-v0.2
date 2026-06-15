@@ -34,14 +34,14 @@ export type SidebarItem = {
 };
 
 const DEFAULT_OPERATOR_ITEMS: SidebarItem[] = [
-  { title: "チャット一覧", href: "/operator/chats", icon: MessageCircle },
+  { title: "Chat List", href: "/operator/chats", icon: MessageCircle },
 ];
 
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
-  { title: "ダッシュボード", href: "/admin", icon: LayoutDashboard },
-  { title: "オペレーター管理", href: "/admin/operators", icon: Users },
-  { title: "定型文管理", href: "/admin/quick-replies", icon: Zap },
-  { title: "RAGドキュメント", href: "/admin/rag", icon: BookOpen },
+  { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { title: "Operators", href: "/admin/operators", icon: Users },
+  { title: "Quick Replies", href: "/admin/quick-replies", icon: Zap },
+  { title: "RAG Documents", href: "/admin/rag", icon: BookOpen },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -78,10 +78,10 @@ export default function DashboardLayout({
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-6">
             <h1 className="text-2xl font-semibold tracking-tight text-center">
-              サインインが必要です
+              Sign in required
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              このページにアクセスするには認証が必要です。
+              Authentication is required to access this page.
             </p>
           </div>
           <Button
@@ -89,7 +89,7 @@ export default function DashboardLayout({
             size="lg"
             className="w-full bg-black hover:bg-gray-800 text-white"
           >
-            サインイン
+            Sign In
           </Button>
         </div>
       </div>
@@ -228,7 +228,7 @@ function DashboardLayoutContent({
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>サインアウト</span>
+                  <span>Sign Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

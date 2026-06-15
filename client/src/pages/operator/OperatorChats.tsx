@@ -15,9 +15,9 @@ import { toast } from "sonner";
 type SessionStatus = "waiting" | "active" | "ended";
 
 const STATUS_LABELS: Record<SessionStatus, string> = {
-  waiting: "待機中",
-  active: "対応中",
-  ended: "終了",
+  waiting: "Waiting",
+  active: "Active",
+  ended: "Ended",
 };
 
 const STATUS_COLORS: Record<SessionStatus, string> = {
@@ -53,17 +53,17 @@ export default function OperatorChats() {
 
     socket.on("new_session", (data: { sessionId: number; visitorName?: string }) => {
       refetch();
-      toast.info(`新規チャット: ${data.visitorName ?? "訪問者"}`, {
-        description: "新しいチャットが開始されました",
+      toast.info(`New chat: ${data.visitorName ?? "Visitor"}`, {
+        description: "A new chat has started",
         action: {
-          label: "対応する",
+          label: "Respond",
           onClick: () => navigate(`/operator/chats/${data.sessionId}`),
         },
       });
       // Browser notification
       if (Notification.permission === "granted") {
-        new Notification("新規チャット", {
-          body: `${data.visitorName ?? "訪問者"} がチャットを開始しました`,
+        new Notification("New Chat", {
+          body: `${data.visitorName ?? "Visitor"} started a chat`,
           icon: "/favicon.ico",
         });
       }
@@ -73,10 +73,10 @@ export default function OperatorChats() {
     socket.on("session_ended", () => refetch());
     socket.on("escalation_alert", (data: { sessionId: number; visitorName?: string }) => {
       refetch();
-      toast.warning(`エスカレーション: ${data.visitorName ?? "訪問者"}`, {
-        description: "オペレーター対応が必要です",
+      toast.warning(`Escalation: ${data.visitorName ?? "Visitor"}`, {
+        description: "Operator assistance required",
         action: {
-          label: "対応する",
+          label: "Respond",
           onClick: () => navigate(`/operator/chats/${data.sessionId}`),
         },
       });
@@ -106,23 +106,23 @@ export default function OperatorChats() {
   if (!isAuthenticated || (user?.role !== "operator" && user?.role !== "admin")) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">アクセス権限がありません</p>
+        <p className="text-gray-500">Access denied</p>
       </div>
     );
   }
 
   const sidebarItems = [
-    { title: "チャット一覧", href: "/operator/chats", icon: MessageCircle },
+    { title: "Chat List", href: "/operator/chats", icon: MessageCircle },
   ];
 
   return (
     <DashboardLayout
       sidebarItems={sidebarItems}
-      title="オペレーター"
+      title="Operator"
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-semibold text-gray-900">チャット一覧</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Chat List</h1>
           {notifPermission !== "granted" && (
             <Button
               variant="outline"
@@ -131,7 +131,7 @@ export default function OperatorChats() {
               className="gap-2 text-xs"
             >
               <Bell className="w-3.5 h-3.5" />
-              通知を有効にする
+              Enable Notifications
             </Button>
           )}
         </div>
@@ -143,10 +143,10 @@ export default function OperatorChats() {
           className="mb-4"
         >
           <TabsList className="bg-gray-100">
-            <TabsTrigger value="all">すべて</TabsTrigger>
-            <TabsTrigger value="waiting">待機中</TabsTrigger>
-            <TabsTrigger value="active">対応中</TabsTrigger>
-            <TabsTrigger value="ended">終了</TabsTrigger>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="waiting">Waiting</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="ended">Ended</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -156,7 +156,7 @@ export default function OperatorChats() {
             {!sessions || sessions.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">チャットはありません</p>
+                <p className="text-sm">No chats found</p>
               </div>
             ) : (
               sessions.map((session) => (
@@ -173,10 +173,10 @@ export default function OperatorChats() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {session.visitorName ?? "匿名ユーザー"}
+                            {session.visitorName ?? "Anonymous"}
                           </p>
                           <span className="text-base">
-                            {LANG_LABELS[session.language ?? "ja"] ?? "🌐"}
+                            {LANG_LABELS[session.language ?? "en"] ?? "🌐"}
                           </span>
                         </div>
                         {session.visitorEmail && (
@@ -195,7 +195,7 @@ export default function OperatorChats() {
                       </Badge>
                       <div className="flex items-center gap-1 text-xs text-gray-400">
                         <Clock className="w-3 h-3" />
-                        {new Date(session.createdAt).toLocaleString("ja-JP", {
+                        {                        new Date(session.createdAt).toLocaleString("en-US", {
                           month: "numeric",
                           day: "numeric",
                           hour: "2-digit",

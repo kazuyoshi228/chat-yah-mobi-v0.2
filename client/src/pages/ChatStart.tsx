@@ -32,7 +32,7 @@ export default function ChatStart() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [language, setLanguage] = useState<"ja" | "en" | "zh" | "es" | "ko">("ja");
+  const [language, setLanguage] = useState<"ja" | "en" | "zh" | "es" | "ko">("en");
 
   const startSession = trpc.chat.startSession.useMutation({
     onSuccess: (data) => {
@@ -62,10 +62,10 @@ export default function ChatStart() {
             <MessageCircle className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
-            yah.mobile サポート
+            yah.mobile Support
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            チャットでサポートを受ける
+            Chat with us — we're here to help
           </p>
         </div>
 
@@ -73,20 +73,20 @@ export default function ChatStart() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              お名前（任意）
+              Name (optional)
             </Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="山田 太郎"
+              placeholder="John Doe"
               className="border-gray-200 focus:border-black focus:ring-black"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              メールアドレス（任意）
+              Email (optional)
             </Label>
             <Input
               id="email"
@@ -99,7 +99,7 @@ export default function ChatStart() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">言語</Label>
+            <Label className="text-sm font-medium text-gray-700">Language</Label>
             <Select value={language} onValueChange={(v) => setLanguage(v as typeof language)}>
               <SelectTrigger className="border-gray-200">
                 <SelectValue />
@@ -116,13 +116,13 @@ export default function ChatStart() {
 
           <div className="space-y-2">
             <Label htmlFor="message" className="text-sm font-medium text-gray-700">
-              お問い合わせ内容 <span className="text-red-500">*</span>
+              Message <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="ご質問やお問い合わせ内容をご入力ください"
+              placeholder="How can we help you today?"
               rows={4}
               required
               className="border-gray-200 focus:border-black focus:ring-black resize-none"
@@ -137,16 +137,16 @@ export default function ChatStart() {
             {startSession.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                接続中...
+                Connecting...
               </>
             ) : (
-              "チャットを開始する"
+              "Start Chat"
             )}
           </Button>
         </form>
 
         <p className="text-xs text-gray-400 text-center mt-4">
-          チャットを開始することで、プライバシーポリシーに同意したものとみなされます
+          By starting a chat, you agree to our Privacy Policy
         </p>
       </div>
     </div>

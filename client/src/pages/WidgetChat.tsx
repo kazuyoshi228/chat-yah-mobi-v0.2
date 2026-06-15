@@ -46,10 +46,10 @@ function useQueryParam(key: string): string {
 type Stage = "start" | "chat" | "ended";
 
 export default function WidgetChat() {
-  const rawLang = useQueryParam("lang") || "ja";
+  const rawLang = useQueryParam("lang") || "en";
   const validLangs = ["ja", "en", "zh", "es", "ko"] as const;
   type Lang = typeof validLangs[number];
-  const lang: Lang = (validLangs as readonly string[]).includes(rawLang) ? (rawLang as Lang) : "ja";
+  const lang: Lang = (validLangs as readonly string[]).includes(rawLang) ? (rawLang as Lang) : "en";
   const accentColor = useQueryParam("color") || "#000000";
   const parentOrigin = useQueryParam("origin") || "*";
 
@@ -99,7 +99,7 @@ export default function WidgetChat() {
       // Roll back optimistic message and show retry option
       setMessages((prev) => prev.filter((m) => m.content !== variables.content || m.role !== "visitor"));
       setFailedMessages((prev) => [...prev, variables.content]);
-      setSendError("送信に失敗しました。再送信してください。");
+      setSendError("Failed to send. Please try again.");
     },
   });
 
@@ -207,16 +207,16 @@ export default function WidgetChat() {
             <Headphones className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white leading-tight">yah.mobile サポート</p>
+            <p className="text-sm font-semibold text-white leading-tight">yah.mobile Support</p>
             <p className="text-xs text-white/60 leading-tight">
-              {stage === "chat" ? "AI + オペレーター対応" : "チャットサポート"}
+              {stage === "chat" ? "AI + Operator" : "Chat Support"}
             </p>
           </div>
         </div>
         <button
           onClick={handleClose}
           className="p-1.5 text-white/60 hover:text-white transition-colors rounded-full"
-          aria-label="閉じる"
+          aria-label="Close"
         >
           <X className="w-4 h-4" />
         </button>
@@ -226,13 +226,13 @@ export default function WidgetChat() {
       {stage === "start" && (
         <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
           <p className="text-sm text-gray-500">
-            お気軽にお問い合わせください。AIが即座にお答えします。
+            Feel free to ask us anything. Our AI will respond instantly.
           </p>
           <input
             type="text"
             value={visitorName}
             onChange={(e) => setVisitorName(e.target.value)}
-            placeholder="お名前（任意）"
+            placeholder="Your name (optional)"
             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
           />
           <Textarea
@@ -241,13 +241,13 @@ export default function WidgetChat() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleStart(); }
             }}
-            placeholder="お問い合わせ内容を入力..."
+            placeholder="How can we help you today?"
             rows={4}
             className="resize-none border-gray-200 text-sm focus:ring-black/20"
           />
           {startSession.isError && (
             <p className="text-xs text-red-500 text-center">
-              接続に失敗しました。もう一度お試しください。
+              Connection failed. Please try again.
             </p>
           )}
           <button
@@ -259,7 +259,7 @@ export default function WidgetChat() {
             {startSession.isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              "チャットを開始"
+              "Start Chat"
             )}
           </button>
         </div>
@@ -273,13 +273,13 @@ export default function WidgetChat() {
             <div className="bg-amber-50 border-b border-amber-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-amber-700">オペレーターに繋ぎますか？</p>
+                <p className="text-xs text-amber-700">Would you like to connect with an operator?</p>
               </div>
               <button
                 onClick={() => requestEscalation.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
                 className="text-xs text-amber-700 font-medium underline"
               >
-                繋ぐ
+                Connect
               </button>
             </div>
           )}
@@ -350,7 +350,7 @@ export default function WidgetChat() {
                   }}
                   className="text-xs text-blue-500 underline mt-0.5"
                 >
-                  再送信する
+                  Retry
                 </button>
               )}
             </div>
@@ -362,7 +362,7 @@ export default function WidgetChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="メッセージを入力..."
+              placeholder="Type a message..."
               rows={1}
               className="flex-1 resize-none border-gray-200 text-xs min-h-[36px] max-h-[80px] py-2 focus:ring-black/20"
             />
@@ -381,7 +381,7 @@ export default function WidgetChat() {
               onClick={() => endSession.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
               className="text-xs text-gray-400 hover:text-gray-600 w-full text-center transition-colors"
             >
-              チャットを終了する
+              End chat
             </button>
           </div>
         </>
@@ -393,7 +393,7 @@ export default function WidgetChat() {
           {!surveyDone ? (
             <>
               <p className="text-sm font-medium text-gray-900 text-center">
-                チャットはいかがでしたか？
+                How was your experience?
               </p>
               {/* Star rating */}
               <div className="flex gap-2">
@@ -408,7 +408,7 @@ export default function WidgetChat() {
               </div>
               {/* Resolved question */}
               <div className="w-full">
-                <p className="text-xs text-gray-500 mb-1.5 text-center">問題は解決しましたか？</p>
+                <p className="text-xs text-gray-500 mb-1.5 text-center">Was your issue resolved?</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setResolved("yes")}
@@ -420,7 +420,7 @@ export default function WidgetChat() {
                     )}
                     style={resolved === "yes" ? { background: accentColor } : undefined}
                   >
-                    ✔ はい
+                    ✔ Yes
                   </button>
                   <button
                     onClick={() => setResolved("no")}
@@ -432,18 +432,18 @@ export default function WidgetChat() {
                     )}
                     style={resolved === "no" ? { background: accentColor } : undefined}
                   >
-                    ✖ いいえ
+                    ✖ No
                   </button>
                 </div>
               </div>
               {/* Low-rating free comment */}
               {rating > 0 && rating <= 3 && (
                 <div className="w-full">
-                  <p className="text-xs text-gray-500 mb-1">改善点を教えてください</p>
+                  <p className="text-xs text-gray-500 mb-1">What could we improve?</p>
                   <textarea
                     value={freeComment}
                     onChange={(e) => setFreeComment(e.target.value)}
-                    placeholder="何が不満でしたか？"
+                    placeholder="Tell us what went wrong..."
                     rows={2}
                     className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
                   />
@@ -464,20 +464,20 @@ export default function WidgetChat() {
                 className="w-full py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-50"
                 style={{ background: accentColor }}
               >
-                送信する
+                Submit
               </button>
             </>
           ) : (
             <>
               <CheckCircle className="w-12 h-12 text-green-500" />
               <p className="text-sm text-gray-600 text-center">
-                フィードバックありがとうございました！
+                Thank you for your feedback!
               </p>
               <button
                 onClick={handleClose}
                 className="text-xs text-gray-400 hover:text-gray-600 underline"
               >
-                閉じる
+                Close
               </button>
             </>
           )}

@@ -74,10 +74,10 @@ function SurveyModal({
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold mb-1">ありがとうございました</h3>
-          <p className="text-sm text-gray-500 mb-4">フィードバックを受け付けました</p>
+          <h3 className="text-lg font-semibold mb-1">Thank you!</h3>
+          <p className="text-sm text-gray-500 mb-4">Your feedback has been received</p>
           <Button onClick={onClose} className="w-full bg-black text-white hover:bg-gray-800">
-            閉じる
+            Close
           </Button>
         </div>
       </div>
@@ -88,7 +88,7 @@ function SurveyModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
         <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-semibold">チャットはいかがでしたか？</h3>
+          <h3 className="text-lg font-semibold">How was your experience?</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-5 h-5" />
           </button>
@@ -108,7 +108,7 @@ function SurveyModal({
         </div>
         {/* Resolved question */}
         <div className="mb-4">
-          <p className="text-sm font-medium text-gray-700 mb-2">問題は解決しましたか？</p>
+          <p className="text-sm font-medium text-gray-700 mb-2">Was your issue resolved?</p>
           <div className="flex gap-2">
             <button
               onClick={() => setResolved("yes")}
@@ -119,7 +119,7 @@ function SurveyModal({
                   : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
               )}
             >
-              ✔ はい
+              ✔ Yes
             </button>
             <button
               onClick={() => setResolved("no")}
@@ -130,18 +130,18 @@ function SurveyModal({
                   : "bg-white text-gray-700 border-gray-200 hover:border-gray-400"
               )}
             >
-              ✖ いいえ
+              ✖ No
             </button>
           </div>
         </div>
         {/* Free comment: shown only for rating <= 3 */}
         {rating > 0 && rating <= 3 && (
           <div className="mb-4">
-            <p className="text-sm font-medium text-gray-700 mb-1">改善点を教えてください</p>
+            <p className="text-sm font-medium text-gray-700 mb-1">What could we improve?</p>
             <Textarea
               value={freeComment}
               onChange={(e) => setFreeComment(e.target.value)}
-              placeholder="何が不満でしたか？ご意見をお聞かせください。"
+              placeholder="Tell us what went wrong or how we can do better."
               rows={3}
               className="resize-none border-gray-200"
             />
@@ -151,7 +151,7 @@ function SurveyModal({
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="その他コメント（任意）"
+          placeholder="Additional comments (optional)"
           rows={2}
           className="mb-4 resize-none border-gray-200"
         />
@@ -169,7 +169,7 @@ function SurveyModal({
           disabled={rating === 0 || submitSurvey.isPending}
           className="w-full bg-black text-white hover:bg-gray-800"
         >
-          送信する
+          Submit
         </Button>
       </div>
     </div>
@@ -260,7 +260,7 @@ export default function ChatRoom() {
         {
           sessionId,
           role: "ai",
-          content: `${data.operatorName ?? "オペレーター"} が参加しました。引き続きサポートいたします。`,
+          content: `${data.operatorName ?? "Operator"} has joined. We'll continue to assist you.`,
           createdAt: new Date(),
         },
       ]);
@@ -343,7 +343,7 @@ export default function ChatRoom() {
       sendMessage.mutate({
         sessionId,
         visitorId,
-        content: `[ファイル: ${file.name}]`,
+          content: `[File: ${file.name}]`,
         fileUrl: result.url,
       });
     };
@@ -365,8 +365,8 @@ export default function ChatRoom() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 text-sm mb-4">セッションが見つかりません</p>
-          <Button onClick={() => navigate("/chat")}>チャットを開始する</Button>
+          <p className="text-gray-500 text-sm mb-4">Session not found</p>
+          <Button onClick={() => navigate("/chat")}>Start a chat</Button>
         </div>
       </div>
     );
@@ -381,9 +381,9 @@ export default function ChatRoom() {
             <Headphones className="w-4.5 h-4.5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">yah.mobile サポート</p>
+            <p className="text-sm font-semibold text-gray-900">yah.mobile Support</p>
             <p className="text-xs text-gray-400">
-              {session?.status === "active" ? "オペレーター対応中" : "AI サポート中"}
+              {session?.status === "active" ? "Operator connected" : "AI Support"}
             </p>
           </div>
         </div>
@@ -394,7 +394,7 @@ export default function ChatRoom() {
             onClick={handleEndSession}
             className="text-gray-400 hover:text-red-500 text-xs"
           >
-            終了
+            End
           </Button>
         )}
       </div>
@@ -405,7 +405,7 @@ export default function ChatRoom() {
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
             <p className="text-xs text-amber-700">
-              オペレーターへの接続が必要ですか？
+              Need to connect with an operator?
             </p>
           </div>
           <Button
@@ -413,7 +413,7 @@ export default function ChatRoom() {
             onClick={() => requestEscalation.mutate({ sessionId, visitorId })}
             className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1 h-auto"
           >
-            オペレーターに繋ぐ
+            Connect to operator
           </Button>
         </div>
       )}
@@ -475,7 +475,7 @@ export default function ChatRoom() {
                       isVisitor ? "text-gray-400" : "text-gray-400"
                     )}
                   >
-                    {new Date(msg.createdAt).toLocaleTimeString("ja-JP", {
+                    {new Date(msg.createdAt).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -490,7 +490,7 @@ export default function ChatRoom() {
           {sessionEnded && (
             <div className="text-center py-4">
               <Badge variant="secondary" className="text-xs">
-                チャットが終了しました
+                Chat ended
               </Badge>
             </div>
           )}
@@ -520,7 +520,7 @@ export default function ChatRoom() {
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="メッセージを入力..."
+              placeholder="Type a message..."
               rows={1}
               className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[40px] max-h-[120px] py-2.5 text-sm"
               style={{ height: "auto" }}

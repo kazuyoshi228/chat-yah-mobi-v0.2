@@ -31,7 +31,7 @@ export default function Home() {
                   onClick={() => navigate("/operator/chats")}
                   className="text-sm text-gray-600"
                 >
-                  オペレーター
+                  Operator
                 </Button>
               )}
               {user?.role === "admin" && (
@@ -41,7 +41,7 @@ export default function Home() {
                   onClick={() => navigate("/admin")}
                   className="text-sm text-gray-600"
                 >
-                  管理
+                  Admin
                 </Button>
               )}
             </>
@@ -52,14 +52,14 @@ export default function Home() {
               onClick={() => { window.location.href = getLoginUrl(); }}
               className="text-sm text-gray-600"
             >
-              スタッフログイン
+              Staff Login
             </Button>
           )}
           <Button
             onClick={() => navigate("/chat")}
             className="bg-black hover:bg-gray-800 text-white text-sm px-4 py-2 h-auto rounded-full"
           >
-            チャットを始める
+            Start Chat
           </Button>
         </div>
       </nav>
@@ -68,33 +68,33 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-full px-4 py-1.5 text-xs text-gray-500 mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          AI + オペレーターによるリアルタイムサポート
+          AI + Operator Real-time Support
         </div>
         <h1
           className="text-5xl md:text-6xl font-medium text-gray-900 leading-tight mb-6"
           style={{ fontFamily: "'EB Garamond', serif" }}
         >
-          カスタマーサポートを
+          Elevate Your
           <br />
-          <span className="italic">次のレベルへ</span>
+          <span className="italic">Customer Support</span>
         </h1>
         <p className="text-lg text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed">
-          AIが即座に対応し、必要に応じてオペレーターへスムーズにエスカレーション。
-          多言語対応で、世界中のお客様をサポートします。
+          AI responds instantly and escalates seamlessly to operators when needed.
+          Multilingual support for customers around the world.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
             onClick={() => navigate("/chat")}
             className="bg-black hover:bg-gray-800 text-white px-8 py-3 h-auto rounded-full text-sm font-medium"
           >
-            今すぐチャットを開始
+            Start Chatting Now
           </Button>
           <Button
             variant="outline"
             onClick={() => { window.location.href = getLoginUrl(); }}
             className="border-gray-200 text-gray-600 px-8 py-3 h-auto rounded-full text-sm"
           >
-            スタッフポータル
+            Staff Portal
           </Button>
         </div>
       </section>
@@ -105,33 +105,33 @@ export default function Home() {
           {[
             {
               icon: Bot,
-              title: "AI自動応答",
-              desc: "GPT-4oによる高精度な自動応答。RAGで御社の情報を学習させ、的確な回答を提供します。",
+              title: "AI Auto-Response",
+              desc: "High-accuracy auto-responses via GPT-4o. Train on your company's knowledge base with RAG for precise answers.",
             },
             {
               icon: Headphones,
-              title: "シームレスなエスカレーション",
-              desc: "AIで解決できない場合は、オペレーターへ自動的に引き継ぎ。会話履歴も共有されます。",
+              title: "Seamless Escalation",
+              desc: "When AI can't resolve an issue, it automatically hands off to an operator — with full conversation history shared.",
             },
             {
               icon: Globe,
-              title: "多言語対応",
-              desc: "日本語・英語・中国語・スペイン語・韓国語に対応。グローバルなお客様をサポート。",
+              title: "Multilingual Support",
+              desc: "Supports Japanese, English, Chinese, Spanish, and Korean. Serve your global customers in their own language.",
             },
             {
               icon: Zap,
-              title: "定型文機能",
-              desc: "よく使う返答を定型文として登録。オペレーターの対応スピードを大幅に向上させます。",
+              title: "Quick Replies",
+              desc: "Save frequently used responses as quick replies. Dramatically speed up operator response times.",
             },
             {
               icon: Shield,
-              title: "セキュアな通信",
-              desc: "WebSocketによるリアルタイム通信。メッセージは安全に暗号化されます。",
+              title: "Secure Communication",
+              desc: "Real-time communication via WebSocket. Messages are securely encrypted end-to-end.",
             },
             {
               icon: MessageCircle,
-              title: "満足度調査",
-              desc: "チャット終了後にアンケートを自動送信。サービス改善に役立てます。",
+              title: "Satisfaction Survey",
+              desc: "Automatically send a survey after each chat. Use the feedback to continuously improve your service.",
             },
           ].map((feature) => (
             <div key={feature.title} className="p-6 bg-gray-50 rounded-2xl">
@@ -149,18 +149,18 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-6 pb-20">
         <div className="bg-gray-950 rounded-2xl p-8 text-white">
           <div className="mb-6">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">埋め込み</span>
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-widest">Embed</span>
             <h2 className="text-xl font-semibold mt-2 mb-2" style={{ fontFamily: "'EB Garamond', serif" }}>
-              あなたのサイトに設置する
+              Add to Your Website
             </h2>
             <p className="text-sm text-gray-400">
-              以下のスクリプトを貼り付けるだけで、どのウェブサイトにもチャットウィジェットを設置できます。
+              Paste the script tag below to install the chat widget on any website.
             </p>
           </div>
           <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-green-400 overflow-x-auto">
             <pre className="whitespace-pre-wrap break-all">{`<script
   src="https://chat.yah.mobi/widget.js"
-  data-lang="ja"
+  data-lang="en"
   data-position="bottom-right"
   data-color="#000000">
 </script>`}</pre>
@@ -176,7 +176,7 @@ export default function Home() {
             </div>
             <div>
               <span className="text-gray-300 font-medium">data-color</span>
-              <p className="mt-0.5">#000000（任意のHEXカラー）</p>
+              <p className="mt-0.5">Any HEX color (e.g. #000000)</p>
             </div>
           </div>
         </div>

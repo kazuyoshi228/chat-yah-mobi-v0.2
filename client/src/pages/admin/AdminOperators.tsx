@@ -9,9 +9,9 @@ import { Loader2, Users, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 const ROLE_LABELS: Record<string, string> = {
-  user: "一般ユーザー",
-  operator: "オペレーター",
-  admin: "管理者",
+  user: "User",
+  operator: "Operator",
+  admin: "Admin",
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -28,27 +28,27 @@ export default function AdminOperators() {
 
   const setRole = trpc.admin.setUserRole.useMutation({
     onSuccess: () => {
-      toast.success("ロールを更新しました");
+      toast.success("Role updated");
       refetch();
     },
-    onError: () => toast.error("更新に失敗しました"),
+    onError: () => toast.error("Failed to update role"),
   });
 
   if (user?.role !== "admin") {
     return (
-      <DashboardLayout title="管理ダッシュボード">
-        <div className="p-6 text-gray-500">管理者権限が必要です</div>
+      <DashboardLayout title="Admin Dashboard">
+        <div className="p-6 text-gray-500">Admin access required</div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="管理ダッシュボード">
+    <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">オペレーター管理</h1>
-            <p className="text-sm text-gray-400 mt-0.5">ユーザーのロールを管理します</p>
+            <h1 className="text-xl font-semibold text-gray-900">Operator Management</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Manage user roles</p>
           </div>
         </div>
 
@@ -61,7 +61,7 @@ export default function AdminOperators() {
             {!operators || operators.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">オペレーター・管理者はいません</p>
+                <p className="text-sm">No operators or admins found</p>
               </div>
             ) : (
               operators.map((op) => (
@@ -95,9 +95,9 @@ export default function AdminOperators() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="user">一般ユーザー</SelectItem>
-                          <SelectItem value="operator">オペレーター</SelectItem>
-                          <SelectItem value="admin">管理者</SelectItem>
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="operator">Operator</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
