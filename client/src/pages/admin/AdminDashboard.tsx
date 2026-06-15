@@ -89,7 +89,7 @@ export default function AdminDashboard() {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <img
-              src="/manus-storage/yah-mobile-logo_ec15ef66.svg"
+              src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
