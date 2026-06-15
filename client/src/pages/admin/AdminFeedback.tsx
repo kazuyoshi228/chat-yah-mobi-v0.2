@@ -48,10 +48,7 @@ export default function AdminFeedback() {
             alt="yah.mobile"
             className="h-8 w-auto object-contain"
           />
-          <div>
-            <h1 className="text-xl font-semibold">Feedback</h1>
-            <p className="text-sm text-muted-foreground mt-1">Post-chat survey responses from visitors</p>
-          </div>
+          <h1 className="text-xl font-semibold">Feedback</h1>
         </div>
 
         {/* Summary cards */}

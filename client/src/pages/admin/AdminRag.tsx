@@ -97,10 +97,7 @@ export default function AdminRag() {
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">RAG Documents</h1>
-              <p className="text-sm text-gray-400 mt-0.5">Manage the AI knowledge base</p>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-900">RAG Documents</h1>
           </div>
           <Button
             onClick={() => setShowDialog(true)}

@@ -312,12 +312,7 @@ export default function AdminOperators() {
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Operator Management</h1>
-              <p className="text-sm text-gray-400 mt-0.5">
-                {operators ? `${operators.length} staff member${operators.length !== 1 ? "s" : ""}` : "Loading..."}
-              </p>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-900">Operator Management</h1>
           </div>
           <Button size="sm" onClick={() => setShowAdd(true)} className="gap-1.5">
             <Plus className="w-4 h-4" />

@@ -77,10 +77,7 @@ export default function AdminQuickReplies() {
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Quick Replies</h1>
-              <p className="text-sm text-gray-400 mt-0.5">Manage canned responses for operators</p>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-900">Quick Replies</h1>
           </div>
           <Button
             onClick={() => setShowDialog(true)}

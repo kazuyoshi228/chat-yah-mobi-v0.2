@@ -89,10 +89,7 @@ export default function AdminDataAnalysis() {
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
-            <div>
-              <h1 className="text-xl font-semibold">Data Analysis</h1>
-              <p className="text-sm text-muted-foreground mt-1">Inquiry trends and channel breakdown</p>
-            </div>
+            <h1 className="text-xl font-semibold">Data Analysis</h1>
           </div>
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
             {(["all", "today", "week", "month"] as Period[]).map((p) => (

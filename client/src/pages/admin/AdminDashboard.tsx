@@ -93,12 +93,7 @@ export default function AdminDashboard() {
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Dashboard
-              </h1>
-              <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
-            </div>
+            <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
           </div>
           {/* Period filter buttons */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
