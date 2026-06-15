@@ -114,3 +114,9 @@
 - [x] chat.ts startSession: AI がエスカレーション判定した場合も全オペレーターへメール送信
 - [x] server/email.test.ts: Resendモックテスト3件追加（12/12通過）
 - [x] TypeScriptエラー確認・チェックポイント保存
+
+## Phase 13: Portalページ（スタッフホーム画面）
+- [x] client/src/pages/Portal.tsx: /portal ルートにスタッフホーム画面を作成
+- [x] Admin・Operatorそれぞれのログインボタンを配置
+- [x] ログイン済みの場合はrole別に自動リダイレクト（admin→/admin、operator→/operator/chats）
+- [x] App.tsxに/portalルートを追加
