@@ -63,7 +63,7 @@ export default function ChatStart() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-black mb-4">
             <MessageCircle className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
+          <h1 className="text-2xl font-semibold text-gray-900">
             {t("chat_start_title")}
           </h1>
           <p className="text-sm text-gray-500 mt-1">

@@ -91,6 +91,65 @@ export async function updateUserRole(userId: number, role: "user" | "admin" | "o
   await db.update(users).set({ role }).where(eq(users.id, userId));
 }
 
+/**
+ * Create a new operator user record.
+ * openId is auto-generated as a placeholder (not linked to OAuth).
+ */
+export async function createOperatorUser(data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const openId = `op_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const name = `${data.firstName} ${data.lastName}`.trim();
+  const result = await db.insert(users).values({
+    openId,
+    name,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    email: data.email,
+    role: "operator",
+    lastSignedIn: new Date(),
+  });
+  return (result[0] as any).insertId as number;
+}
+
+/**
+ * Update operator profile (firstName, lastName, email).
+ */
+export async function updateOperatorProfile(
+  userId: number,
+  data: { firstName?: string; lastName?: string; email?: string }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const updateSet: Record<string, unknown> = { ...data };
+  if (data.firstName !== undefined || data.lastName !== undefined) {
+    // Re-derive name from current + new values
+    const current = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const cur = current[0];
+    const fn = data.firstName ?? cur?.firstName ?? "";
+    const ln = data.lastName ?? cur?.lastName ?? "";
+    updateSet.name = `${fn} ${ln}`.trim();
+  }
+  await db.update(users).set(updateSet as any).where(eq(users.id, userId));
+}
+
+/**
+ * Get the number of chat sessions handled by an operator.
+ */
+export async function getOperatorChatCount(operatorId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(chatSessions)
+    .where(eq(chatSessions.operatorId, operatorId));
+  return Number(result[0]?.count ?? 0);
+}
+
 // ─── Chat Sessions ────────────────────────────────────────────────────────────
 
 export async function createChatSession(data: InsertChatSession): Promise<number> {

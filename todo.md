@@ -81,27 +81,27 @@
 - [x] 未解決チャット数カードを追加
 
 ## Phase 9: 言語切り替えボタン + KPI期間フィルター
-- [ ] shared/i18n.ts: 日本語・英語・中国語・スペイン語・韓国語の翻訳辞書を作成
-- [ ] client/src/contexts/LanguageContext.tsx: 言語コンテキストを作成
-- [ ] client/src/main.tsx: LanguageProviderをラップ
-- [ ] Home.tsx: ヘッダーに言語切り替えドロップダウンを追加
-- [ ] ChatStart.tsx: 言語コンテキストに対応
-- [ ] ChatRoom.tsx: 言語コンテキストに対応
-- [ ] ChatWidget.tsx: 言語コンテキストに対応
-- [ ] WidgetChat.tsx: 言語コンテキストに対応
-- [ ] AdminDashboard.tsx: KPIに期間フィルター（今日・今週・今月）を追加
-- [ ] server/routers/admin.ts: getKpiにperiodパラメーターを追加
-- [ ] server/db.ts: getKpiStatsに期間フィルターロジックを追加
+- [x] shared/i18n.ts: 日本語・英語・中国語・スペイン語・韓国語の翻訳辞書を作成
+- [x] client/src/contexts/LanguageContext.tsx: 言語コンテキストを作成
+- [x] client/src/main.tsx: LanguageProviderをラップ
+- [x] Home.tsx: ヘッダーに言語切り替えドロップダウンを追加
+- [x] ChatStart.tsx: 言語コンテキストに対応
+- [x] ChatRoom.tsx: 言語コンテキストに対応
+- [x] ChatWidget.tsx: 言語コンテキストに対応
+- [x] WidgetChat.tsx: 言語コンテキストに対応
+- [x] AdminDashboard.tsx: KPIに期間フィルター（今日・今週・今月）を追加
+- [x] server/routers/admin.ts: getKpiにperiodパラメーターを追加
+- [x] server/db.ts: getKpiStatsに期間フィルターロジックを追加
 
 ## Phase 10: フォント差し替え・ナビゲーションバーデザイン統一
-- [ ] National2フォントをindex.cssに@font-faceで定義
-- [ ] bodyにNational2を適用
-- [ ] Home.tsxのナビゲーションバーをyah.mobiデザイン（透明背景・大文字・letter-spacing）に変更
-- [ ] EB Garamondの参照を全て削除しNational2に統一
+- [x] National2フォントをindex.cssに@font-faceで定義
+- [x] bodyにNational2を適用
+- [x] Home.tsxのナビゲーションバーをyah.mobiデザイン（透明背景・大文字・letter-spacing）に変更
+- [x] EB Garamondの参照を全て削除しNational2に統一
 
 ## Phase 11: Operatorページのカード表示・追加機能
-- [ ] server/db.tsにcreateOperatorUser（名・姓・メールでユーザー作成）ヘルパーを追加
-- [ ] server/routers/admin.tsにcreateOperatorミューテーションを追加
-- [ ] AdminOperators.tsxをカード表示に変更（名・姓・メール・ID・openId・role・作成日など）
-- [ ] 「Add Operator」ダイアログを追加（名・姓・メールアドレス入力）
-- [ ] TypeScriptエラー確認・チェックポイント保存
+- [x] server/db.tsにcreateOperatorUser（名・姓・メールでユーザー作成）ヘルパーを追加
+- [x] server/routers/admin.tsにcreateOperatorミューテーションを追加
+- [x] AdminOperators.tsxをカード表示に変更（名・姓・メール・ID・openId・role・作成日など）
+- [x] 「Add Operator」ダイアログを追加（名・姓・メールアドレス入力）
+- [x] TypeScriptエラー確認・チェックポイント保存

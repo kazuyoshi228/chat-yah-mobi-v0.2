@@ -1,14 +1,17 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
+  createOperatorUser,
   createQuickReply,
   createRagDocument,
   deleteQuickReply,
   deleteRagDocument,
   getAllOperators,
   getKpiStats,
+  getOperatorChatCount,
   listQuickReplies,
   listRagDocuments,
+  updateOperatorProfile,
   updateQuickReply,
   updateRagDocument,
   updateUserRole,
@@ -47,8 +50,51 @@ export const adminRouter = router({
 
   // Operator management
   listOperators: adminProcedure.query(async () => {
-    return getAllOperators();
+    const operators = await getAllOperators();
+    // Attach chat count for each operator
+    const withCounts = await Promise.all(
+      operators.map(async (op) => ({
+        ...op,
+        chatCount: await getOperatorChatCount(op.id),
+      }))
+    );
+    return withCounts;
   }),
+
+  createOperator: adminProcedure
+    .input(
+      z.object({
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
+        email: z.string().email(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const id = await createOperatorUser(input);
+      return { id };
+    }),
+
+  updateOperator: adminProcedure
+    .input(
+      z.object({
+        userId: z.number(),
+        firstName: z.string().min(1).optional(),
+        lastName: z.string().min(1).optional(),
+        email: z.string().email().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { userId, ...data } = input;
+      await updateOperatorProfile(userId, data);
+      return { success: true };
+    }),
+
+  deleteOperator: adminProcedure
+    .input(z.object({ userId: z.number() }))
+    .mutation(async ({ input }) => {
+      await updateUserRole(input.userId, "user");
+      return { success: true };
+    }),
 
   setUserRole: adminProcedure
     .input(

@@ -88,7 +88,7 @@ export default function AdminDashboard() {
         {/* Header with period filter */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900" style={{ fontFamily: "'EB Garamond', serif" }}>
+            <h1 className="text-xl font-semibold text-gray-900">
               Dashboard
             </h1>
             <p className="text-sm text-gray-400 mt-0.5">Chat support overview</p>
