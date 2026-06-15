@@ -1,7 +1,6 @@
 import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import Home from "@/pages/Home";
 import ChatStart from "@/pages/ChatStart";
 import ChatRoom from "@/pages/ChatRoom";
 import OperatorChats from "@/pages/operator/OperatorChats";
@@ -18,7 +17,8 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="light">
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/">{() => { window.location.replace("/portal"); return null; }}</Route>
+        <Route path="/home">{() => { window.location.replace("/portal"); return null; }}</Route>
         <Route path="/chat" component={ChatStart} />
         <Route path="/chat/:sessionId" component={ChatRoom} />
         <Route path="/operator/chats" component={OperatorChats} />
