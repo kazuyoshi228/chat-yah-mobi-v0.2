@@ -160,7 +160,7 @@ export default function OperatorChatDetail() {
     <DashboardLayout sidebarItems={sidebarItems} title="Operator">
       <div className="flex h-[calc(100vh-0px)] overflow-hidden">
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 w-0">
           {/* Chat Header */}
           <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -322,8 +322,8 @@ export default function OperatorChatDetail() {
           )}
         </div>
 
-        {/* Right Panel: Summary */}
-        <div className="w-72 border-l border-gray-100 bg-white flex flex-col">
+        {/* Right Panel: Summary - hidden on mobile */}
+        <div className="hidden lg:flex w-72 border-l border-gray-100 bg-white flex-col">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-900">Conversation Summary</p>
           </div>
