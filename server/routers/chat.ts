@@ -15,6 +15,8 @@ import { publicProcedure, router } from "../_core/trpc";
 import { generateAIResponse, generateSummary } from "./ai";
 import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
+import { sendEscalationEmail, sendNewChatEmail } from "../email";
+import { getAllOperators } from "../db";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
@@ -76,11 +78,36 @@ export const chatRouter = router({
         });
       }
 
-      // Notify owner
+      // Notify owner (Manus platform notification)
       await notifyOwner({
         title: "新規チャット開始",
         content: `${input.visitorName ?? "訪問者"} がチャットを開始しました。\n最初のメッセージ: ${input.initialMessage}`,
       }).catch(() => {});
+
+      // Send email notification to all operators if escalation is needed
+      if (shouldEscalate) {
+        const operators = await getAllOperators().catch(() => []);
+        const appUrl = process.env.VITE_FRONTEND_FORGE_API_URL
+          ? "https://chat.yah.mobi"
+          : "https://chat.yah.mobi";
+        await Promise.allSettled(
+          operators
+            .filter((op) => op.email)
+            .map((op) =>
+              sendEscalationEmail({
+                toEmail: op.email!,
+                operatorName: op.firstName
+                  ? `${op.firstName} ${op.lastName ?? ""}`.trim()
+                  : (op.name ?? "Operator"),
+                sessionId,
+                visitorName: input.visitorName,
+                language: input.language,
+                urgent: true,
+                appUrl,
+              })
+            )
+        );
+      }
 
       return { sessionId, isNew: true, aiResponse: aiContent, shouldEscalate };
     }),
@@ -277,6 +304,26 @@ export const chatRouter = router({
           urgent: true,
         });
       }
+
+      // Send escalation email to all operators with email addresses
+      const operators = await getAllOperators().catch(() => []);
+      await Promise.allSettled(
+        operators
+          .filter((op) => op.email)
+          .map((op) =>
+            sendEscalationEmail({
+              toEmail: op.email!,
+              operatorName: op.firstName
+                ? `${op.firstName} ${op.lastName ?? ""}`.trim()
+                : (op.name ?? "Operator"),
+              sessionId: input.sessionId,
+              visitorName: session.visitorName,
+              language: session.language,
+              urgent: true,
+              appUrl: "https://chat.yah.mobi",
+            })
+          )
+      );
 
       return { success: true };
     }),

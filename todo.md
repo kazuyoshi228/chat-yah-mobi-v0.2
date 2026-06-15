@@ -105,3 +105,12 @@
 - [x] AdminOperators.tsxをカード表示に変更（名・姓・メール・ID・openId・role・作成日など）
 - [x] 「Add Operator」ダイアログを追加（名・姓・メールアドレス入力）
 - [x] TypeScriptエラー確認・チェックポイント保存
+
+## Phase 12: Resendメール通知
+- [x] resendパッケージをインストール（v6.12.4）
+- [x] ENV にRESEND_API_KEY・RESEND_FROM_EMAILを追加
+- [x] server/email.ts: sendEscalationEmail・sendNewChatEmailヘルパーを作成
+- [x] chat.ts requestEscalation: エスカレーション時に全オペレーターへメール送信
+- [x] chat.ts startSession: AI がエスカレーション判定した場合も全オペレーターへメール送信
+- [x] server/email.test.ts: Resendモックテスト3件追加（12/12通過）
+- [x] TypeScriptエラー確認・チェックポイント保存
