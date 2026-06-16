@@ -161,4 +161,17 @@ export const operatorRouter = router({
   listQuickReplies: operatorProcedure.query(async () => {
     return listQuickReplies();
   }),
+
+  // Real-time counts for operator dashboard
+  getActiveCounts: operatorProcedure
+    .query(async () => {
+      const [waiting, active] = await Promise.all([
+        listChatSessions("waiting"),
+        listChatSessions("active"),
+      ]);
+      return {
+        waiting: waiting.length,
+        active: active.length,
+      };
+    }),
 });
