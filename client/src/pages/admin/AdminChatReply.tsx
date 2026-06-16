@@ -69,7 +69,8 @@ export default function AdminChatReply() {
 
     socket.on("new_message", (msg: ChatMessage) => {
       setMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
+        // Skip if already present by id (avoids duplicate with optimistic update)
+        if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, { ...msg, createdAt: new Date(msg.createdAt) }];
       });
     });
@@ -92,12 +93,24 @@ export default function AdminChatReply() {
   const handleSend = () => {
     const content = input.trim();
     if (!content || sendMessage.isPending) return;
-    // Optimistic update
+    // Optimistic update with a temporary negative id to avoid duplicate with socket event
+    const tempId = -(Date.now());
     setMessages((prev) => [
       ...prev,
-      { sessionId, role: "operator", content, operatorName: user?.name ?? undefined, createdAt: new Date() },
+      { id: tempId, sessionId, role: "operator", content, operatorName: user?.name ?? undefined, createdAt: new Date() },
     ]);
-    sendMessage.mutate({ sessionId, content });
+    sendMessage.mutate({ sessionId, content }, {
+      onSuccess: (data) => {
+        // Replace temp message with the real one (id from server)
+        setMessages((prev) =>
+          prev.map((m) => m.id === tempId ? { ...m, id: data.messageId } : m)
+        );
+      },
+      onError: () => {
+        // Remove failed optimistic message
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      },
+    });
     setInput("");
   };
 
