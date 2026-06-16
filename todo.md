@@ -215,7 +215,7 @@
 - [x] A-5: operator.endSession / admin.endChat に scheduleSessionDeletion 追加
 
 ## Phase B: パフォーマンス・アーキテクチャ改善（2026-06-16）
-- [ ] B-1: Redis Pub/Sub アダプター導入（未実装・スケールアウト時に導入予定・現時点はポーリング30秒フォールバックで暑定対応中）
+- [x] B-1: Redis Pub/Sub アダプター導入（@socket.io/redis-adapter + ioredis + Upstash Redis。ENV未設定時はin-memoryにフォールバック）
 - [x] B-2: DBインデックス追加（messages.sessionId, sessions.visitorId, sessions.status, sessions.operatorId, surveys.sessionId）
 - [x] B-3: Socket.io 接続中はポーリング間隔を30秒に延長（WidgetChat・OperatorChatDetail・AdminChatReply）
 - [x] B-4: admin.listOperators N+1クエリ修正（getAllOperatorsWithChatCount JOIN化）

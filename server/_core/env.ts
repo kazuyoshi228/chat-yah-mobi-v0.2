@@ -11,4 +11,6 @@ export const ENV = {
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev",
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  upstashRedisRestUrl: process.env.UPSTASH_REDIS_REST_URL ?? "",
+  upstashRedisRestToken: process.env.UPSTASH_REDIS_REST_TOKEN ?? "",
 };

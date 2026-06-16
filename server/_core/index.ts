@@ -5,6 +5,8 @@ import net from "net";
 import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { Server as SocketIOServer } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { Redis } from "ioredis";
 import { registerOAuthRoutes } from "./oauth";
 import { registerGoogleOAuthRoutes } from "./googleOAuth";
 import { registerStorageProxy } from "./storageProxy";
@@ -15,6 +17,7 @@ import { setIo } from "../socket";
 import { sdk } from "./sdk";
 import { COOKIE_NAME } from "@shared/const";
 import { purgeExpiredSessions } from "../db";
+import { ENV } from "./env";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -51,6 +54,26 @@ async function startServer() {
       methods: ["GET", "POST"],
     },
   });
+
+  // ── Redis Pub/Sub adapter (Upstash) ──────────────────────────────────────
+  // Enables real-time message broadcasting across multiple server instances.
+  // Falls back gracefully to in-memory if credentials are not configured.
+  if (ENV.upstashRedisRestUrl && ENV.upstashRedisRestToken) {
+    try {
+      // Upstash Redis uses TLS; construct rediss:// URL from REST URL
+      const redisHost = ENV.upstashRedisRestUrl.replace(/^https?:\/\//, "");
+      const redisUrl = `rediss://default:${ENV.upstashRedisRestToken}@${redisHost}:6379`;
+      const pubClient = new Redis(redisUrl, { maxRetriesPerRequest: null, lazyConnect: true });
+      const subClient = pubClient.duplicate();
+      await Promise.all([pubClient.connect(), subClient.connect()]);
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log("[Socket.io] Redis Pub/Sub adapter connected (Upstash)");
+    } catch (err) {
+      console.warn("[Socket.io] Redis adapter failed, using in-memory adapter:", err);
+    }
+  } else {
+    console.log("[Socket.io] Using in-memory adapter (no Redis credentials)");
+  }
 
   setIo(io);
 
