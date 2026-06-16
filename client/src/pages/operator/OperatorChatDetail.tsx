@@ -20,6 +20,9 @@ import {
   ArrowLeft,
   Loader2,
   MessageCircle,
+  Paperclip,
+  ImageIcon,
+  X as XIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -54,6 +57,13 @@ export default function OperatorChatDetail() {
   const [typingInfo, setTypingInfo] = useState<{ role: string; isTyping: boolean } | null>(null);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
 
+  // Image state
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -82,6 +92,7 @@ export default function OperatorChatDetail() {
   });
 
   const sendTyping = trpc.operator.typing.useMutation();
+  const uploadFile = trpc.upload.uploadFile.useMutation();
 
   // Socket.io
   useEffect(() => {
@@ -150,6 +161,59 @@ export default function OperatorChatDetail() {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error("Image must be under 16MB.");
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleSendImage = async () => {
+    if (!imageFile) return;
+    setIsUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+      });
+      const { url } = await uploadFile.mutateAsync({
+        fileName: imageFile.name,
+        mimeType: imageFile.type,
+        base64Data: base64,
+        sessionId,
+      });
+      const tempId = -(Date.now());
+      setMessages((prev) => [
+        ...prev,
+        { id: tempId, sessionId, role: "operator", content: "", fileUrl: url, createdAt: new Date() },
+      ]);
+      setImageFile(null);
+      setImagePreview(null);
+      sendMessage.mutate({ sessionId, content: "", fileUrl: url }, {
+        onSuccess: (data) => {
+          setMessages((prev) => prev.map((m) => m.id === tempId ? { ...m, id: data.messageId } : m));
+        },
+        onError: () => {
+          setMessages((prev) => prev.filter((m) => m.id !== tempId));
+          toast.error("Failed to send image.");
+        },
+      });
+    } catch {
+      toast.error("Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
     sendTyping.mutate({ sessionId, isTyping: true });
@@ -169,6 +233,26 @@ export default function OperatorChatDetail() {
 
   return (
     <DashboardLayout sidebarItems={sidebarItems} title="Operator">
+      {/* Lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <button
+            className="absolute top-3 right-3 text-white/70 hover:text-white"
+            onClick={() => setLightboxSrc(null)}
+          >
+            <XIcon className="w-6 h-6" />
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Full size"
+            className="max-w-[90vw] max-h-[85vh] rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       <div className="flex h-[calc(100vh-0px)] overflow-hidden">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0 w-0">
@@ -251,16 +335,34 @@ export default function OperatorChatDetail() {
                       </div>
                     )}
                     <div className={cn(
-                      "max-w-[70%] rounded-2xl px-4 py-2.5 text-sm",
+                      "max-w-[70%] rounded-2xl overflow-hidden",
                       isVisitor ? "bg-white border border-gray-100 text-gray-800 rounded-bl-sm shadow-sm" :
                       isOp ? "bg-black text-white rounded-br-sm" :
                       "bg-gray-100 text-gray-700 rounded-bl-sm"
                     )}>
-                      {isAI && <p className="text-xs text-gray-400 mb-1">AI</p>}
-                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                      <p className="text-xs mt-1 opacity-60">
-                        {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
+                      {msg.fileUrl && (
+                        <button onClick={() => setLightboxSrc(msg.fileUrl!)} className="block w-full">
+                          <img
+                            src={msg.fileUrl}
+                            alt="Attachment"
+                            className="max-w-[220px] max-h-[220px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          />
+                        </button>
+                      )}
+                      {msg.content && (
+                        <div className="px-4 py-2.5 text-sm">
+                          {isAI && <p className="text-xs text-gray-400 mb-1">AI</p>}
+                          <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                          <p className="text-xs mt-1 opacity-60">
+                            {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                      )}
+                      {!msg.content && msg.fileUrl && (
+                        <p className="text-xs px-2 pb-1.5 opacity-60">
+                          {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
@@ -304,6 +406,21 @@ export default function OperatorChatDetail() {
                   ))}
                 </div>
               )}
+              {/* Image preview */}
+              {imagePreview && (
+                <div className="mb-2">
+                  <div className="relative inline-block">
+                    <img src={imagePreview} alt="Preview" className="h-20 w-auto rounded-lg object-cover border border-gray-200" />
+                    <button
+                      onClick={() => { setImageFile(null); setImagePreview(null); }}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white rounded-full flex items-center justify-center hover:bg-gray-900"
+                    >
+                      <XIcon className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
               <div className="flex items-end gap-2">
                 <button
                   onClick={() => setShowQuickReplies(!showQuickReplies)}
@@ -313,21 +430,41 @@ export default function OperatorChatDetail() {
                 >
                   <Zap className="w-4 h-4" />
                 </button>
-                <Textarea
-                  value={input}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type a message... (Shift+Enter for newline)"
-                  rows={1}
-                  className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[40px] max-h-[120px] py-2.5 text-sm"
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sendMessage.isPending}
-                  className="bg-black hover:bg-gray-800 text-white rounded-full w-10 h-10 p-0 flex-shrink-0"
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                  disabled={isUploading}
+                  aria-label="Attach image"
                 >
-                  <Send className="w-4 h-4" />
-                </Button>
+                  <Paperclip className="w-4 h-4" />
+                </button>
+                {imagePreview ? (
+                  <Button
+                    onClick={handleSendImage}
+                    disabled={isUploading}
+                    className="flex-1 bg-black hover:bg-gray-800 text-white text-xs gap-1.5"
+                  >
+                    {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><ImageIcon className="w-3.5 h-3.5" /> Send Image</>}
+                  </Button>
+                ) : (
+                  <>
+                    <Textarea
+                      value={input}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Type a message... (Shift+Enter for newline)"
+                      rows={1}
+                      className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[40px] max-h-[120px] py-2.5 text-sm"
+                    />
+                    <Button
+                      onClick={handleSend}
+                      disabled={!input.trim() || sendMessage.isPending}
+                      className="bg-black hover:bg-gray-800 text-white rounded-full w-10 h-10 p-0 flex-shrink-0"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           )}

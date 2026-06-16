@@ -246,7 +246,7 @@ export const adminRouter = router({
     }),
 
   sendChatMessage: adminProcedure
-    .input(z.object({ sessionId: z.number(), content: z.string().min(1), fileUrl: z.string().optional() }))
+    .input(z.object({ sessionId: z.number(), content: z.string(), fileUrl: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });

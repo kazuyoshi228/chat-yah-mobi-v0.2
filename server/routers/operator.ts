@@ -74,7 +74,7 @@ export const operatorRouter = router({
     .input(
       z.object({
         sessionId: z.number(),
-        content: z.string().min(1),
+        content: z.string(),
         fileUrl: z.string().optional(),
       })
     )

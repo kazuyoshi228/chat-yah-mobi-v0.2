@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Send, UserCheck, StopCircle, RefreshCw, Bot, User } from "lucide-react";
+import { ArrowLeft, Send, UserCheck, StopCircle, RefreshCw, Bot, User, Paperclip, ImageIcon, X as XIcon, Loader2 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -29,6 +29,14 @@ export default function AdminChatReply() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
+  // Image state
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -51,6 +59,7 @@ export default function AdminChatReply() {
   const refreshSummary = trpc.admin.refreshChatSummary.useMutation({
     onSuccess: (data) => { toast.success("Summary updated"); refetch(); },
   });
+  const uploadFile = trpc.upload.uploadFile.useMutation();
 
   // Load initial messages
   useEffect(() => {
@@ -121,6 +130,59 @@ export default function AdminChatReply() {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error("Image must be under 16MB.");
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleSendImage = async () => {
+    if (!imageFile) return;
+    setIsUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve((e.target?.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+      });
+      const { url } = await uploadFile.mutateAsync({
+        fileName: imageFile.name,
+        mimeType: imageFile.type,
+        base64Data: base64,
+        sessionId,
+      });
+      const tempId = -(Date.now());
+      setMessages((prev) => [
+        ...prev,
+        { id: tempId, sessionId, role: "operator", content: "", fileUrl: url, operatorName: user?.name ?? undefined, createdAt: new Date() },
+      ]);
+      setImageFile(null);
+      setImagePreview(null);
+      sendMessage.mutate({ sessionId, content: "", fileUrl: url }, {
+        onSuccess: (data) => {
+          setMessages((prev) => prev.map((m) => m.id === tempId ? { ...m, id: data.messageId } : m));
+        },
+        onError: () => {
+          setMessages((prev) => prev.filter((m) => m.id !== tempId));
+          toast.error("Failed to send image.");
+        },
+      });
+    } catch {
+      toast.error("Failed to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const session = detail?.session;
   const quickReplies = detail?.quickReplies ?? [];
   const isEnded = session?.status === "ended";
@@ -132,6 +194,26 @@ export default function AdminChatReply() {
 
   return (
     <DashboardLayout>
+      {/* Lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <button
+            className="absolute top-3 right-3 text-white/70 hover:text-white"
+            onClick={() => setLightboxSrc(null)}
+          >
+            <XIcon className="w-6 h-6" />
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Full size"
+            className="max-w-[90vw] max-h-[85vh] rounded-lg object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       <div className="flex flex-col h-[calc(100vh-0px)] max-h-screen">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-background shrink-0">
@@ -198,7 +280,7 @@ export default function AdminChatReply() {
                     </span>
                   )}
                   <div
-                    className={`px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${
+                    className={`rounded-2xl overflow-hidden ${
                       isOp
                         ? "bg-foreground text-background rounded-br-sm"
                         : isAI
@@ -206,7 +288,20 @@ export default function AdminChatReply() {
                         : "bg-muted rounded-bl-sm"
                     }`}
                   >
-                    {msg.content}
+                    {msg.fileUrl && (
+                      <button onClick={() => setLightboxSrc(msg.fileUrl!)} className="block w-full">
+                        <img
+                          src={msg.fileUrl}
+                          alt="Attachment"
+                          className="max-w-[220px] max-h-[220px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                        />
+                      </button>
+                    )}
+                    {msg.content && (
+                      <div className="px-3 py-2 text-sm whitespace-pre-wrap break-words">
+                        {msg.content}
+                      </div>
+                    )}
                   </div>
                   <span className="text-[10px] text-muted-foreground mt-0.5">
                     {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -267,24 +362,59 @@ export default function AdminChatReply() {
           </div>
         ) : (
           <div className="px-4 py-3 border-t bg-background shrink-0">
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+            {/* Image preview */}
+            {imagePreview && (
+              <div className="mb-2">
+                <div className="relative inline-block">
+                  <img src={imagePreview} alt="Preview" className="h-20 w-auto rounded-lg object-cover border" />
+                  <button
+                    onClick={() => { setImageFile(null); setImagePreview(null); }}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white rounded-full flex items-center justify-center hover:bg-gray-900"
+                  >
+                    <XIcon className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="flex gap-2 items-end">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message… (Enter to send)"
-                className="resize-none min-h-[44px] max-h-32 text-sm"
-                rows={1}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!input.trim() || sendMessage.isPending}
-                size="icon"
-                className="shrink-0"
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                disabled={isUploading}
+                aria-label="Attach image"
               >
-                <Send className="h-4 w-4" />
-              </Button>
+                <Paperclip className="h-4 w-4" />
+              </button>
+              {imagePreview ? (
+                <Button
+                  onClick={handleSendImage}
+                  disabled={isUploading}
+                  className="flex-1 gap-1.5"
+                >
+                  {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ImageIcon className="h-4 w-4" /> Send Image</>}
+                </Button>
+              ) : (
+                <>
+                  <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type a message… (Enter to send)"
+                    className="resize-none min-h-[44px] max-h-32 text-sm"
+                    rows={1}
+                  />
+                  <Button
+                    onClick={handleSend}
+                    disabled={!input.trim() || sendMessage.isPending}
+                    size="icon"
+                    className="shrink-0"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}

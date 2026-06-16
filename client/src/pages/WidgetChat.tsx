@@ -15,6 +15,8 @@ import {
   Loader2,
   X,
   AlertCircle,
+  Paperclip,
+  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { nanoid } from "nanoid";
@@ -24,6 +26,7 @@ interface ChatMessage {
   sessionId: number;
   role: "visitor" | "operator" | "ai";
   content: string;
+  fileUrl?: string | null;
   createdAt: Date | string;
 }
 
@@ -43,6 +46,35 @@ function useQueryParam(key: string): string {
 }
 
 type Stage = "start" | "chat" | "ended";
+
+// ── Lightbox ────────────────────────────────────────────────────────────────
+function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <button
+        className="absolute top-3 right-3 text-white/70 hover:text-white"
+        onClick={onClose}
+        aria-label="Close"
+      >
+        <X className="w-6 h-6" />
+      </button>
+      <img
+        src={src}
+        alt="Full size"
+        className="max-w-[90vw] max-h-[85vh] rounded-lg object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
 
 export default function WidgetChat() {
   const rawLang = useQueryParam("lang") || "en";
@@ -65,12 +97,21 @@ export default function WidgetChat() {
   const [freeComment, setFreeComment] = useState("");
   const [surveyDone, setSurveyDone] = useState(false);
 
+  // Image state
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // ── tRPC ──────────────────────────────────────────────────────────────────
   const [sendError, setSendError] = useState<string | null>(null);
   const [failedMessages, setFailedMessages] = useState<string[]>([]);
+
+  const uploadFile = trpc.upload.uploadFile.useMutation();
 
   const startSession = trpc.chat.startSession.useMutation({
     onSuccess: (data) => {
@@ -163,6 +204,62 @@ export default function WidgetChat() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
+  // ── Image handlers ────────────────────────────────────────────────────────
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 16 * 1024 * 1024) {
+      setSendError("Image must be under 16MB.");
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  };
+
+  const handleCancelImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleSendImage = useCallback(async () => {
+    if (!imageFile || !sessionId) return;
+    setIsUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          // Strip data URL prefix
+          resolve(result.split(",")[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+      });
+      const { url } = await uploadFile.mutateAsync({
+        fileName: imageFile.name,
+        mimeType: imageFile.type,
+        base64Data: base64,
+        sessionId,
+      });
+      // Add optimistic message with image
+      setMessages((prev) => [
+        ...prev,
+        { sessionId, role: "visitor", content: "", fileUrl: url, createdAt: new Date() },
+      ]);
+      setImageFile(null);
+      setImagePreview(null);
+      sendMessage.mutate({ sessionId, visitorId: getOrCreateVisitorId(), content: "", fileUrl: url });
+    } catch {
+      setSendError("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  }, [imageFile, sessionId, uploadFile, sendMessage]);
+
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleStart = () => {
     if (!initialMessage.trim()) return;
@@ -196,6 +293,9 @@ export default function WidgetChat() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-screen bg-white font-sans" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+      {/* Lightbox */}
+      {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 flex-shrink-0"
@@ -283,6 +383,7 @@ export default function WidgetChat() {
             </div>
           )}
 
+          {/* Message list */}
           <div
             className="flex-1 px-3 py-3 overflow-y-auto overscroll-contain"
             style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
@@ -303,14 +404,37 @@ export default function WidgetChat() {
                       </div>
                     )}
                     <div className={cn(
-                      "max-w-[78%] rounded-2xl px-3 py-2 text-xs leading-relaxed",
+                      "max-w-[78%] rounded-2xl overflow-hidden",
                       isVisitor
-                        ? "rounded-br-sm text-white"
-                        : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                    )}
-                    style={isVisitor ? { background: accentColor } : undefined}
-                    >
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                        ? "rounded-br-sm"
+                        : "bg-gray-100 rounded-bl-sm"
+                    )}>
+                      {/* Image attachment */}
+                      {msg.fileUrl && (
+                        <button
+                          onClick={() => setLightboxSrc(msg.fileUrl!)}
+                          className="block w-full"
+                        >
+                          <img
+                            src={msg.fileUrl}
+                            alt="Attachment"
+                            className="max-w-[200px] max-h-[200px] object-cover rounded-2xl cursor-pointer hover:opacity-90 transition-opacity"
+                            style={isVisitor ? { borderRadius: "1rem 1rem 0.25rem 1rem" } : { borderRadius: "1rem 1rem 1rem 0.25rem" }}
+                          />
+                        </button>
+                      )}
+                      {/* Text content */}
+                      {msg.content && (
+                        <div
+                          className={cn(
+                            "px-3 py-2 text-xs leading-relaxed",
+                            isVisitor ? "text-white" : "text-gray-800"
+                          )}
+                          style={isVisitor ? { background: accentColor } : undefined}
+                        >
+                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -358,24 +482,84 @@ export default function WidgetChat() {
             </div>
           )}
 
+          {/* Image preview before send */}
+          {imagePreview && (
+            <div className="px-3 pt-2 flex-shrink-0">
+              <div className="relative inline-block">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="h-20 w-auto rounded-lg object-cover border border-gray-200"
+                />
+                <button
+                  onClick={handleCancelImage}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-700 text-white rounded-full flex items-center justify-center hover:bg-gray-900"
+                  aria-label="Remove image"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Input */}
           <div className="border-t border-gray-100 px-3 py-2 flex items-end gap-2 flex-shrink-0">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              rows={1}
-              className="flex-1 resize-none border-gray-200 text-xs min-h-[36px] max-h-[80px] py-2 focus:ring-black/20"
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageSelect}
             />
+            {/* Attach button */}
             <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 disabled:opacity-40 transition-opacity"
-              style={{ background: accentColor }}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 flex-shrink-0 transition-colors"
+              aria-label="Attach image"
+              disabled={isUploading}
             >
-              <Send className="w-3.5 h-3.5" />
+              <Paperclip className="w-4 h-4" />
             </button>
+
+            {imagePreview ? (
+              // When image is selected, show send image button
+              <button
+                onClick={handleSendImage}
+                disabled={isUploading}
+                className="flex-1 py-2 rounded-full text-xs font-medium text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
+                style={{ background: accentColor }}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Send Image
+                  </>
+                )}
+              </button>
+            ) : (
+              <>
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a message..."
+                  rows={1}
+                  className="flex-1 resize-none border-gray-200 text-xs min-h-[36px] max-h-[80px] py-2 focus:ring-black/20"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim()}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 disabled:opacity-40 transition-opacity"
+                  style={{ background: accentColor }}
+                  aria-label="Send"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
           </div>
 
           <div className="px-3 pb-2 flex-shrink-0">
