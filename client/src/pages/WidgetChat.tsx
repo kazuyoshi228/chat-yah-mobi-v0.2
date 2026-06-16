@@ -6,7 +6,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { trpc } from "@/lib/trpc";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Send,
   Bot,
@@ -196,7 +195,7 @@ export default function WidgetChat() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-screen bg-white font-sans select-none overflow-hidden">
+    <div className="flex flex-col h-screen bg-white font-sans" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 flex-shrink-0"
@@ -284,7 +283,10 @@ export default function WidgetChat() {
             </div>
           )}
 
-          <ScrollArea className="flex-1 px-3 py-3">
+          <div
+            className="flex-1 px-3 py-3 overflow-y-auto overscroll-contain"
+            style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+          >
             <div className="space-y-2">
               {messages.map((msg, i) => {
                 const isVisitor = msg.role === "visitor";
@@ -330,7 +332,7 @@ export default function WidgetChat() {
               )}
               <div ref={bottomRef} />
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Send error + failed message retry */}
           {sendError && (

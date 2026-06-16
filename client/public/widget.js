@@ -68,7 +68,7 @@
     "#yah-chat-frame-wrap{" +
       "position:fixed;bottom:" + (OFFSET + BUTTON_SIZE + 12) + "px;" + posH +
       "width:" + WIDGET_WIDTH + "px;height:" + WIDGET_HEIGHT + "px;" +
-      "border-radius:16px;overflow:hidden;" +
+      "border-radius:16px;overflow:hidden;touch-action:pan-y;" +
       "box-shadow:0 8px 40px rgba(0,0,0,0.18);border:1px solid rgba(0,0,0,0.08);" +
       "z-index:" + (config.zIndex - 1) + ";" +
       "display:none;flex-direction:column;" +
@@ -78,7 +78,7 @@
     "}" +
     "#yah-chat-frame-wrap.yah-open{display:flex;}" +
     "#yah-chat-frame-wrap.yah-visible{transform:scale(1) translateY(0);opacity:1;}" +
-    "#yah-chat-iframe{width:100%;height:100%;border:none;background:#fff;}" +
+    "#yah-chat-iframe{width:100%;height:100%;border:none;background:#fff;touch-action:pan-y;}" +
     "@media(max-width:440px){" +
       "#yah-chat-frame-wrap{" +
         "width:calc(100vw - 16px);" +

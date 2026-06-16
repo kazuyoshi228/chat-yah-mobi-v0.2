@@ -183,3 +183,10 @@
 - [x] server/routers/admin.ts: sendChatMessageでメッセージ送信時にstatus=activeとoperatorId=ctx.user.idを自動設定
 - [x] Adminがメッセージを送るだけでAssignなしでもAIが止まるよう修正
 - [x] TypeScript: 0エラー確認
+
+## Phase 23: モバイルウィジェットのスクロール修正
+- [x] WidgetChat.tsx: ScrollAreaをネイティブdiv+overflow-y-auto+overscroll-containに変更
+- [x] WidgetChat.tsx: 外側コンテナのoverflow-hiddenを削除、touchAction: pan-yを追加
+- [x] WidgetChat.tsx: -webkit-overflow-scrolling: touchを追加（iOS Safari対応）
+- [x] widget.js: iframeとwrapにtouch-action: pan-yを追加
+- [x] TypeScript: 0エラー確認
