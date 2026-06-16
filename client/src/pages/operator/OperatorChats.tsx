@@ -62,7 +62,7 @@ export default function OperatorChats() {
         description: "A new chat has started",
         action: {
           label: "Respond",
-          onClick: () => navigate(`/operator/chats/${data.sessionId}`),
+          onClick: () => navigate(`/ops/chats/${data.sessionId}`),
         },
       });
       // Browser notification
@@ -82,7 +82,7 @@ export default function OperatorChats() {
         description: "Operator assistance required",
         action: {
           label: "Respond",
-          onClick: () => navigate(`/operator/chats/${data.sessionId}`),
+          onClick: () => navigate(`/ops/chats/${data.sessionId}`),
         },
       });
     });
@@ -117,7 +117,7 @@ export default function OperatorChats() {
   }
 
   const sidebarItems = [
-    { title: "Chat List", href: "/operator/chats", icon: MessageCircle },
+    { title: "Chat List", href: "/ops/chats", icon: MessageCircle },
   ];
 
   return (
@@ -243,7 +243,7 @@ export default function OperatorChats() {
               sessions.map((session) => (
                 <button
                   key={session.id}
-                  onClick={() => navigate(`/operator/chats/${session.id}`)}
+                  onClick={() => navigate(`/ops/chats/${session.id}`)}
                   className="w-full text-left bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3">

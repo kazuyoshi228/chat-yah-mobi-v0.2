@@ -22,12 +22,24 @@ export default function App() {
   return (
     <ThemeProvider defaultTheme="light">
       <Switch>
+        {/* Root */}
         <Route path="/">{() => { window.location.replace("/portal"); return null; }}</Route>
-        <Route path="/home">{() => { window.location.replace("/portal"); return null; }}</Route>
+
+        {/* Auth */}
+        <Route path="/portal" component={Portal} />
+
+        {/* Visitor chat */}
         <Route path="/chat" component={ChatStart} />
         <Route path="/chat/:sessionId" component={ChatRoom} />
-        <Route path="/operator/chats" component={OperatorChats} />
-        <Route path="/operator/chats/:id" component={OperatorChatDetail} />
+
+        {/* Operator portal */}
+        <Route path="/ops/chats" component={OperatorChats} />
+        <Route path="/ops/chats/:id" component={OperatorChatDetail} />
+        {/* Legacy redirect */}
+        <Route path="/operator/chats">{() => { window.location.replace("/ops/chats"); return null; }}</Route>
+        <Route path="/operator/chats/:id">{({ id }) => { window.location.replace(`/ops/chats/${id}`); return null; }}</Route>
+
+        {/* Admin portal */}
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/operators" component={AdminOperators} />
         <Route path="/admin/quick-replies" component={AdminQuickReplies} />
@@ -35,11 +47,14 @@ export default function App() {
         <Route path="/admin/feedback" component={AdminFeedback} />
         <Route path="/admin/data-analysis" component={AdminDataAnalysis} />
         <Route path="/admin/chats" component={AdminChatList} />
+        <Route path="/admin/chats/:id/reply" component={AdminChatReply} />
         <Route path="/admin/chats/:id" component={AdminChatDetail} />
-        <Route path="/admin/active-chats">{() => { window.location.replace("/admin/chats"); return null; }}</Route>
-        <Route path="/admin/chats/reply/:id" component={AdminChatReply} />
-        <Route path="/portal" component={Portal} />
+        {/* Legacy redirects */}
+        <Route path="/admin/chats/reply/:id">{({ id }) => { window.location.replace(`/admin/chats/${id}/reply`); return null; }}</Route>
+
+        {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
+
         <Route component={NotFound} />
       </Switch>
       <Toaster richColors position="top-right" />

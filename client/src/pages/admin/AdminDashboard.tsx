@@ -128,7 +128,7 @@ export default function AdminDashboard() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             {/* Waiting */}
-            <Link href="/admin/active-chats?status=waiting">
+            <Link href="/admin/chats?status=waiting">
               <div className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
                 (activeCounts?.waiting ?? 0) > 0
                   ? "border-red-300 bg-red-50"
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
             </Link>
 
             {/* Active */}
-            <Link href="/admin/active-chats?status=active">
+            <Link href="/admin/chats?status=active">
               <div className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
                 (activeCounts?.active ?? 0) > 0
                   ? "border-blue-300 bg-blue-50"
@@ -338,7 +338,7 @@ export default function AdminDashboard() {
             { title: "Operators", desc: "Manage roles and assignments", href: "/admin/operators" },
             { title: "Quick Replies", desc: "Add and edit canned responses", href: "/admin/quick-replies" },
             { title: "RAG Documents", desc: "Manage AI knowledge base", href: "/admin/rag" },
-            { title: "Chat List", desc: "View all chats", href: "/operator/chats" },
+            { title: "Chat List", desc: "View all chats", href: "/ops/chats" },
           ].map((item) => (
             <a
               key={item.href}

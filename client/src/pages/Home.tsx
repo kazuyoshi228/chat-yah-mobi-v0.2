@@ -66,7 +66,7 @@ export default function Home() {
             <div className="hidden sm:flex items-center gap-8">
               {(user?.role === "operator" || user?.role === "admin") && (
                 <button
-                  onClick={() => navigate("/operator/chats")}
+                  onClick={() => navigate("/ops/chats")}
                   className="text-[0.6875rem] font-medium tracking-[0.16em] uppercase text-gray-700 hover:text-black transition-colors border-b border-transparent hover:border-black pb-0.5"
                 >
                   {t("home_nav_operator")}

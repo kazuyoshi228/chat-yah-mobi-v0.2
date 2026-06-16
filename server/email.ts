@@ -50,7 +50,7 @@ export async function sendEscalationEmail(
   const visitorLabel = visitorName ?? "Anonymous visitor";
   const langLabel = language ? ` (${language.toUpperCase()})` : "";
   const urgentBadge = urgent ? "🚨 URGENT — " : "";
-  const chatUrl = `${appUrl}/operator/chats/${sessionId}`;
+  const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
 
   const subject = `${urgentBadge}Operator requested: ${visitorLabel}${langLabel} — Session #${sessionId}`;
 
@@ -184,7 +184,7 @@ export async function sendNewChatEmail(opts: {
 
   const visitorLabel = visitorName ?? "Anonymous visitor";
   const langLabel = language ? ` (${language.toUpperCase()})` : "";
-  const chatUrl = `${appUrl}/operator/chats/${sessionId}`;
+  const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
   const subject = `New chat started: ${visitorLabel}${langLabel} — Session #${sessionId}`;
 
   const html = `

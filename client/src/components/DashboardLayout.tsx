@@ -34,7 +34,7 @@ export type SidebarItem = {
 };
 
 const DEFAULT_OPERATOR_ITEMS: SidebarItem[] = [
-  { title: "Chat List", href: "/operator/chats", icon: MessageCircle },
+  { title: "Chat List", href: "/ops/chats", icon: MessageCircle },
 ];
 
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [

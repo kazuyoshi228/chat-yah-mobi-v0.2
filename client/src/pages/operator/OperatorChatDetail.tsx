@@ -117,7 +117,7 @@ export default function OperatorChatDetail() {
   });
 
   const endSession = trpc.operator.endSession.useMutation({
-    onSuccess: () => { toast.success("Session ended"); navigate("/operator/chats"); },
+    onSuccess: () => { toast.success("Session ended"); navigate("/ops/chats"); },
   });
 
   const generateSummary = trpc.operator.generateSummary.useMutation({
@@ -265,7 +265,7 @@ export default function OperatorChatDetail() {
   const isAssigned = session?.operatorId === user?.id;
 
   const sidebarItems = [
-    { title: "Chat List", href: "/operator/chats", icon: MessageCircle },
+    { title: "Chat List", href: "/ops/chats", icon: MessageCircle },
   ];
 
   return (
@@ -297,7 +297,7 @@ export default function OperatorChatDetail() {
           <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate("/operator/chats")}
+                onClick={() => navigate("/ops/chats")}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />

@@ -157,7 +157,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       if (user.role === "admin") {
         res.redirect("/admin");
       } else {
-        res.redirect("/operator/chats");
+        res.redirect("/ops/chats");
       }
     } catch (err) {
       console.error("[GoogleOAuth] Callback error:", err);
