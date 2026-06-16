@@ -92,7 +92,8 @@ export default function OperatorChatDetail() {
 
     socket.on("new_message", (msg: ChatMessage) => {
       setMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
+        // Skip if already present by id (avoids duplicate with optimistic update)
+        if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
     });
@@ -125,11 +126,21 @@ export default function OperatorChatDetail() {
     const content = input.trim();
     if (!content || sendMessage.isPending) return;
     setInput("");
+    const tempId = -(Date.now());
     setMessages((prev) => [
       ...prev,
-      { sessionId, role: "operator", content, createdAt: new Date() },
+      { id: tempId, sessionId, role: "operator", content, createdAt: new Date() },
     ]);
-    sendMessage.mutate({ sessionId, content });
+    sendMessage.mutate({ sessionId, content }, {
+      onSuccess: (data) => {
+        setMessages((prev) =>
+          prev.map((m) => m.id === tempId ? { ...m, id: data.messageId } : m)
+        );
+      },
+      onError: () => {
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      },
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
