@@ -178,3 +178,8 @@
 - [x] server/routers/ai.ts: generateAIResponseでメッセージ内容から言語を自動検出し、DBのlanguageフィールドを更新
 - [x] server/routers/ai.ts: 検出言語でescalation判定も行うよう修正
 - [x] TypeScript: 0エラー確認
+
+## Phase 22: Admin sendChatMessage時のAI自動返信停止修正
+- [x] server/routers/admin.ts: sendChatMessageでメッセージ送信時にstatus=activeとoperatorId=ctx.user.idを自動設定
+- [x] Adminがメッセージを送るだけでAssignなしでもAIが止まるよう修正
+- [x] TypeScript: 0エラー確認

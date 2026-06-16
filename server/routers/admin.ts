@@ -250,6 +250,13 @@ export const adminRouter = router({
     .mutation(async ({ input, ctx }) => {
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+      // Auto-assign admin and set status=active so AI stops responding to visitor messages
+      if (session.status !== "ended") {
+        await updateChatSession(input.sessionId, {
+          status: "active",
+          operatorId: session.operatorId ?? ctx.user.id,
+        });
+      }
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
