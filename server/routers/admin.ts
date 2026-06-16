@@ -437,4 +437,17 @@ Do not include any other text.`;
         analyzedMessageCount: visitorMessages.length,
       };
     }),
+
+  // Real-time counts for dashboard alert section
+  getActiveCounts: adminProcedure
+    .query(async () => {
+      const [waiting, active] = await Promise.all([
+        listChatSessions("waiting"),
+        listChatSessions("active"),
+      ]);
+      return {
+        waiting: waiting.length,
+        active: active.length,
+      };
+    }),
 });

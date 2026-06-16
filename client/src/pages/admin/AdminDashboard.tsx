@@ -3,7 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, Bot, Star, Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { MessageCircle, Bot, Star, Users, CheckCircle, XCircle, Loader2, AlertCircle, Clock, Headphones } from "lucide-react";
+import { Link } from "wouter";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,11 @@ export default function AdminDashboard() {
   const { data: kpi, isLoading } = trpc.admin.getKpi.useQuery(
     { period },
     { enabled: isAuthenticated && user?.role === "admin" }
+  );
+
+  const { data: activeCounts, isLoading: isLoadingCounts } = trpc.admin.getActiveCounts.useQuery(
+    undefined,
+    { enabled: isAuthenticated && user?.role === "admin", refetchInterval: 15000 }
   );
 
   if (loading) {
@@ -111,6 +117,73 @@ export default function AdminDashboard() {
                 {PERIOD_LABELS[p]}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* 対応必要セクション */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <h2 className="text-sm font-semibold text-gray-700">対応必要</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Waiting */}
+            <Link href="/admin/active-chats?status=waiting">
+              <div className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                (activeCounts?.waiting ?? 0) > 0
+                  ? "border-red-300 bg-red-50"
+                  : "border-gray-100 bg-white"
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4 text-red-400" />
+                    <span className="text-xs font-medium text-gray-500">Waiting</span>
+                  </div>
+                  {(activeCounts?.waiting ?? 0) > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  )}
+                </div>
+                {isLoadingCounts ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-300" />
+                ) : (
+                  <p className={`text-4xl font-bold ${
+                    (activeCounts?.waiting ?? 0) > 0 ? "text-red-600" : "text-gray-300"
+                  }`}>
+                    {activeCounts?.waiting ?? 0}
+                  </p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">オペレーター待ち</p>
+              </div>
+            </Link>
+
+            {/* Active */}
+            <Link href="/admin/active-chats?status=active">
+              <div className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${
+                (activeCounts?.active ?? 0) > 0
+                  ? "border-blue-300 bg-blue-50"
+                  : "border-gray-100 bg-white"
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Headphones className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-medium text-gray-500">Active</span>
+                  </div>
+                  {(activeCounts?.active ?? 0) > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  )}
+                </div>
+                {isLoadingCounts ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-gray-300" />
+                ) : (
+                  <p className={`text-4xl font-bold ${
+                    (activeCounts?.active ?? 0) > 0 ? "text-blue-600" : "text-gray-300"
+                  }`}>
+                    {activeCounts?.active ?? 0}
+                  </p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">対応中</p>
+              </div>
+            </Link>
           </div>
         </div>
 
