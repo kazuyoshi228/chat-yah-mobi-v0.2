@@ -79,6 +79,9 @@ export const operatorRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      if (!input.content.trim() && !input.fileUrl) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Message content or file is required" });
+      }
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
 

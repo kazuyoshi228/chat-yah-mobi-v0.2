@@ -192,12 +192,12 @@
 - [x] TypeScript: 0エラー確認
 
 ## Phase 24: チャット内画像送受信機能
-- [ ] WidgetChat.tsx: 画像選択ボタン（クリップアイコン）を入力欄に追加
-- [ ] WidgetChat.tsx: 画像プレビュー（送信前確認）UIを追加
-- [ ] WidgetChat.tsx: upload.uploadFileを使って画像をS3にアップロードし、fileUrlとしてsendMessageに渡す
-- [ ] WidgetChat.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
-- [ ] OperatorChatDetail.tsx: 画像送信ボタンとプレビューUIを追加
-- [ ] OperatorChatDetail.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
-- [ ] AdminChatReply.tsx: 画像送信ボタンとプレビューUIを追加
-- [ ] AdminChatReply.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
-- [ ] 画像クリックで拡大表示（lightbox）を実装
+- [x] WidgetChat.tsx: 画像選択ボタン（クリップアイコン）を入力欄に追加
+- [x] WidgetChat.tsx: 画像プレビュー（送信前確認）UIを追加
+- [x] WidgetChat.tsx: upload.uploadFileを使って画像をS3にアップロードし、fileUrlとしてsendMessageに渡す
+- [x] WidgetChat.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
+- [x] OperatorChatDetail.tsx: 画像送信ボタンとプレビューUIを追加
+- [x] OperatorChatDetail.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
+- [x] AdminChatReply.tsx: 画像送信ボタンとプレビューUIを追加
+- [x] AdminChatReply.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
+- [x] 画像クリックで拡大表示（lightbox）を実装

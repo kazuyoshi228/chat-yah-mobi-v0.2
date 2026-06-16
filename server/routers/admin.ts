@@ -248,6 +248,9 @@ export const adminRouter = router({
   sendChatMessage: adminProcedure
     .input(z.object({ sessionId: z.number(), content: z.string(), fileUrl: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
+      if (!input.content.trim() && !input.fileUrl) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Message content or file is required" });
+      }
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       // Auto-assign admin and set status=active so AI stops responding to visitor messages
