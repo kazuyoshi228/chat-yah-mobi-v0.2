@@ -8,6 +8,7 @@ import {
   varchar,
   float,
 } from "drizzle-orm/mysql-core";
+import { relations } from "drizzle-orm";
 
 /**
  * Core user table backing auth flow.
@@ -40,7 +41,7 @@ export const chatSessions = mysqlTable("chat_sessions", {
   visitorName: varchar("visitorName", { length: 128 }),
   visitorEmail: varchar("visitorEmail", { length: 320 }),
   status: mysqlEnum("status", ["waiting", "active", "ended"]).default("waiting").notNull(),
-  operatorId: int("operatorId"),
+  operatorId: int("operatorId").references(() => users.id, { onDelete: "set null" }),
   language: varchar("language", { length: 8 }).default("ja"),
   summary: text("summary"),
   scheduledDeleteAt: timestamp("scheduledDeleteAt"),
@@ -54,11 +55,14 @@ export type InsertChatSession = typeof chatSessions.$inferInsert;
 /**
  * Messages table - stores all chat messages.
  * role: visitor | operator | ai
+ * senderId: FK to users.id — NULL for visitor/AI messages, set for operator/admin messages.
+ *           Allows tracking which staff member sent each message.
  */
 export const messages = mysqlTable("messages", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull(),
+  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
   role: mysqlEnum("role", ["visitor", "operator", "ai"]).notNull(),
+  senderId: int("senderId").references(() => users.id, { onDelete: "set null" }), // FK to users.id (nullable)
   content: text("content").notNull(),
   fileUrl: varchar("fileUrl", { length: 1024 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -104,7 +108,7 @@ export type InsertRagDocument = typeof ragDocuments.$inferInsert;
  */
 export const surveys = mysqlTable("surveys", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull(),
+  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
   rating: int("rating").notNull(), // 1-5
   resolved: mysqlEnum("resolved", ["yes", "no"]),
   comment: text("comment"),

@@ -229,3 +229,12 @@
 - [x] App.tsx: /admin/active-chats ルートを /admin/chats にリダイレクト
 - [x] DashboardLayout.tsx: サイドバーの重複「Chats」(/admin/active-chats)リンクを削除
 - [x] AdminChats.tsxを廃止（App.tsxからimport削除・/admin/active-chatsは/admin/chatsにリダイレクト）
+
+## Phase D-5: DBスキーマ改善（2026-06-16）
+- [x] 5.1: messages テーブルに FK制約 fk_messages_session を追加（ON DELETE CASCADE）
+- [x] 5.1: chat_sessions テーブルに FK制約 fk_sessions_operator を追加（ON DELETE SET NULL）
+- [x] 5.2: messages テーブルに senderId カラム追加（users.id への FK）
+- [x] 5.2: drizzle/schema.ts に senderId フィールドを追加
+- [x] 5.2: server/routers/operator.ts・admin.ts の sendMessage で senderId を保存
+- [x] 5.3: startSession にレースコンディション対策（check→create→re-checkパターンで重複セッションを防止）
+- [x] 5.4: operator.endSession / admin.endChat の scheduleSessionDeletion 呼び出しを確認（A-5で実装済みを確認）

@@ -31,7 +31,8 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      // Check for existing active session
+      // 5.3: Race condition guard — re-check after first lookup to prevent duplicate sessions
+      // Pattern: check → create → re-check (handles concurrent requests from the same visitor)
       const existing = await getChatSessionByVisitorId(input.visitorId);
       if (existing && existing.status !== "ended") {
         return { sessionId: existing.id, isNew: false };
@@ -45,6 +46,15 @@ export const chatRouter = router({
         status: "waiting",
         language: input.language,
       });
+
+      // 5.3: Post-insert re-check — if a concurrent request created a session first,
+      // return the earliest active session to avoid duplicates
+      const concurrent = await getChatSessionByVisitorId(input.visitorId);
+      if (concurrent && concurrent.id !== sessionId && concurrent.status !== "ended") {
+        // Another session was created concurrently; discard ours (it will be cleaned up by purge)
+        await updateChatSession(sessionId, { status: "ended" });
+        return { sessionId: concurrent.id, isNew: false };
+      }
 
       // Save visitor's first message
       await createMessage({

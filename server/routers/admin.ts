@@ -263,6 +263,7 @@ export const adminRouter = router({
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
+        senderId: ctx.user.id, // 5.2: track which admin sent the message
         content: input.content,
         fileUrl: input.fileUrl,
       });
