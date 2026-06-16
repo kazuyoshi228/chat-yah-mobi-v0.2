@@ -201,3 +201,8 @@
 - [x] AdminChatReply.tsx: 画像送信ボタンとプレビューUIを追加
 - [x] AdminChatReply.tsx: メッセージ一覧でfileUrlがある場合に画像を表示
 - [x] 画像クリックで拡大表示（lightbox）を実装
+
+## Phase 25: Admin/Operatorメッセージ重複・Visitor未配信バグ修正
+- [x] AdminChatReply: new_messageハンドラーでrole=operatorのメッセージを無視（楽観的更新と重複防止）
+- [x] OperatorChatDetail: 同様にrole=operatorのメッセージを無視
+- [x] WidgetChat: ポーリング（3秒ごとにgetMessages）を追加してSocket.io未配信時のフォールバックを実装

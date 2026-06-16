@@ -161,13 +161,34 @@ export default function WidgetChat() {
     },
   });
 
+    // ── Polling fallback (in case Socket.io cross-instance delivery fails) ─────
+  const getMessages = trpc.chat.getMessages.useQuery(
+    { sessionId: sessionId! },
+    { enabled: !!sessionId && stage === "chat", refetchInterval: 3000 }
+  );
+  useEffect(() => {
+    if (!getMessages.data) return;
+    setMessages((prev) => {
+      const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
+      const newMsgs = (getMessages.data as ChatMessage[]).filter(
+        (m) => m.id && !existingIds.has(m.id)
+      );
+      if (newMsgs.length === 0) return prev;
+      // Notify parent about unread operator/ai messages
+      const hasNewOperator = newMsgs.some((m) => m.role !== "visitor");
+      if (hasNewOperator) {
+        window.parent.postMessage({ type: "yah:unread", count: newMsgs.filter(m => m.role !== "visitor").length }, parentOrigin);
+      }
+      return [...getMessages.data as ChatMessage[]];
+    });
+  }, [getMessages.data, parentOrigin]);
+
   // ── Socket ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!sessionId) return;
     const socket = io(window.location.origin, { path: "/api/socket.io" });
     socketRef.current = socket;
     socket.emit("join_session", sessionId);
-
     socket.on("new_message", (msg: ChatMessage) => {
       if (msg.role !== "visitor") {
         setMessages((prev) => {
@@ -178,13 +199,10 @@ export default function WidgetChat() {
         window.parent.postMessage({ type: "yah:unread", count: 1 }, parentOrigin);
       }
     });
-
     socket.on("typing", (data: { role: string; isTyping: boolean }) => {
       if (data.role !== "visitor") setIsTyping(data.isTyping);
     });
-
     socket.on("session_ended", () => setStage("ended"));
-
     return () => { socket.disconnect(); };
   }, [sessionId, parentOrigin]);
 

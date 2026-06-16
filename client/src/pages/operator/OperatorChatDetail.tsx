@@ -102,8 +102,9 @@ export default function OperatorChatDetail() {
     socket.emit("join_operators");
 
     socket.on("new_message", (msg: ChatMessage) => {
+      // Skip operator messages - they are already shown via optimistic updates
+      if (msg.role === "operator") return;
       setMessages((prev) => {
-        // Skip if already present by id (avoids duplicate with optimistic update)
         if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
