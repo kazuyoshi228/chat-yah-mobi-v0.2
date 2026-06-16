@@ -46,6 +46,27 @@ export default function AdminChatReply() {
     { enabled: !!sessionId }
   );
 
+  // Polling fallback: fetch messages every 3s in case Socket.io misses events (multi-instance)
+  const { data: polledMessages } = trpc.chat.getMessages.useQuery(
+    { sessionId },
+    { enabled: !!sessionId, refetchInterval: 3000, refetchIntervalInBackground: true }
+  );
+
+  useEffect(() => {
+    if (!polledMessages) return;
+    setMessages((prev) => {
+      const withoutTemps = prev.filter((m) => m.id && m.id > 0);
+      const allIds = new Set(withoutTemps.map((m) => m.id));
+      const newFromPoll = (polledMessages as ChatMessage[]).filter((m) => m.id && !allIds.has(m.id));
+      if (newFromPoll.length === 0) return prev;
+      const merged = [
+        ...withoutTemps,
+        ...newFromPoll,
+      ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return merged;
+    });
+  }, [polledMessages]);
+
   const assignChat = trpc.admin.assignChat.useMutation({
     onSuccess: () => { toast.success("Session assigned to you"); refetch(); },
   });

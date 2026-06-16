@@ -73,6 +73,31 @@ export default function OperatorChatDetail() {
     { sessionId },
     { enabled: isValidSession }
   );
+
+  // Polling fallback: fetch messages every 3s in case Socket.io misses events (multi-instance)
+  const { data: polledMessages } = trpc.chat.getMessages.useQuery(
+    { sessionId },
+    { enabled: isValidSession, refetchInterval: 3000, refetchIntervalInBackground: true }
+  );
+
+  useEffect(() => {
+    if (!polledMessages) return;
+    setMessages((prev) => {
+      const existingIds = new Set(prev.map((m) => m.id).filter(Boolean));
+      const newMsgs = (polledMessages as ChatMessage[]).filter(
+        (m) => m.id && !existingIds.has(m.id)
+      );
+      if (newMsgs.length === 0) return prev;
+      // Merge: replace temp messages (negative id) and add truly new ones
+      const withoutTemps = prev.filter((m) => m.id && m.id > 0);
+      const allIds = new Set(withoutTemps.map((m) => m.id));
+      const merged = [
+        ...withoutTemps,
+        ...(polledMessages as ChatMessage[]).filter((m) => m.id && !allIds.has(m.id)),
+      ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return merged;
+    });
+  }, [polledMessages]);
   const { data: quickReplies } = trpc.operator.listQuickReplies.useQuery();
 
   const assignSession = trpc.operator.assignSession.useMutation({

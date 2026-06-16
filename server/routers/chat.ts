@@ -134,11 +134,15 @@ export const chatRouter = router({
       z.object({
         sessionId: z.number(),
         visitorId: z.string(),
-        content: z.string().min(1),
+        content: z.string(),
         fileUrl: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
+      // Require either content or fileUrl
+      if (!input.content.trim() && !input.fileUrl) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Message content or image required" });
+      }
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       if (session.visitorId !== input.visitorId) {
