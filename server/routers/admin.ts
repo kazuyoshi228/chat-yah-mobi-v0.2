@@ -17,6 +17,7 @@ import {
   listRagDocuments,
   listSurveys,
   createMessage,
+  getImageAnalyticsSummary,
   scheduleSessionDeletion,
   updateChatSession,
   updateOperatorProfile,
@@ -469,5 +470,25 @@ Do not include any other text.`;
         waiting: waiting.length,
         active: active.length,
       };
+    }),
+
+  // Image analytics: Vision AI analysis results aggregated for the admin dashboard.
+  getImageAnalytics: adminProcedure
+    .input(
+      z.object({
+        period: z.enum(["today", "week", "month", "all"]).optional().default("month"),
+      })
+    )
+    .query(async ({ input }) => {
+      const now = new Date();
+      let startDate: Date | undefined;
+      if (input.period === "today") {
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      } else if (input.period === "week") {
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (input.period === "month") {
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+      return getImageAnalyticsSummary(startDate, undefined);
     }),
 });

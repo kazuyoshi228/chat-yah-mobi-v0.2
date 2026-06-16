@@ -215,7 +215,7 @@
 - [x] A-5: operator.endSession / admin.endChat に scheduleSessionDeletion 追加
 
 ## Phase B: パフォーマンス・アーキテクチャ改善（2026-06-16）
-- [ ] B-1: Redis Pub/Sub アダプター導入（将来対応・現時点はポーリングフォールバックで代替対応中）
+- [ ] B-1: Redis Pub/Sub アダプター導入（未実装・スケールアウト時に導入予定・現時点はポーリング30秒フォールバックで暑定対応中）
 - [x] B-2: DBインデックス追加（messages.sessionId, sessions.visitorId, sessions.status, sessions.operatorId, surveys.sessionId）
 - [x] B-3: Socket.io 接続中はポーリング間隔を30秒に延長（WidgetChat・OperatorChatDetail・AdminChatReply）
 - [x] B-4: admin.listOperators N+1クエリ修正（getAllOperatorsWithChatCount JOIN化）
@@ -238,3 +238,12 @@
 - [x] 5.2: server/routers/operator.ts・admin.ts の sendMessage で senderId を保存
 - [x] 5.3: startSession にレースコンディション対策（check→create→re-checkパターンで重複セッションを防止）
 - [x] 5.4: operator.endSession / admin.endChat の scheduleSessionDeletion 呼び出しを確認（A-5で実装済みを確認）
+
+## Phase E: 画像Vision AI解析 + Admin分析ダッシュボード（2026-06-16）
+
+- [x] image_analyses テーブルをDBに追加（sessionId, messageId, category, keywords, description, confidence）
+- [x] drizzle/schema.ts に imageAnalyses テーブル定義を追加
+- [x] upload.ts: アップロード後に非同期でVision AI解析を実行しDBに保存
+- [x] server/db.ts: createImageAnalysis・getImageAnalyticsSummary ヘルパー追加
+- [x] admin.ts: getImageAnalytics プロシージャ追加（カテゴリ別集計・キーワード頻度）
+- [x] AdminDataAnalysis.tsx: 画像分析セクションを追加（カテゴリ別棒グラフ・キーワード一覧・最近の画像付きチャット）

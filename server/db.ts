@@ -3,13 +3,16 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
   chatSessions,
+  imageAnalyses,
   messages,
   quickReplies,
   ragDocuments,
   surveys,
   users,
   type ChatSession,
+  type ImageAnalysis,
   type InsertChatSession,
+  type InsertImageAnalysis,
   type InsertMessage,
   type InsertQuickReply,
   type InsertRagDocument,
@@ -494,5 +497,101 @@ export async function getKpiStats(since?: Date) {
     resolvedRate,       // overall % resolved (null if no survey data)
     aiResolvedRate,     // AI-handled sessions % resolved
     operatorResolvedRate, // Operator-handled sessions % resolved
+  };
+}
+
+// ─── Image Analyses ───────────────────────────────────────────────────────────
+
+/**
+ * Save Vision AI analysis result for an uploaded image.
+ */
+export async function createImageAnalysis(data: InsertImageAnalysis): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(imageAnalyses).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+/**
+ * Get image analyses for a specific session.
+ */
+export async function getImageAnalysesBySession(sessionId: number): Promise<ImageAnalysis[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(imageAnalyses)
+    .where(eq(imageAnalyses.sessionId, sessionId))
+    .orderBy(desc(imageAnalyses.createdAt));
+}
+
+/**
+ * Get aggregated image analytics for the admin dashboard.
+ * Returns category counts, top keywords, and recent image messages.
+ */
+export async function getImageAnalyticsSummary(startDate?: Date, endDate?: Date) {
+  const db = await getDb();
+  if (!db) return { categoryCounts: [], topKeywords: [], recentAnalyses: [], totalImages: 0 };
+
+  const conditions = [];
+  if (startDate) conditions.push(gte(imageAnalyses.createdAt, startDate));
+  if (endDate) conditions.push(lte(imageAnalyses.createdAt, endDate));
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  // Category counts
+  const categoryCounts = await db
+    .select({
+      category: imageAnalyses.category,
+      count: sql<number>`count(*)`,
+    })
+    .from(imageAnalyses)
+    .where(whereClause)
+    .groupBy(imageAnalyses.category)
+    .orderBy(desc(sql<number>`count(*)`));
+
+  // Total images
+  const totalResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(imageAnalyses)
+    .where(whereClause);
+  const totalImages = Number(totalResult[0]?.count ?? 0);
+
+  // Recent analyses (last 20)
+  const recentAnalyses = await db
+    .select()
+    .from(imageAnalyses)
+    .where(whereClause)
+    .orderBy(desc(imageAnalyses.createdAt))
+    .limit(20);
+
+  // Aggregate keywords from JSON column
+  const allAnalyses = await db
+    .select({ keywords: imageAnalyses.keywords })
+    .from(imageAnalyses)
+    .where(whereClause);
+
+  const keywordFreq: Record<string, number> = {};
+  for (const row of allAnalyses) {
+    const kws = row.keywords as string[] | null;
+    if (Array.isArray(kws)) {
+      for (const kw of kws) {
+        keywordFreq[kw] = (keywordFreq[kw] ?? 0) + 1;
+      }
+    }
+  }
+  const topKeywords = Object.entries(keywordFreq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20)
+    .map(([keyword, count]) => ({ keyword, count }));
+
+  return {
+    categoryCounts: categoryCounts.map((r) => ({
+      category: r.category ?? "uncategorized",
+      count: Number(r.count),
+    })),
+    topKeywords,
+    recentAnalyses,
+    totalImages,
   };
 }

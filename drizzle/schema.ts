@@ -118,3 +118,25 @@ export const surveys = mysqlTable("surveys", {
 
 export type Survey = typeof surveys.$inferSelect;
 export type InsertSurvey = typeof surveys.$inferInsert;
+
+/**
+ * Image analyses - Vision AI analysis results for uploaded images.
+ * category: e.g. "error_screen", "product", "billing", "other"
+ * keywords: array of extracted keywords
+ * description: AI-generated description of the image content
+ * confidence: 0.0-1.0 confidence score
+ */
+export const imageAnalyses = mysqlTable("image_analyses", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  messageId: int("messageId"),
+  fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
+  category: varchar("category", { length: 128 }),
+  keywords: json("keywords").$type<string[]>(),
+  description: text("description"),
+  confidence: float("confidence").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ImageAnalysis = typeof imageAnalyses.$inferSelect;
+export type InsertImageAnalysis = typeof imageAnalyses.$inferInsert;
