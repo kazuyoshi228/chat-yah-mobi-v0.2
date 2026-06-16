@@ -415,8 +415,9 @@ export async function getKpiStats(since?: Date) {
   const endedSessions = allSessions.filter((s) => s.status === "ended");
   // AI resolved = sessions that ended without an operator
   const aiResolved = endedSessions.filter((s) => !s.operatorId).length;
-  // Operator resolved = sessions that ended with an operator
-  const operatorResolved = endedSessions.filter((s) => !!s.operatorId).length;
+  // Operator Handled = sessions where an operator was assigned (active + ended)
+  const operatorHandledSessions = allSessions.filter((s) => !!s.operatorId);
+  const operatorResolved = operatorHandledSessions.length;
 
   const allSurveys = since
     ? await db.select().from(surveys).where(gte(surveys.createdAt, since))
@@ -435,7 +436,8 @@ export async function getKpiStats(since?: Date) {
     ? Math.round((resolvedCount / surveysWithResolved.length) * 100)
     : null;
 
-  // AI vs Operator resolved rate (from surveys joined with sessions)
+  // AI vs Operator resolved rate
+  // Operator Resolution Rate = (operator-ended sessions) / (all operator-handled sessions) * 100
   const sessionMap = new Map(allSessions.map((s) => [s.id, s]));
   const aiSurveys = surveysWithResolved.filter((sv) => {
     const sess = sessionMap.get(sv.sessionId);
@@ -448,8 +450,10 @@ export async function getKpiStats(since?: Date) {
   const aiResolvedRate = aiSurveys.length > 0
     ? Math.round((aiSurveys.filter((s) => s.resolved === "yes").length / aiSurveys.length) * 100)
     : null;
-  const operatorResolvedRate = opSurveys.length > 0
-    ? Math.round((opSurveys.filter((s) => s.resolved === "yes").length / opSurveys.length) * 100)
+  // Operator Resolution Rate: ended sessions with operator / all sessions with operator
+  const operatorEndedCount = operatorHandledSessions.filter((s) => s.status === "ended").length;
+  const operatorResolvedRate = operatorHandledSessions.length > 0
+    ? Math.round((operatorEndedCount / operatorHandledSessions.length) * 100)
     : null;
 
   return {
