@@ -31,7 +31,7 @@ export default function Portal() {
             {/* Title block */}
             <div className="mb-8">
               <img
-                src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
+                src="/manus-storage/yah-mobile-logo-horizontal_f116360c.svg"
                 alt="yah.mobile"
                 className="h-5 w-auto object-contain mb-3 brightness-0 invert"
               />

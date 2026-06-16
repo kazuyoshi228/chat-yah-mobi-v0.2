@@ -23,6 +23,7 @@ import {
   Paperclip,
   ImageIcon,
   X as XIcon,
+  PhoneOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -333,18 +334,25 @@ export default function OperatorChatDetail() {
                   disabled={assignSession.isPending}
                   className="bg-black text-white hover:bg-gray-800 text-xs h-7"
                 >
-                  Assign to me
+                  {assignSession.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Assign to me"}
                 </Button>
               )}
               {!isEnded && isAssigned && (
                 <Button
                   size="sm"
-                  variant="outline"
-                  onClick={() => endSession.mutate({ sessionId })}
+                  onClick={() => {
+                    if (confirm("このセッションを終了しますか？")) {
+                      endSession.mutate({ sessionId });
+                    }
+                  }}
                   disabled={endSession.isPending}
-                  className="text-xs h-7 border-gray-200"
+                  className="bg-red-500 hover:bg-red-600 text-white text-xs h-7 gap-1.5 border-0"
                 >
-                  End session
+                  {endSession.isPending ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <><PhoneOff className="w-3 h-3" /> End</>
+                  )}
                 </Button>
               )}
             </div>
@@ -423,8 +431,23 @@ export default function OperatorChatDetail() {
           </ScrollArea>
 
           {/* Input */}
-          {!isEnded && isAssigned && (
+          {!isEnded && (
             <div className="bg-white border-t border-gray-100 px-4 py-3">
+              {/* Assign banner for unassigned sessions */}
+              {!isAssigned && (
+                <div className="mb-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  <p className="text-xs text-amber-700">このセッションはまだアサインされていません</p>
+                  <Button
+                    size="sm"
+                    onClick={() => assignSession.mutate({ sessionId })}
+                    disabled={assignSession.isPending}
+                    className="bg-black text-white hover:bg-gray-800 text-xs h-6 ml-2"
+                  >
+                    {assignSession.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Assign to me"}
+                  </Button>
+                </div>
+              )}
+
               {/* Quick Replies */}
               {showQuickReplies && quickReplies && quickReplies.length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">

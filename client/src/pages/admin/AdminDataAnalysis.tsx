@@ -99,7 +99,7 @@ export default function AdminDataAnalysis() {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <img
-              src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
+              src="/manus-storage/yah-mobile-logo-horizontal_f116360c.svg"
               alt="yah.mobile"
               className="h-8 w-auto object-contain"
             />
