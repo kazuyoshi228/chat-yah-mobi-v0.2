@@ -40,16 +40,23 @@ export default function AdminChatReply() {
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   const { data: detail, refetch } = trpc.admin.getChatDetail.useQuery(
     { sessionId },
     { enabled: !!sessionId }
   );
 
-  // Polling fallback: fetch messages every 3s in case Socket.io misses events (multi-instance)
+  // Polling fallback: fetch messages in case Socket.io misses events (multi-instance)
+  // B-3: When Socket.io is connected, poll every 30s; otherwise every 3s
+  // Admin is authenticated; no visitorId needed (server bypasses ownership check for admin)
   const { data: polledMessages } = trpc.chat.getMessages.useQuery(
     { sessionId },
-    { enabled: !!sessionId, refetchInterval: 3000, refetchIntervalInBackground: true }
+    {
+      enabled: !!sessionId,
+      refetchInterval: socketConnected ? 30_000 : 3_000,
+      refetchIntervalInBackground: true,
+    }
   );
 
   useEffect(() => {
@@ -96,6 +103,9 @@ export default function AdminChatReply() {
     socketRef.current = socket;
     socket.emit("join_session", String(sessionId));
     socket.emit("join_operators");
+    // B-3: Track connectivity to adjust polling interval
+    socket.on("connect", () => setSocketConnected(true));
+    socket.on("disconnect", () => setSocketConnected(false));
 
     socket.on("new_message", (msg: ChatMessage) => {
       // Skip operator messages - they are already shown via optimistic updates
@@ -113,7 +123,7 @@ export default function AdminChatReply() {
       refetch();
     });
 
-    return () => { socket.disconnect(); };
+    return () => { socket.disconnect(); setSocketConnected(false); };
   }, [sessionId, refetch]);
 
   // Auto-scroll

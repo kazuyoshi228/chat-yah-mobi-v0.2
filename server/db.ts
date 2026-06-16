@@ -145,6 +145,32 @@ export async function updateOperatorProfile(
 }
 
 /**
+ * B-4: Get all operators with their chat counts in a single query (avoids N+1).
+ */
+export async function getAllOperatorsWithChatCount() {
+  const db = await getDb();
+  if (!db) return [];
+  const operators = await db
+    .select()
+    .from(users)
+    .where(inArray(users.role, ["operator", "admin"]));
+  if (operators.length === 0) return [];
+
+  const ids = operators.map((u) => u.id);
+  const counts = await db
+    .select({
+      operatorId: chatSessions.operatorId,
+      count: sql<number>`count(*)`,
+    })
+    .from(chatSessions)
+    .where(inArray(chatSessions.operatorId, ids))
+    .groupBy(chatSessions.operatorId);
+
+  const countMap = new Map(counts.map((c) => [c.operatorId, Number(c.count)]));
+  return operators.map((op) => ({ ...op, chatCount: countMap.get(op.id) ?? 0 }));
+}
+
+/**
  * Get the number of chat sessions handled by an operator.
  */
 export async function getOperatorChatCount(operatorId: number): Promise<number> {

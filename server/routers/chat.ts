@@ -121,10 +121,32 @@ export const chatRouter = router({
       return session;
     }),
 
-  // Get messages for a session
+  // Get messages for a session.
+  // Visitors must supply their visitorId to prove ownership.
+  // Operators/admins (authenticated users) can access any session.
   getMessages: publicProcedure
-    .input(z.object({ sessionId: z.number() }))
-    .query(async ({ input }) => {
+    .input(
+      z.object({
+        sessionId: z.number(),
+        visitorId: z.string().optional(), // required for unauthenticated visitors
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const session = await getChatSession(input.sessionId);
+      if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const isOperatorOrAdmin =
+        ctx.user && (ctx.user.role === "operator" || ctx.user.role === "admin");
+
+      if (!isOperatorOrAdmin) {
+        if (!input.visitorId || session.visitorId !== input.visitorId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Visitor ID does not match this session.",
+          });
+        }
+      }
+
       return getMessagesBySessionId(input.sessionId);
     }),
 
@@ -147,6 +169,13 @@ export const chatRouter = router({
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       if (session.visitorId !== input.visitorId) {
         throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      // B-6: Reject messages to ended sessions
+      if (session.status === "ended") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This chat session has ended.",
+        });
       }
 
       // Save visitor message

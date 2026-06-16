@@ -206,3 +206,19 @@
 - [x] AdminChatReply: new_messageハンドラーでrole=operatorのメッセージを無視（楽観的更新と重複防止）
 - [x] OperatorChatDetail: 同様にrole=operatorのメッセージを無視
 - [x] WidgetChat: ポーリング（3秒ごとにgetMessages）を追加してSocket.io未配信時のフォールバックを実装
+
+## Phase A: セキュリティ緊急対応（2026-06-16）
+- [x] A-1: upload.uploadFile に認証・サイズ(20MB)・MIMEタイプバリデーション追加
+- [x] A-2: Socket.io join_operators に認証ミドルウェア追加
+- [x] A-3: chat.getMessages に visitorId 検証を追加（情報漏洩防止）
+- [x] A-4: operator.sendMessage にセッション所有権チェック追加
+- [x] A-5: operator.endSession / admin.endChat に scheduleSessionDeletion 追加
+
+## Phase B: パフォーマンス・アーキテクチャ改善（2026-06-16）
+- [ ] B-1: Redis Pub/Sub アダプター導入（Socket.io スティッキーセッション問題解決）※Autoscale環境でのみ必要・将来対応
+- [x] B-2: DBインデックス追加（messages.sessionId, sessions.visitorId, sessions.status, sessions.operatorId, surveys.sessionId）
+- [x] B-3: Socket.io 接続中はポーリング間隔を30秒に延長（WidgetChat・OperatorChatDetail・AdminChatReply）
+- [x] B-4: admin.listOperators N+1クエリ修正（getAllOperatorsWithChatCount JOIN化）
+- [x] B-5: Express ボディサイズ制限を 50mb → 20mb に変更
+- [x] B-6: chat.sendMessage / admin.sendChatMessage - ended セッションへの送信を拒否
+- [x] B-7: admin.sendChatMessage - ended セッションへの送信を拒否（B-6と統合）

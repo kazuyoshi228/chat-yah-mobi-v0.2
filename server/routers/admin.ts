@@ -6,6 +6,7 @@ import {
   deleteQuickReply,
   deleteRagDocument,
   getAllOperators,
+  getAllOperatorsWithChatCount,
   getAnalysisData,
   getChatSession,
   getKpiStats,
@@ -16,6 +17,7 @@ import {
   listRagDocuments,
   listSurveys,
   createMessage,
+  scheduleSessionDeletion,
   updateChatSession,
   updateOperatorProfile,
   updateQuickReply,
@@ -59,15 +61,8 @@ export const adminRouter = router({
 
   // Operator management
   listOperators: adminProcedure.query(async () => {
-    const operators = await getAllOperators();
-    // Attach chat count for each operator
-    const withCounts = await Promise.all(
-      operators.map(async (op) => ({
-        ...op,
-        chatCount: await getOperatorChatCount(op.id),
-      }))
-    );
-    return withCounts;
+    // B-4: Use single-query helper to avoid N+1 (one COUNT per operator)
+    return getAllOperatorsWithChatCount();
   }),
 
   createOperator: adminProcedure
@@ -253,13 +248,18 @@ export const adminRouter = router({
       }
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
-      // Auto-assign admin and set status=active so AI stops responding to visitor messages
-      if (session.status !== "ended") {
-        await updateChatSession(input.sessionId, {
-          status: "active",
-          operatorId: session.operatorId ?? ctx.user.id,
+      // B-7: Reject messages to ended sessions
+      if (session.status === "ended") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This chat session has already ended.",
         });
       }
+      // Auto-assign admin and set status=active so AI stops responding to visitor messages
+      await updateChatSession(input.sessionId, {
+        status: "active",
+        operatorId: session.operatorId ?? ctx.user.id,
+      });
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
@@ -311,6 +311,10 @@ export const adminRouter = router({
         updateData.operatorId = ctx.user.id;
       }
       await updateChatSession(input.sessionId, updateData);
+
+      // A-5: Data retention — schedule deletion 2 years from now
+      await scheduleSessionDeletion(input.sessionId).catch(() => {});
+
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("session_ended", { sessionId: input.sessionId });

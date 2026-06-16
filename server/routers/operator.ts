@@ -6,6 +6,7 @@ import {
   getMessagesBySessionId,
   listChatSessions,
   listQuickReplies,
+  scheduleSessionDeletion,
   updateChatSession,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
@@ -70,6 +71,7 @@ export const operatorRouter = router({
     }),
 
   // Send operator message
+  // Only the assigned operator (or any admin) may send messages to a session.
   sendMessage: operatorProcedure
     .input(
       z.object({
@@ -84,6 +86,16 @@ export const operatorRouter = router({
       }
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // Ownership check: admins bypass; operators must be the assigned operator
+      if (ctx.user.role !== "admin") {
+        if (session.operatorId && session.operatorId !== ctx.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "You are not the assigned operator for this session.",
+          });
+        }
+      }
 
       const msgId = await createMessage({
         sessionId: input.sessionId,
@@ -121,6 +133,9 @@ export const operatorRouter = router({
       );
 
       await updateChatSession(input.sessionId, { status: "ended", summary });
+
+      // Data retention: schedule deletion 2 years from now (GDPR / 個人情報保護法対応)
+      await scheduleSessionDeletion(input.sessionId).catch(() => {});
 
       const io = getIo();
       if (io) {

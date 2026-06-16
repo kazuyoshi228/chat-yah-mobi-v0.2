@@ -106,6 +106,7 @@ export default function WidgetChat() {
 
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   // ── tRPC ──────────────────────────────────────────────────────────────────
   const [sendError, setSendError] = useState<string | null>(null);
@@ -162,9 +163,15 @@ export default function WidgetChat() {
   });
 
     // ── Polling fallback (in case Socket.io cross-instance delivery fails) ─────
+  // B-3: When Socket.io is connected, poll every 30s (fallback only).
+  //       When disconnected, poll every 3s to ensure message delivery.
+  const visitorId = getOrCreateVisitorId();
   const getMessages = trpc.chat.getMessages.useQuery(
-    { sessionId: sessionId! },
-    { enabled: !!sessionId && stage === "chat", refetchInterval: 3000 }
+    { sessionId: sessionId!, visitorId },
+    {
+      enabled: !!sessionId && stage === "chat",
+      refetchInterval: socketConnected ? 30_000 : 3_000,
+    }
   );
   useEffect(() => {
     if (!getMessages.data) return;
@@ -189,6 +196,9 @@ export default function WidgetChat() {
     const socket = io(window.location.origin, { path: "/api/socket.io" });
     socketRef.current = socket;
     socket.emit("join_session", sessionId);
+    // B-3: Track socket connectivity to adjust polling interval
+    socket.on("connect", () => setSocketConnected(true));
+    socket.on("disconnect", () => setSocketConnected(false));
     socket.on("new_message", (msg: ChatMessage) => {
       if (msg.role !== "visitor") {
         setMessages((prev) => {
@@ -203,7 +213,7 @@ export default function WidgetChat() {
       if (data.role !== "visitor") setIsTyping(data.isTyping);
     });
     socket.on("session_ended", () => setStage("ended"));
-    return () => { socket.disconnect(); };
+    return () => { socket.disconnect(); setSocketConnected(false); };
   }, [sessionId, parentOrigin]);
 
   // Scroll to bottom
@@ -262,6 +272,7 @@ export default function WidgetChat() {
         mimeType: imageFile.type,
         base64Data: base64,
         sessionId,
+        visitorId: getOrCreateVisitorId(),
       });
       // Add optimistic message with image
       setMessages((prev) => [

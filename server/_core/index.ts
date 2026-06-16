@@ -13,6 +13,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { setIo } from "../socket";
 import { sdk } from "./sdk";
+import { COOKIE_NAME } from "@shared/const";
 import { purgeExpiredSessions } from "../db";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -38,9 +39,9 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Configure body parser — 20 MB covers screenshot uploads (base64 overhead included)
+  app.use(express.json({ limit: "20mb" }));
+  app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
   // Socket.io setup
   const io = new SocketIOServer(server, {
@@ -53,10 +54,42 @@ async function startServer() {
 
   setIo(io);
 
+  // ── Socket.io authentication helper ─────────────────────────────────────
+  // Returns the full DB user (with role) or null if unauthenticated
+  async function resolveSocketUser(socket: import("socket.io").Socket) {
+    try {
+      const cookieHeader = socket.handshake.headers.cookie ?? "";
+      const cookieMap = new Map(
+        cookieHeader.split(";").map((c) => {
+          const [k, ...v] = c.trim().split("=");
+          return [k.trim(), decodeURIComponent(v.join("="))];
+        })
+      );
+      const sessionCookie = cookieMap.get(COOKIE_NAME);
+      const session = await sdk.verifySession(sessionCookie);
+      if (!session) return null;
+      // Fetch full user record from DB to get role
+      const { getUserByOpenId } = await import("../db");
+      return await getUserByOpenId(session.openId); // { id, role, ... } | undefined
+    } catch {
+      return null;
+    }
+  }
+
   // Socket.io connection handling
   io.on("connection", (socket) => {
-    // Join operator room
-    socket.on("join_operators", () => {
+    // Join operator room — requires a valid operator/admin session cookie
+    socket.on("join_operators", async () => {
+      const session = await resolveSocketUser(socket);
+      if (!session) {
+        socket.emit("auth_error", { message: "Authentication required to join operator room." });
+        return;
+      }
+      // Only operators and admins may join the operator room
+      if (session.role !== "operator" && session.role !== "admin") {
+        socket.emit("auth_error", { message: "Operator or admin role required." });
+        return;
+      }
       socket.join("operators");
     });
 

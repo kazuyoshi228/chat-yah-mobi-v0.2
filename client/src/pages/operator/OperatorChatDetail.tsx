@@ -67,6 +67,7 @@ export default function OperatorChatDetail() {
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   const utils = trpc.useUtils();
   const { data: detail, refetch } = trpc.operator.getSessionDetail.useQuery(
@@ -74,10 +75,16 @@ export default function OperatorChatDetail() {
     { enabled: isValidSession }
   );
 
-  // Polling fallback: fetch messages every 3s in case Socket.io misses events (multi-instance)
+  // Polling fallback: fetch messages in case Socket.io misses events (multi-instance)
+  // B-3: When Socket.io is connected, poll every 30s; otherwise every 3s
+  // Operators are authenticated; no visitorId needed (server bypasses check for operator/admin)
   const { data: polledMessages } = trpc.chat.getMessages.useQuery(
     { sessionId },
-    { enabled: isValidSession, refetchInterval: 3000, refetchIntervalInBackground: true }
+    {
+      enabled: isValidSession,
+      refetchInterval: socketConnected ? 30_000 : 3_000,
+      refetchIntervalInBackground: true,
+    }
   );
 
   useEffect(() => {
@@ -125,6 +132,9 @@ export default function OperatorChatDetail() {
     socketRef.current = socket;
     socket.emit("join_session", sessionId);
     socket.emit("join_operators");
+    // B-3: Track connectivity to adjust polling interval
+    socket.on("connect", () => setSocketConnected(true));
+    socket.on("disconnect", () => setSocketConnected(false));
 
     socket.on("new_message", (msg: ChatMessage) => {
       // Skip operator messages - they are already shown via optimistic updates
@@ -144,7 +154,7 @@ export default function OperatorChatDetail() {
       refetch();
     });
 
-    return () => { socket.disconnect(); };
+    return () => { socket.disconnect(); setSocketConnected(false); };
   }, [sessionId, refetch]);
 
   // Load messages
