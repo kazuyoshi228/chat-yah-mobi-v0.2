@@ -152,3 +152,10 @@
 - [x] AdminDataAnalysis.tsx: h1「Data Analysis」左にロゴを追加
 - [x] OperatorChats.tsx: h1「Chat List」左にロゴを追加
 - [x] TypeScript: 0エラー確認
+
+## Phase 17: AdminチャットリストとDetail閲覧機能
+- [x] client/src/pages/admin/AdminChatList.tsx: Admin用チャットリストページを新規作成
+- [x] client/src/pages/admin/AdminChatDetail.tsx: Admin用チャット詳細（読み取り専用＋Force End）を新規作成
+- [x] DashboardLayout.tsx: DEFAULT_ADMIN_ITEMSに「Chat List」(/admin/chats)を追加
+- [x] App.tsx: /admin/chats・/admin/chats/:idルートを追加
+- [x] TypeScript: 0エラー確認
