@@ -1,86 +1,100 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 
-// Google OAuth login URL — server handles the redirect
 const GOOGLE_LOGIN_URL = "/api/auth/google";
 
 export default function Portal() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
-  // Check for error params from OAuth callback
   const params = new URLSearchParams(window.location.search);
   const errorCode = params.get("error");
   const errorMessages: Record<string, string> = {
-    google_auth_failed: "Google 認証に失敗しました。もう一度お試しください。",
-    token_exchange_failed: "認証トークンの取得に失敗しました。",
-    access_denied: "このアカウントはアクセス権限がありません。管理者にお問い合わせください。",
-    no_email: "Google アカウントのメールアドレスを取得できませんでした。",
-    internal_error: "内部エラーが発生しました。しばらくしてからお試しください。",
+    google_auth_failed: "Google authentication failed. Please try again.",
+    token_exchange_failed: "Failed to retrieve authentication token.",
+    access_denied: "This account does not have access. Contact your administrator.",
+    no_email: "Could not retrieve email from your Google account.",
+    internal_error: "An internal error occurred. Please try again later.",
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#f5f4f0] flex flex-col">
       {/* Top bar */}
-      <header className="px-8 py-6 flex items-center justify-between border-b border-gray-100">
+      <header className="px-8 py-6 flex items-center">
         <img
           src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
           alt="yah.mobile"
-          className="h-7 w-auto object-contain cursor-pointer"
+          className="h-6 w-auto object-contain cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
           onClick={() => navigate("/")}
         />
       </header>
 
-      {/* Main content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-        <div className="w-full max-w-sm">
-          {/* Heading */}
-          <div className="mb-10 text-center">
-            <h1 className="text-3xl font-semibold text-black leading-tight">chat.yah.mobile Portal</h1>
-          </div>
+      {/* Main content — vertically centered */}
+      <main className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-[340px]">
 
-          {/* Error message */}
-          {errorCode && (
-            <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 text-center">
-              {errorMessages[errorCode] ?? "ログインに失敗しました。"}
+          {/* Card */}
+          <div className="bg-black rounded-2xl px-8 py-9 shadow-2xl shadow-black/20">
+
+            {/* Title block */}
+            <div className="mb-8">
+              <p className="text-[11px] font-medium tracking-[0.18em] uppercase text-white/40 mb-2">
+                yah.mobile
+              </p>
+              <h1 className="text-[28px] font-semibold text-white leading-tight tracking-tight">
+                Chat Portal
+              </h1>
             </div>
-          )}
 
-          {/* Login button */}
-          <a
-            href={GOOGLE_LOGIN_URL}
-            className="group flex items-center justify-between px-6 py-5 border border-black rounded-xl bg-black text-white hover:bg-gray-900 transition-colors duration-150"
-          >
-            <p className="text-base font-semibold flex items-center gap-2">
-              <GoogleIcon className="w-4 h-4" />
-              Google でログイン
-            </p>
-            <svg
-              className="w-5 h-5 text-gray-400 group-hover:translate-x-0.5 transition-transform duration-150"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
+            {/* Divider */}
+            <div className="h-px bg-white/10 mb-8" />
+
+            {/* Error message */}
+            {errorCode && (
+              <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400 text-center">
+                {errorMessages[errorCode] ?? "Login failed. Please try again."}
+              </div>
+            )}
+
+            {/* Login button */}
+            <a
+              href={GOOGLE_LOGIN_URL}
+              className="group flex items-center gap-3 w-full px-5 py-3.5 bg-white hover:bg-gray-50 active:scale-[0.98] rounded-xl transition-all duration-150 ease-out"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-            </svg>
-          </a>
+              <GoogleIcon className="w-4 h-4 shrink-0" />
+              <span className="text-[13px] font-semibold text-gray-900 tracking-tight flex-1">
+                Log in with Google
+              </span>
+              <svg
+                className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition-transform duration-150"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
+            </a>
 
+            {/* Footer note */}
+            <p className="mt-6 text-center text-[11px] text-white/25 tracking-wide">
+              Internal use only
+            </p>
+          </div>
 
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="px-8 py-5 border-t border-gray-100 text-center">
-        <p className="text-xs text-gray-400 tracking-wide">
-          © {new Date().getFullYear()} yah.mobile — Internal Use Only
+      {/* Bottom footer */}
+      <footer className="px-8 py-5 text-center">
+        <p className="text-[11px] text-gray-400 tracking-wide">
+          © {new Date().getFullYear()} yah.mobile
         </p>
       </footer>
     </div>
   );
 }
 
-// Google logo SVG icon
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
