@@ -215,10 +215,17 @@
 - [x] A-5: operator.endSession / admin.endChat に scheduleSessionDeletion 追加
 
 ## Phase B: パフォーマンス・アーキテクチャ改善（2026-06-16）
-- [ ] B-1: Redis Pub/Sub アダプター導入（Socket.io スティッキーセッション問題解決）※Autoscale環境でのみ必要・将来対応
+- [ ] B-1: Redis Pub/Sub アダプター導入（将来対応・現時点はポーリングフォールバックで代替対応中）
 - [x] B-2: DBインデックス追加（messages.sessionId, sessions.visitorId, sessions.status, sessions.operatorId, surveys.sessionId）
 - [x] B-3: Socket.io 接続中はポーリング間隔を30秒に延長（WidgetChat・OperatorChatDetail・AdminChatReply）
 - [x] B-4: admin.listOperators N+1クエリ修正（getAllOperatorsWithChatCount JOIN化）
 - [x] B-5: Express ボディサイズ制限を 50mb → 20mb に変更
 - [x] B-6: chat.sendMessage / admin.sendChatMessage - ended セッションへの送信を拒否
 - [x] B-7: admin.sendChatMessage - ended セッションへの送信を拒否（B-6と統合）
+
+## Phase C-6.1: Admin画面ルーティング統合（2026-06-16）
+- [x] AdminChatList.tsx: Socket.io接続中はポーリング間隔を30秒に延長（B-3と同様）
+- [x] AdminChatList.tsx: 「Active」タブを追加してwaitingとactiveを切り替え表示できるようにする（元々実装済み）
+- [x] App.tsx: /admin/active-chats ルートを /admin/chats にリダイレクト
+- [x] DashboardLayout.tsx: サイドバーの重複「Chats」(/admin/active-chats)リンクを削除
+- [x] AdminChats.tsxを廃止（App.tsxからimport削除・/admin/active-chatsは/admin/chatsにリダイレクト）

@@ -36,10 +36,13 @@ export default function AdminChatList() {
   const { user, isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [statusFilter, setStatusFilter] = useState<SessionStatus | undefined>(undefined);
+  const [socketConnected, setSocketConnected] = useState(false);
 
-  const { data: sessions, refetch } = trpc.admin.listChats.useQuery({
-    status: statusFilter ?? "all",
-  });
+  // B-3: Polling fallback — 30s when Socket.io connected, 10s when disconnected
+  const { data: sessions, refetch } = trpc.admin.listChats.useQuery(
+    { status: statusFilter ?? "all" },
+    { refetchInterval: socketConnected ? 30_000 : 10_000, refetchIntervalInBackground: true }
+  );
 
   // Socket.io for real-time updates
   useEffect(() => {
@@ -47,10 +50,13 @@ export default function AdminChatList() {
       path: "/api/socket.io",
     });
     socket.emit("join_operators");
+    // B-3: Track connectivity to adjust polling interval
+    socket.on("connect", () => setSocketConnected(true));
+    socket.on("disconnect", () => setSocketConnected(false));
     socket.on("new_session", () => refetch());
     socket.on("session_assigned", () => refetch());
     socket.on("session_ended", () => refetch());
-    return () => { socket.disconnect(); };
+    return () => { socket.disconnect(); setSocketConnected(false); };
   }, [refetch]);
 
   if (loading) {
