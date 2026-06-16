@@ -79,12 +79,6 @@ export default function Portal() {
         </div>
       </main>
 
-      {/* Bottom footer */}
-      <footer className="px-8 py-5 text-center">
-        <p className="text-[11px] text-gray-400 tracking-wide">
-          © {new Date().getFullYear()} yah.mobile
-        </p>
-      </footer>
     </div>
   );
 }
