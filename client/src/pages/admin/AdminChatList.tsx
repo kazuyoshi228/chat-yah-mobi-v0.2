@@ -37,8 +37,8 @@ export default function AdminChatList() {
   const [, navigate] = useLocation();
   const [statusFilter, setStatusFilter] = useState<SessionStatus | undefined>(undefined);
 
-  const { data: sessions, refetch } = trpc.operator.listSessions.useQuery({
-    status: statusFilter,
+  const { data: sessions, refetch } = trpc.admin.listChats.useQuery({
+    status: statusFilter ?? "all",
   });
 
   // Socket.io for real-time updates

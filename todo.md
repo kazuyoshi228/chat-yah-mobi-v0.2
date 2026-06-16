@@ -159,3 +159,11 @@
 - [x] DashboardLayout.tsx: DEFAULT_ADMIN_ITEMSに「Chat List」(/admin/chats)を追加
 - [x] App.tsx: /admin/chats・/admin/chats/:idルートを追加
 - [x] TypeScript: 0エラー確認
+
+## Phase 19: Admin対応時のoperatorId保存修正
+- [x] server/routers/admin.ts: endChatでoperatorIdが未設定の場合ctx.user.idを設定するよう修正
+- [x] client/src/pages/admin/AdminChatDetail.tsx: Force EndをoperatorのendSessionからadmin.endChatに変更
+- [x] client/src/pages/admin/AdminChatDetail.tsx: getSessionDetailをadmin.getChatDetailに変更
+- [x] client/src/pages/admin/AdminChatDetail.tsx: generateSummaryをadmin.refreshChatSummaryに変更
+- [x] client/src/pages/admin/AdminChatList.tsx: operator.listSessionsをadmin.listChatsに変更
+- [x] TypeScript: 0エラー確認

@@ -46,19 +46,19 @@ export default function AdminChatDetail() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { data: detail, refetch } = trpc.operator.getSessionDetail.useQuery(
+  const { data: detail, refetch } = trpc.admin.getChatDetail.useQuery(
     { sessionId },
     { enabled: isValidSession }
   );
 
-  const endSession = trpc.operator.endSession.useMutation({
+  const endSession = trpc.admin.endChat.useMutation({
     onSuccess: () => {
       toast.success("Session ended");
       refetch();
     },
   });
 
-  const generateSummary = trpc.operator.generateSummary.useMutation({
+  const generateSummary = trpc.admin.refreshChatSummary.useMutation({
     onSuccess: () => {
       toast.success("Summary generated");
       refetch();

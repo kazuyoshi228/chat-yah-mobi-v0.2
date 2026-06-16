@@ -290,12 +290,17 @@ export const adminRouter = router({
 
   endChat: adminProcedure
     .input(z.object({ sessionId: z.number() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       const history = await getMessagesBySessionId(input.sessionId);
       const summary = await generateSummary(history.map((m) => ({ role: m.role, content: m.content })));
-      await updateChatSession(input.sessionId, { status: "ended", summary });
+      // Preserve existing operatorId if already assigned; otherwise set admin as operator
+      const updateData: Parameters<typeof updateChatSession>[1] = { status: "ended", summary };
+      if (!session.operatorId) {
+        updateData.operatorId = ctx.user.id;
+      }
+      await updateChatSession(input.sessionId, updateData);
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("session_ended", { sessionId: input.sessionId });
