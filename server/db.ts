@@ -417,7 +417,8 @@ export async function getKpiStats(since?: Date) {
   const aiResolved = endedSessions.filter((s) => !s.operatorId).length;
   // Operator Handled = sessions where an operator was assigned (active + ended)
   const operatorHandledSessions = allSessions.filter((s) => !!s.operatorId);
-  const operatorResolved = operatorHandledSessions.length;
+  // Operator Handled count = sessions with operatorId that are ended
+  const operatorResolved = operatorHandledSessions.filter((s) => s.status === "ended").length;
 
   const allSurveys = since
     ? await db.select().from(surveys).where(gte(surveys.createdAt, since))
@@ -450,10 +451,10 @@ export async function getKpiStats(since?: Date) {
   const aiResolvedRate = aiSurveys.length > 0
     ? Math.round((aiSurveys.filter((s) => s.resolved === "yes").length / aiSurveys.length) * 100)
     : null;
-  // Operator Resolution Rate: ended sessions with operator / all sessions with operator
+  // Operator Resolution Rate: operator-ended sessions / all ended sessions * 100
   const operatorEndedCount = operatorHandledSessions.filter((s) => s.status === "ended").length;
-  const operatorResolvedRate = operatorHandledSessions.length > 0
-    ? Math.round((operatorEndedCount / operatorHandledSessions.length) * 100)
+  const operatorResolvedRate = endedSessions.length > 0
+    ? Math.round((operatorEndedCount / endedSessions.length) * 100)
     : null;
 
   return {
