@@ -165,8 +165,8 @@ export const chatRouter = router({
         });
       }
 
-      // If operator is assigned, don't auto-reply
-      if (session.status === "active" && session.operatorId) {
+      // If operator is assigned OR session is active (operator taking over), don't auto-reply
+      if (session.status === "active" || session.operatorId) {
         return { aiResponse: null, shouldEscalate: false };
       }
 

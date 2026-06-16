@@ -167,3 +167,8 @@
 - [x] client/src/pages/admin/AdminChatDetail.tsx: generateSummaryをadmin.refreshChatSummaryに変更
 - [x] client/src/pages/admin/AdminChatList.tsx: operator.listSessionsをadmin.listChatsに変更
 - [x] TypeScript: 0エラー確認
+
+## Phase 20: Operator対応中のAI自動返信停止バグ修正
+- [x] server/routers/chat.ts: sendMessageのAI返信条件を `status=active && operatorId` から `status=active || operatorId` に変更
+- [x] Operator assignedまたはstatus=activeのどちらか一方でもAI返信を停止するよう修正
+- [x] TypeScript: 0エラー確認
