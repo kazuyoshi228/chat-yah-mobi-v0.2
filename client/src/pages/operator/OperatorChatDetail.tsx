@@ -337,7 +337,7 @@ export default function OperatorChatDetail() {
                   {assignSession.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Assign to me"}
                 </Button>
               )}
-              {!isEnded && isAssigned && (
+              {!isEnded && (
                 <Button
                   size="sm"
                   onClick={() => {

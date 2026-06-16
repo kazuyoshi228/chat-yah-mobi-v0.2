@@ -44,7 +44,7 @@ export default function AdminFeedback() {
         {/* Header */}
         <div className="flex items-center gap-3">
           <img
-            src="/manus-storage/yah-mobile-logo-horizontal_f116360c.svg"
+            src="/manus-storage/yah-mobile-logo-horizontal_62d76ed8.svg"
             alt="yah.mobile"
             className="h-8 w-auto object-contain"
           />

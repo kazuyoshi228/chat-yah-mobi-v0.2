@@ -87,14 +87,29 @@ export const operatorRouter = router({
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
 
-      // Ownership check: admins bypass; operators must be the assigned operator
-      if (ctx.user.role !== "admin") {
-        if (session.operatorId && session.operatorId !== ctx.user.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the assigned operator for this session.",
+      // Auto-assign: if no operator is assigned yet, assign this operator
+      if (!session.operatorId) {
+        await updateChatSession(input.sessionId, {
+          status: "active",
+          operatorId: ctx.user.id,
+        });
+        const io = getIo();
+        if (io) {
+          io.to(`session:${input.sessionId}`).emit("operator_joined", {
+            sessionId: input.sessionId,
+            operatorName: ctx.user.name,
+          });
+          io.to("operators").emit("session_assigned", {
+            sessionId: input.sessionId,
+            operatorId: ctx.user.id,
           });
         }
+      } else if (ctx.user.role !== "admin" && session.operatorId !== ctx.user.id) {
+        // Another operator is already assigned — block
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This session is already assigned to another operator.",
+        });
       }
 
       const msgId = await createMessage({

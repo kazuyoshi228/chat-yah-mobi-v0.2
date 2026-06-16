@@ -31,9 +31,9 @@ export default function Portal() {
             {/* Title block */}
             <div className="mb-8">
               <img
-                src="/manus-storage/yah-mobile-logo-horizontal_f116360c.svg"
+                src="/manus-storage/yah-mobile-logo-horizontal-white_d4a528bb.svg"
                 alt="yah.mobile"
-                className="h-5 w-auto object-contain mb-3 brightness-0 invert"
+                className="h-5 w-auto object-contain mb-3"
               />
               <h1 className="text-[28px] font-semibold text-white leading-tight tracking-tight">
                 Chat Portal
