@@ -90,6 +90,21 @@ export async function searchRagDocuments(query: string, topK = 3): Promise<strin
   return scored.map((s) => `[${s.doc.title}]\n${s.doc.content}`).join("\n\n");
 }
 
+// Detect language from message content
+export function detectLanguageFromMessage(message: string): string | null {
+  // Japanese: hiragana, katakana, kanji
+  if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/.test(message)) return "ja";
+  // Korean: hangul
+  if (/[\uAC00-\uD7AF\u1100-\u11FF]/.test(message)) return "ko";
+  // Chinese: CJK unified (no hiragana/katakana)
+  if (/[\u4E00-\u9FFF]/.test(message) && !/[\u3040-\u309F\u30A0-\u30FF]/.test(message)) return "zh";
+  // Spanish: common Spanish-specific chars or words
+  if (/[áéíóúüñ¿¡]/i.test(message)) return "es";
+  // English: mostly ASCII letters
+  if (/^[\x00-\x7F]+$/.test(message.trim())) return "en";
+  return null;
+}
+
 // Detect escalation need
 export function detectEscalation(message: string, language: string): boolean {
   const lang = language in ESCALATION_KEYWORDS ? language : "en";
@@ -104,8 +119,14 @@ export async function generateAIResponse(
   userMessage: string,
   history: Array<{ role: string; content: string }>,
   language: string
-): Promise<{ content: string; shouldEscalate: boolean }> {
-  const langName = LANGUAGE_NAMES[language] ?? "Japanese";
+): Promise<{ content: string; shouldEscalate: boolean; detectedLanguage: string }> {
+  // Auto-detect language from message content; fallback to session language
+  const detectedLang = detectLanguageFromMessage(userMessage) ?? language;
+  // If detected language differs from session language, update DB
+  if (detectedLang !== language) {
+    await updateChatSession(sessionId, { language: detectedLang }).catch(() => {});
+  }
+  const langName = LANGUAGE_NAMES[detectedLang] ?? "English";
   const ragContext = await searchRagDocuments(userMessage);
 
   const systemPrompt = `You are a helpful customer support assistant for yah.mobile, a mobile service company.
@@ -133,10 +154,10 @@ If you cannot answer the question or the user seems frustrated, suggest connecti
     (response as any)?.choices?.[0]?.message?.content ?? "申し訳ありませんが、現在応答できません。";
 
   const shouldEscalate =
-    detectEscalation(userMessage, language) ||
-    detectEscalation(content, language);
+    detectEscalation(userMessage, detectedLang) ||
+    detectEscalation(content, detectedLang);
 
-  return { content, shouldEscalate };
+  return { content, shouldEscalate, detectedLanguage: detectedLang };
 }
 
 // Generate conversation summary

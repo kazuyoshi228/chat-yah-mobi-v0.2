@@ -172,3 +172,9 @@
 - [x] server/routers/chat.ts: sendMessageのAI返信条件を `status=active && operatorId` から `status=active || operatorId` に変更
 - [x] Operator assignedまたはstatus=activeのどちらか一方でもAI返信を停止するよう修正
 - [x] TypeScript: 0エラー確認
+
+## Phase 21: AI言語自動検出修正
+- [x] server/routers/ai.ts: detectLanguageFromMessage()関数を追加（日本語/英語/中国語/スペイン語/韓国語を文字コードで検出）
+- [x] server/routers/ai.ts: generateAIResponseでメッセージ内容から言語を自動検出し、DBのlanguageフィールドを更新
+- [x] server/routers/ai.ts: 検出言語でescalation判定も行うよう修正
+- [x] TypeScript: 0エラー確認
