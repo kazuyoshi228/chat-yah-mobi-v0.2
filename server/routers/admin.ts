@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
   createOperatorUser,
@@ -8,19 +7,26 @@ import {
   deleteRagDocument,
   getAllOperators,
   getAnalysisData,
+  getChatSession,
   getKpiStats,
+  getMessagesBySessionId,
   getOperatorChatCount,
+  listChatSessions,
   listQuickReplies,
   listRagDocuments,
   listSurveys,
+  createMessage,
+  updateChatSession,
   updateOperatorProfile,
   updateQuickReply,
   updateRagDocument,
   updateUserRole,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
-import { getEmbedding } from "./ai";
+import { TRPCError } from "@trpc/server";
+import { getEmbedding, generateSummary } from "./ai";
 import { invokeLLM } from "../_core/llm";
+import { getIo } from "../socket";
 
 // Middleware: require admin role
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -219,6 +225,92 @@ export const adminRouter = router({
     .input(z.object({ limit: z.number().min(1).max(500).default(100) }))
     .query(async ({ input }) => {
       return listSurveys(input.limit);
+    }),
+
+  // ── Chat Management (Admin can reply to Waiting/Active sessions) ──
+  listChats: adminProcedure
+    .input(z.object({ status: z.enum(["waiting", "active", "ended", "all"]).optional() }))
+    .query(async ({ input }) => {
+      const status = input.status === "all" ? undefined : input.status;
+      return listChatSessions(status);
+    }),
+
+  getChatDetail: adminProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .query(async ({ input }) => {
+      const session = await getChatSession(input.sessionId);
+      if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+      const messages = await getMessagesBySessionId(input.sessionId);
+      const quickReplies = await listQuickReplies();
+      return { session, messages, quickReplies };
+    }),
+
+  sendChatMessage: adminProcedure
+    .input(z.object({ sessionId: z.number(), content: z.string().min(1), fileUrl: z.string().optional() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await getChatSession(input.sessionId);
+      if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+      const msgId = await createMessage({
+        sessionId: input.sessionId,
+        role: "operator",
+        content: input.content,
+        fileUrl: input.fileUrl,
+      });
+      const io = getIo();
+      if (io) {
+        io.to(`session:${input.sessionId}`).emit("new_message", {
+          id: msgId,
+          sessionId: input.sessionId,
+          role: "operator",
+          content: input.content,
+          fileUrl: input.fileUrl,
+          operatorName: ctx.user.name,
+          createdAt: new Date(),
+        });
+      }
+      return { success: true, messageId: msgId };
+    }),
+
+  assignChat: adminProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await getChatSession(input.sessionId);
+      if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+      await updateChatSession(input.sessionId, { status: "active", operatorId: ctx.user.id });
+      const io = getIo();
+      if (io) {
+        io.to(`session:${input.sessionId}`).emit("operator_joined", {
+          sessionId: input.sessionId,
+          operatorName: ctx.user.name,
+        });
+        io.to("operators").emit("session_assigned", { sessionId: input.sessionId, operatorId: ctx.user.id });
+      }
+      return { success: true };
+    }),
+
+  endChat: adminProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ input }) => {
+      const session = await getChatSession(input.sessionId);
+      if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+      const history = await getMessagesBySessionId(input.sessionId);
+      const summary = await generateSummary(history.map((m) => ({ role: m.role, content: m.content })));
+      await updateChatSession(input.sessionId, { status: "ended", summary });
+      const io = getIo();
+      if (io) {
+        io.to(`session:${input.sessionId}`).emit("session_ended", { sessionId: input.sessionId });
+        io.to("operators").emit("session_ended", { sessionId: input.sessionId });
+      }
+      return { success: true };
+    }),
+
+  refreshChatSummary: adminProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ input }) => {
+      const history = await getMessagesBySessionId(input.sessionId);
+      const summary = await generateSummary(history.map((m) => ({ role: m.role, content: m.content })));
+      await updateChatSession(input.sessionId, { summary });
+      return { summary };
     }),
 
   // Data Analysis

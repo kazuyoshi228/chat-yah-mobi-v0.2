@@ -40,6 +40,7 @@ const DEFAULT_OPERATOR_ITEMS: SidebarItem[] = [
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { title: "Chat List", href: "/admin/chats", icon: MessageCircle },
+  { title: "Chats", href: "/admin/active-chats", icon: MessageCircle },
   { title: "Operators", href: "/admin/operators", icon: Users },
   { title: "Quick Replies", href: "/admin/quick-replies", icon: Zap },
   { title: "RAG Documents", href: "/admin/rag", icon: BookOpen },
