@@ -19,15 +19,7 @@ export default function Portal() {
 
   return (
     <div className="min-h-screen bg-[#f5f4f0] flex flex-col">
-      {/* Top bar */}
-      <header className="px-8 py-6 flex items-center">
-        <img
-          src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
-          alt="yah.mobile"
-          className="h-6 w-auto object-contain cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
-          onClick={() => navigate("/")}
-        />
-      </header>
+
 
       {/* Main content — vertically centered */}
       <main className="flex-1 flex items-center justify-center px-6">
@@ -38,9 +30,11 @@ export default function Portal() {
 
             {/* Title block */}
             <div className="mb-8">
-              <p className="text-[11px] font-medium tracking-[0.18em] uppercase text-white/40 mb-2">
-                yah.mobile
-              </p>
+              <img
+                src="/manus-storage/yah-mobile-logo-horizontal_8744efd4.svg"
+                alt="yah.mobile"
+                className="h-5 w-auto object-contain mb-3 opacity-60"
+              />
               <h1 className="text-[28px] font-semibold text-white leading-tight tracking-tight">
                 Chat Portal
               </h1>
@@ -77,7 +71,7 @@ export default function Portal() {
             </a>
 
             {/* Footer note */}
-            <p className="mt-6 text-center text-[11px] text-white/25 tracking-wide">
+            <p className="mt-6 text-center text-[11px] text-white/60 tracking-wide">
               Internal use only
             </p>
           </div>
