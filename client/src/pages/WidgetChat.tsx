@@ -321,7 +321,7 @@ export default function WidgetChat() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-screen bg-white font-sans w-full max-w-[430px] mx-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+    <div className="flex flex-col bg-white font-sans" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch', width: '100%', maxWidth: '430px', height: '100dvh', margin: '0 auto', overflowX: 'hidden', position: 'relative' } as React.CSSProperties}>
       {/* Lightbox */}
       {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
 
@@ -361,7 +361,8 @@ export default function WidgetChat() {
             value={visitorName}
             onChange={(e) => setVisitorName(e.target.value)}
             placeholder="Your name (optional)"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black/20"
+            style={{ fontSize: '16px' }}
           />
           <Textarea
             value={initialMessage}
@@ -371,7 +372,8 @@ export default function WidgetChat() {
             }}
             placeholder="How can we help you today?"
             rows={4}
-            className="resize-none border-gray-200 text-sm focus:ring-black/20"
+            className="resize-none border-gray-200 focus:ring-black/20"
+            style={{ fontSize: '16px' }}
           />
           {startSession.isError && (
             <p className="text-xs text-red-500 text-center">
@@ -575,7 +577,8 @@ export default function WidgetChat() {
                   onKeyDown={handleKeyDown}
                   placeholder="Type a message..."
                   rows={1}
-                  className="flex-1 resize-none border-gray-200 text-xs min-h-[36px] max-h-[80px] py-2 focus:ring-black/20"
+                  className="flex-1 resize-none border-gray-200 min-h-[36px] max-h-[80px] py-2 focus:ring-black/20"
+                  style={{ fontSize: '16px' }}
                 />
                 <button
                   onClick={handleSend}
@@ -659,7 +662,8 @@ export default function WidgetChat() {
                     onChange={(e) => setFreeComment(e.target.value)}
                     placeholder="Tell us what went wrong..."
                     rows={2}
-                    className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
+                    className="w-full border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
+                  style={{ fontSize: '16px' }}
                   />
                 </div>
               )}
