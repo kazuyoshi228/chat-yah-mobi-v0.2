@@ -4,6 +4,7 @@ import {
   createMessage,
   getChatSession,
   getMessagesBySessionId,
+  getSurveyBySessionId,
   listChatSessions,
   listQuickReplies,
   scheduleSessionDeletion,
@@ -33,14 +34,15 @@ export const operatorRouter = router({
       return listChatSessions(input.status);
     }),
 
-  // Get session detail with messages
+  // Get session detail with messages and survey
   getSessionDetail: operatorProcedure
     .input(z.object({ sessionId: z.number() }))
     .query(async ({ input }) => {
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       const msgs = await getMessagesBySessionId(input.sessionId);
-      return { session, messages: msgs };
+      const survey = await getSurveyBySessionId(input.sessionId);
+      return { session, messages: msgs, survey: survey ?? null };
     }),
 
   // Assign operator to session

@@ -176,12 +176,23 @@ export default function OperatorChatDetail() {
     return () => { socket.disconnect(); setSocketConnected(false); };
   }, [sessionId, refetch]);
 
-  // Load messages
+  // Load messages and survey from initial fetch
   useEffect(() => {
     if (detail?.messages) {
       setMessages(detail.messages as ChatMessage[]);
     }
-  }, [detail?.messages]);
+    if (detail?.survey && !surveyResult) {
+      const s = detail.survey as any;
+      setSurveyResult({
+        sessionId: s.sessionId,
+        rating: s.rating,
+        resolved: s.resolved ?? null,
+        freeComment: s.freeComment ?? null,
+        submittedAt: s.createdAt ?? new Date(),
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail]);
 
   // Scroll to bottom
   useEffect(() => {
