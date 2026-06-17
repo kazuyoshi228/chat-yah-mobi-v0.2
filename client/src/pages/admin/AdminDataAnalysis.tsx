@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import { YahLogo } from "@/components/YahLogo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
@@ -98,11 +99,7 @@ export default function AdminDataAnalysis() {
         {/* Header + period filter */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <img
-              src="/manus-storage/yah-mobile-logo-horizontal_62d76ed8.svg"
-              alt="yah.mobile"
-              className="h-8 w-auto object-contain"
-            />
+            <YahLogo height={32} className="text-black" />
             <h1 className="text-xl font-semibold">Data Analysis</h1>
           </div>
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">

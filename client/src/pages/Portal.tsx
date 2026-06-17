@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
+import { YahLogo } from "@/components/YahLogo";
 
 const GOOGLE_LOGIN_URL = "/api/auth/google";
 
@@ -30,11 +31,7 @@ export default function Portal() {
 
             {/* Title block */}
             <div className="mb-8">
-              <img
-                src="/manus-storage/yah-mobile-logo-horizontal-white_d4a528bb.svg"
-                alt="yah.mobile"
-                className="h-5 w-auto object-contain mb-3"
-              />
+              <YahLogo height={20} className="text-white mb-3" />
               <h1 className="text-[28px] font-semibold text-white leading-tight tracking-tight">
                 Chat Portal
               </h1>

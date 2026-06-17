@@ -1,3 +1,4 @@
+import { YahLogo } from "@/components/YahLogo";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -94,11 +95,7 @@ export default function AdminDashboard() {
         {/* Header with period filter */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
-            <img
-              src="/manus-storage/yah-mobile-logo-horizontal_62d76ed8.svg"
-              alt="yah.mobile"
-              className="h-8 w-auto object-contain"
-            />
+            <YahLogo height={32} className="text-black" />
             <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
           </div>
           {/* Period filter buttons */}

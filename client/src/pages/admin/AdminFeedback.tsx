@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import { YahLogo } from "@/components/YahLogo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,11 +44,7 @@ export default function AdminFeedback() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <img
-            src="/manus-storage/yah-mobile-logo-horizontal_62d76ed8.svg"
-            alt="yah.mobile"
-            className="h-8 w-auto object-contain"
-          />
+          <YahLogo height={32} className="text-black" />
           <h1 className="text-xl font-semibold">Feedback</h1>
         </div>
 
