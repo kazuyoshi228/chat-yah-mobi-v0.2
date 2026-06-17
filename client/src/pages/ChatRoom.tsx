@@ -331,23 +331,33 @@ export default function ChatRoom() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 16 * 1024 * 1024) {
+      alert("Image must be under 16MB.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async () => {
       const base64Data = (reader.result as string).split(",")[1] ?? "";
-      const result = await uploadFile.mutateAsync({
-        fileName: file.name,
-        mimeType: file.type,
-        base64Data,
-        sessionId,
-      });
-      sendMessage.mutate({
-        sessionId,
-        visitorId,
-          content: `[File: ${file.name}]`,
-        fileUrl: result.url,
-      });
+      try {
+        const result = await uploadFile.mutateAsync({
+          fileName: file.name,
+          mimeType: file.type,
+          base64Data,
+          sessionId,
+          visitorId,
+        });
+        sendMessage.mutate({
+          sessionId,
+          visitorId,
+          content: "",
+          fileUrl: result.url,
+        });
+      } catch {
+        alert("Failed to upload image. Please try again.");
+      }
     };
     reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handleEndSession = () => {
@@ -457,16 +467,15 @@ export default function ChatRoom() {
                   {isOperator && msg.operatorName && (
                     <p className="text-xs text-gray-400 mb-1">{msg.operatorName}</p>
                   )}
-                  {msg.fileUrl ? (
-                    <a
-                      href={msg.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline text-blue-300"
-                    >
-                      {msg.content}
-                    </a>
-                  ) : (
+                  {msg.fileUrl && (
+                    <img
+                      src={msg.fileUrl}
+                      alt="Attachment"
+                      className="max-w-[200px] max-h-[200px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(msg.fileUrl!, "_blank")}
+                    />
+                  )}
+                  {msg.content && (
                     <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                   )}
                   <p
