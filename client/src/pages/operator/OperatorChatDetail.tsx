@@ -24,6 +24,8 @@ import {
   ImageIcon,
   X as XIcon,
   PhoneOff,
+  Star,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -36,6 +38,14 @@ interface ChatMessage {
   fileUrl?: string | null;
   operatorName?: string;
   createdAt: Date | string;
+}
+
+interface SurveyResult {
+  sessionId: number;
+  rating: number;
+  resolved: "yes" | "no" | null;
+  freeComment: string | null;
+  submittedAt: Date | string;
 }
 
 const LANG_LABELS: Record<string, string> = {
@@ -57,6 +67,7 @@ export default function OperatorChatDetail() {
   const [input, setInput] = useState("");
   const [typingInfo, setTypingInfo] = useState<{ role: string; isTyping: boolean } | null>(null);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [surveyResult, setSurveyResult] = useState<SurveyResult | null>(null);
 
   // Image state
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -153,6 +164,13 @@ export default function OperatorChatDetail() {
     socket.on("session_ended", () => {
       toast.info("Session has ended");
       refetch();
+    });
+
+    socket.on("survey_submitted", (data: SurveyResult) => {
+      if (data.sessionId === sessionId) {
+        setSurveyResult(data);
+        toast.success("アンケートが送信されました");
+      }
     });
 
     return () => { socket.disconnect(); setSocketConnected(false); };
@@ -426,6 +444,57 @@ export default function OperatorChatDetail() {
                   </div>
                 </div>
               )}
+              {/* Survey Result Card */}
+              {surveyResult && (
+                <div className="flex justify-center my-4">
+                  <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm max-w-[320px] w-full">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ClipboardCheck className="w-4 h-4 text-gray-500" />
+                      <p className="text-xs font-semibold text-gray-700">アンケート結果</p>
+                      <span className="ml-auto text-xs text-gray-400">
+                        {new Date(surveyResult.submittedAt).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    {/* Star rating */}
+                    <div className="flex items-center gap-1 mb-2">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          className={cn(
+                            "w-5 h-5",
+                            s <= surveyResult.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-200"
+                          )}
+                        />
+                      ))}
+                      <span className="ml-1 text-sm font-medium text-gray-700">{surveyResult.rating}/5</span>
+                    </div>
+                    {/* Resolved */}
+                    {surveyResult.resolved !== null && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="text-xs text-gray-500">問題解決:</span>
+                        <span className={cn(
+                          "text-xs font-medium px-2 py-0.5 rounded-full",
+                          surveyResult.resolved === "yes"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-600"
+                        )}>
+                          {surveyResult.resolved === "yes" ? "✔ 解決済み" : "✖ 未解決"}
+                        </span>
+                      </div>
+                    )}
+                    {/* Free comment */}
+                    {surveyResult.freeComment && (
+                      <div className="mt-2 bg-gray-50 rounded-lg px-3 py-2">
+                        <p className="text-xs text-gray-500 mb-0.5">コメント</p>
+                        <p className="text-xs text-gray-700 leading-relaxed">{surveyResult.freeComment}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div ref={bottomRef} />
             </div>
           </div>

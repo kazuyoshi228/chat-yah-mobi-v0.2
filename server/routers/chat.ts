@@ -321,6 +321,22 @@ export const chatRouter = router({
         freeComment: input.freeComment,
       });
 
+      // Notify operators via Socket.io that survey has been submitted
+      const io = getIo();
+      if (io) {
+        const surveyPayload = {
+          sessionId: input.sessionId,
+          rating: input.rating,
+          resolved: input.resolved ?? null,
+          freeComment: input.freeComment ?? null,
+          submittedAt: new Date(),
+        };
+        // Notify the session room (operator viewing this specific chat)
+        io.to(`session:${input.sessionId}`).emit("survey_submitted", surveyPayload);
+        // Also notify all operators (for list view updates)
+        io.to("operators").emit("survey_submitted", surveyPayload);
+      }
+
       return { success: true };
     }),
 

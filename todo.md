@@ -247,3 +247,10 @@
 - [x] server/db.ts: createImageAnalysis・getImageAnalyticsSummary ヘルパー追加
 - [x] admin.ts: getImageAnalytics プロシージャ追加（カテゴリ別集計・キーワード頻度）
 - [x] AdminDataAnalysis.tsx: 画像分析セクションを追加（カテゴリ別棒グラフ・キーワード一覧・最近の画像付きチャット）
+
+## Phase 26: アンケート結果をOperator画面に表示（2026-06-17）
+- [x] server/routers/chat.ts: submitSurvey完了後にSocket.ioでsurvey_submittedイベントを送信（session:${id}ルームとoperatorsルームへ）
+- [x] OperatorChatDetail.tsx: SurveyResult型を定義
+- [x] OperatorChatDetail.tsx: survey_submittedイベントをSocket.ioで受信してsurveResultステートに保存
+- [x] OperatorChatDetail.tsx: アンケート結果カード（星評価・解決済み/未解決・自由コメント）をメッセージ一覧の末尾に表示
+- [x] TypeScript: 0エラー確認
