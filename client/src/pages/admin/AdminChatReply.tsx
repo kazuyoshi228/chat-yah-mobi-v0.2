@@ -6,9 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ArrowLeft, Send, UserCheck, StopCircle, RefreshCw, Bot, User, Paperclip, ImageIcon, X as XIcon, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, UserCheck, StopCircle, RefreshCw, Bot, User, Paperclip, ImageIcon, X as XIcon, Loader2, Star, CheckCircle2, XCircle } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
+
+interface SurveyResult {
+  sessionId: number;
+  rating: number;
+  resolved: boolean | null;
+  freeComment: string | null;
+  submittedAt: Date | string;
+}
 
 interface ChatMessage {
   id?: number;
@@ -41,6 +49,7 @@ export default function AdminChatReply() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [surveyResult, setSurveyResult] = useState<SurveyResult | null>(null);
 
   const { data: detail, refetch } = trpc.admin.getChatDetail.useQuery(
     { sessionId },
@@ -89,12 +98,23 @@ export default function AdminChatReply() {
   });
   const uploadFile = trpc.upload.uploadFile.useMutation();
 
-  // Load initial messages
+  // Load initial messages and survey
   useEffect(() => {
     if (detail?.messages) {
       setMessages(detail.messages.map((m) => ({ ...m, fileUrl: m.fileUrl ?? undefined, createdAt: new Date(m.createdAt) })));
     }
-  }, [detail?.messages]);
+    if (detail?.survey && !surveyResult) {
+      const s = detail.survey as any;
+      setSurveyResult({
+        sessionId: s.sessionId,
+        rating: s.rating,
+        resolved: s.resolved ?? null,
+        freeComment: s.freeComment ?? null,
+        submittedAt: s.createdAt ?? new Date(),
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail]);
 
   // Socket.io
   useEffect(() => {
@@ -121,6 +141,17 @@ export default function AdminChatReply() {
     socket.on("session_ended", () => {
       toast.info("Session has ended");
       refetch();
+    });
+    socket.on("survey_submitted", (data: { sessionId: number; rating: number; resolved: boolean | null; freeComment: string | null; submittedAt: string }) => {
+      if (data.sessionId === sessionId) {
+        setSurveyResult({
+          sessionId: data.sessionId,
+          rating: data.rating,
+          resolved: data.resolved,
+          freeComment: data.freeComment,
+          submittedAt: data.submittedAt,
+        });
+      }
     });
 
     return () => { socket.disconnect(); setSocketConnected(false); };
@@ -349,6 +380,48 @@ export default function AdminChatReply() {
               </div>
             </div>
           )}
+          {/* Survey Result Card */}
+          {surveyResult && (
+            <div className="mx-auto max-w-sm w-full">
+              <div className="rounded-xl border bg-muted/40 p-4 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">アンケート結果</p>
+                {/* Star rating */}
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className={`w-5 h-5 ${
+                        n <= surveyResult.rating
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-muted-foreground/30"
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-1 text-sm font-medium">{surveyResult.rating} / 5</span>
+                </div>
+                {/* Resolved */}
+                {surveyResult.resolved !== null && (
+                  <div className="flex items-center gap-1.5 text-sm">
+                    {surveyResult.resolved ? (
+                      <><CheckCircle2 className="w-4 h-4 text-green-500" /><span className="text-green-700">問題解決済み</span></>
+                    ) : (
+                      <><XCircle className="w-4 h-4 text-red-500" /><span className="text-red-700">未解決</span></>
+                    )}
+                  </div>
+                )}
+                {/* Free comment */}
+                {surveyResult.freeComment && (
+                  <p className="text-sm text-foreground bg-background rounded-lg px-3 py-2 border">
+                    {surveyResult.freeComment}
+                  </p>
+                )}
+                <p className="text-[10px] text-muted-foreground">
+                  {new Date(surveyResult.submittedAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div ref={bottomRef} />
         </div>
 

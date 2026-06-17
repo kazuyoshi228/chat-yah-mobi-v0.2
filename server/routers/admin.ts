@@ -12,6 +12,7 @@ import {
   getKpiStats,
   getMessagesBySessionId,
   getOperatorChatCount,
+  getSurveyBySessionId,
   listChatSessions,
   listQuickReplies,
   listRagDocuments,
@@ -238,7 +239,8 @@ export const adminRouter = router({
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       const messages = await getMessagesBySessionId(input.sessionId);
       const quickReplies = await listQuickReplies();
-      return { session, messages, quickReplies };
+      const survey = await getSurveyBySessionId(input.sessionId);
+      return { session, messages, quickReplies, survey: survey ?? null };
     }),
 
   sendChatMessage: adminProcedure
