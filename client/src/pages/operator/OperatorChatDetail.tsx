@@ -290,7 +290,7 @@ export default function OperatorChatDetail() {
           />
         </div>
       )}
-      <div className="flex h-[calc(100vh-0px)] overflow-hidden">
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0 w-0">
           {/* Chat Header */}
@@ -359,7 +359,7 @@ export default function OperatorChatDetail() {
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 px-4 py-4 bg-gray-50">
+          <div className="flex-1 px-4 py-4 bg-gray-50 overflow-y-auto">
             <div className="max-w-2xl mx-auto space-y-1">
               {messages.map((msg, i) => {
                 const isVisitor = msg.role === "visitor";
@@ -428,7 +428,7 @@ export default function OperatorChatDetail() {
               )}
               <div ref={bottomRef} />
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Input */}
           {!isEnded && (
