@@ -110,7 +110,7 @@ export default function AdminChatList() {
               sessions.map((session) => (
                 <button
                   key={session.id}
-                  onClick={() => navigate(`/admin/chats/${session.id}`)}
+                  onClick={() => navigate(`/admin/chats/${session.id}/reply`)}
                   className="w-full text-left bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-start justify-between gap-3">

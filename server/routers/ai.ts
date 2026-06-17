@@ -150,8 +150,17 @@ If you cannot answer the question or the user seems frustrated, suggest connecti
     ],
   });
 
+  const FALLBACK: Record<string, string> = {
+    ja: "申し訳ありませんが、現在応答できません。",
+    en: "Sorry, I'm unable to respond right now.",
+    ko: "죄송합니다, 현재 응답할 수 없습니다.",
+    zh: "抱歉，我目前无法回复。",
+    es: "Lo siento, no puedo responder en este momento.",
+  };
   const content =
-    (response as any)?.choices?.[0]?.message?.content ?? "申し訳ありませんが、現在応答できません。";
+    (response as any)?.choices?.[0]?.message?.content ??
+    FALLBACK[detectedLang] ??
+    FALLBACK["en"];
 
   const shouldEscalate =
     detectEscalation(userMessage, detectedLang) ||

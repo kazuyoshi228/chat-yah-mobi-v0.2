@@ -321,7 +321,7 @@ export default function WidgetChat() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-screen bg-white font-sans" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+    <div className="flex flex-col h-screen bg-white font-sans w-full max-w-[430px] mx-auto" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
       {/* Lightbox */}
       {lightboxSrc && <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
 
@@ -396,21 +396,20 @@ export default function WidgetChat() {
       {/* ── Chat ── */}
       {stage === "chat" && (
         <>
-          {/* Escalation banner */}
-          {shouldEscalate && (
-            <div className="bg-amber-50 border-b border-amber-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-amber-700">Would you like to connect with an operator?</p>
-              </div>
-              <button
-                onClick={() => requestEscalation.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
-                className="text-xs text-amber-700 font-medium underline"
-              >
-                Connect
-              </button>
+          {/* Operator connect button — always visible */}
+          <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-1.5">
+              <Headphones className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <p className="text-xs text-gray-500">Connect with an operator</p>
             </div>
-          )}
+            <button
+              onClick={() => requestEscalation.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
+              disabled={requestEscalation.isPending || requestEscalation.isSuccess}
+              className="text-xs font-medium px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-all"
+            >
+              {requestEscalation.isSuccess ? "Requested ✓" : requestEscalation.isPending ? "..." : "Connect"}
+            </button>
+          </div>
 
           {/* Message list */}
           <div
