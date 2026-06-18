@@ -327,7 +327,7 @@ export default function OperatorChatDetail() {
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0 w-0">
           {/* Chat Header */}
-          <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="shrink-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate("/ops/chats")}
@@ -516,7 +516,7 @@ export default function OperatorChatDetail() {
 
           {/* Input */}
           {!isEnded && (
-            <div className="bg-white border-t border-gray-100 px-4 py-3">
+            <div className="shrink-0 bg-white border-t border-gray-100 px-4 py-3">
               {/* Assign banner for unassigned sessions */}
               {!isAssigned && (
                 <div className="mb-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
@@ -616,7 +616,7 @@ export default function OperatorChatDetail() {
         {/* Right Panel: Quick Replies + Summary - hidden on mobile */}
         <div className="hidden lg:flex w-72 border-l border-gray-100 bg-white flex-col min-h-0 overflow-hidden">
           {/* Tab header */}
-          <div className="flex border-b border-gray-100">
+          <div className="shrink-0 flex border-b border-gray-100">
             <button
               onClick={() => setRightTab("quickreplies")}
               className={cn(
@@ -645,7 +645,7 @@ export default function OperatorChatDetail() {
           {rightTab === "quickreplies" && (
             <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Search box */}
-              <div className="px-3 py-2 border-b border-gray-100">
+              <div className="shrink-0 px-3 py-2 border-b border-gray-100">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <input
