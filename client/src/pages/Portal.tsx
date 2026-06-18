@@ -1,9 +1,43 @@
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 import { YahLogo } from "@/components/YahLogo";
 const GOOGLE_LOGIN_URL = "/api/auth/google";
 
 export default function Portal() {
+  const { user, isAuthenticated, loading } = useAuth();
+  const [, navigate] = useLocation();
   const params = new URLSearchParams(window.location.search);
   const errorCode = params.get("error");
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (loading || !isAuthenticated || !user) return;
+    if (user.role === "admin") {
+      navigate("/admin");
+    } else if (user.role === "operator") {
+      navigate("/ops/chats");
+    }
+  }, [loading, isAuthenticated, user, navigate]);
+
+  // Show spinner while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f4f0] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  // If authenticated, show spinner while redirect happens
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen bg-[#f5f4f0] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
   const errorMessages: Record<string, string> = {
     google_auth_failed: "Google authentication failed. Please try again.",
     token_exchange_failed: "Failed to retrieve authentication token.",
