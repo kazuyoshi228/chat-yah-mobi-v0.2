@@ -13,15 +13,18 @@ import {
   getMessagesBySessionId,
   getOperatorChatCount,
   getSurveyBySessionId,
+  getUnreadSessionIds,
   listChatSessions,
   listQuickReplies,
   listRagDocuments,
   listSurveys,
   createMessage,
   getImageAnalyticsSummary,
+  markSessionRead,
   scheduleSessionDeletion,
   updateChatSession,
   updateOperatorProfile,
+  updateSessionLastMessageAt,
   updateQuickReply,
   updateRagDocument,
   updateUserRole,
@@ -272,6 +275,7 @@ export const adminRouter = router({
         content: input.content,
         fileUrl: input.fileUrl,
       });
+      await updateSessionLastMessageAt(input.sessionId);
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("new_message", {
@@ -515,5 +519,20 @@ Do not include any other text.`;
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       }
       return getImageAnalyticsSummary(startDate, undefined);
+    }),
+
+  // Mark a session as read by the current admin
+  markRead: adminProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await markSessionRead(ctx.user.id, input.sessionId);
+      return { ok: true };
+    }),
+
+  // Get set of unread session IDs for the current admin
+  getUnreadSessionIds: adminProcedure
+    .query(async ({ ctx }) => {
+      const ids = await getUnreadSessionIds(ctx.user.id);
+      return { unreadIds: Array.from(ids) };
     }),
 });

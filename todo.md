@@ -271,3 +271,13 @@
 - [x] ChatDetailBase 共通コンポーネント作成（OperatorChatDetail + AdminChatReply を統合）
 - [x] ChatListBase 共通コンポーネント作成（OperatorChats + AdminChatList を統合）
 - [x] chat.listQuickReplies を追加して operator/admin の重複エンドポイントを共通化
+
+## Phase 29: 未読バッジ表示（admin/operator 両対応）
+- [x] DBスキーマ: chat_sessions に lastMessageAt 追加、session_reads テーブル新規作成
+- [x] マイグレーション実行
+- [x] DB helpers: markSessionRead / getUnreadSessionIds / updateSessionLastMessageAt 追加
+- [x] API: operator/admin に markRead mutation・getUnreadSessionIds query 追加
+- [x] ChatListBase に未読バッジUI追加（ブルードット・カードボーダー強調）
+- [x] ChatDetailBase でセッション開いた時・新メッセージ受信時に自動既読マーク
+- [x] メッセージ送信時に lastMessageAt を更新（chat/operator/admin 全ルーター）
+- [x] テスト 15/15 通過・チェックポイント保存

@@ -45,6 +45,7 @@ export const chatSessions = mysqlTable("chat_sessions", {
   language: varchar("language", { length: 8 }).default("ja"),
   summary: text("summary"),
   scheduledDeleteAt: timestamp("scheduledDeleteAt"),
+  lastMessageAt: timestamp("lastMessageAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -140,3 +141,17 @@ export const imageAnalyses = mysqlTable("image_analyses", {
 
 export type ImageAnalysis = typeof imageAnalyses.$inferSelect;
 export type InsertImageAnalysis = typeof imageAnalyses.$inferInsert;
+
+/**
+ * Session reads - tracks when each staff member last read a session.
+ * Used to compute unread message counts per session per user.
+ */
+export const sessionReads = mysqlTable("session_reads", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  readAt: timestamp("readAt").defaultNow().notNull(),
+});
+
+export type SessionRead = typeof sessionReads.$inferSelect;
+export type InsertSessionRead = typeof sessionReads.$inferInsert;

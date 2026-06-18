@@ -168,6 +168,14 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   const opTyping = trpc.operator.typing.useMutation();
   const uploadFile = trpc.upload.uploadFile.useMutation();
 
+  // Mark read
+  const opMarkRead = trpc.operator.markRead.useMutation();
+  const adminMarkRead = trpc.admin.markRead.useMutation();
+  const markRead = () => {
+    if (mode === "operator") opMarkRead.mutate({ sessionId });
+    else adminMarkRead.mutate({ sessionId });
+  };
+
   // ── Helpers ───────────────────────────────────────────────────────────────
   const handleAssign = () => {
     if (mode === "operator") assignSession.mutate({ sessionId });
@@ -223,6 +231,12 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
     });
   }, [polledMessages]);
 
+  // Mark read when session is opened
+  useEffect(() => {
+    if (isValidSession) markRead();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValidSession, sessionId]);
+
   // ── Load initial detail ───────────────────────────────────────────────────
   useEffect(() => {
     if (!detail) return;
@@ -255,6 +269,8 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
         if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
+      // Auto-mark as read when viewing the session
+      markRead();
     });
     socket.on("typing", (data: { role: string; isTyping: boolean }) => {
       if (data.role !== "operator") setTypingInfo(data);

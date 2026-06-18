@@ -7,6 +7,7 @@ import {
   getChatSessionByVisitorId,
   getMessagesBySessionId,
   updateChatSession,
+  updateSessionLastMessageAt,
   createSurvey,
   getSurveyBySessionId,
   scheduleSessionDeletion,
@@ -191,6 +192,7 @@ export const chatRouter = router({
         content: input.content,
         fileUrl: input.fileUrl,
       });
+      await updateSessionLastMessageAt(input.sessionId);
 
       const io = getIo();
       if (io) {

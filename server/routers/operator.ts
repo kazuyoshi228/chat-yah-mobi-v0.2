@@ -5,10 +5,13 @@ import {
   getChatSession,
   getMessagesBySessionId,
   getSurveyBySessionId,
+  getUnreadSessionIds,
   listChatSessions,
   listQuickReplies,
+  markSessionRead,
   scheduleSessionDeletion,
   updateChatSession,
+  updateSessionLastMessageAt,
 } from "../db";
 import { protectedProcedure, router } from "../_core/trpc";
 import { generateSummary } from "./ai";
@@ -121,6 +124,7 @@ export const operatorRouter = router({
         content: input.content,
         fileUrl: input.fileUrl,
       });
+      await updateSessionLastMessageAt(input.sessionId);
 
       const io = getIo();
       if (io) {
@@ -209,5 +213,20 @@ export const operatorRouter = router({
         waiting: waiting.length,
         active: active.length,
       };
+    }),
+
+  // Mark a session as read by the current user
+  markRead: operatorProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      await markSessionRead(ctx.user.id, input.sessionId);
+      return { ok: true };
+    }),
+
+  // Get set of unread session IDs for the current user
+  getUnreadSessionIds: operatorProcedure
+    .query(async ({ ctx }) => {
+      const ids = await getUnreadSessionIds(ctx.user.id);
+      return { unreadIds: Array.from(ids) };
     }),
 });

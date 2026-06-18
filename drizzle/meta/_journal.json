@@ -36,6 +36,13 @@
       "when": 1781602725197,
       "tag": "0004_absurd_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1781785821474,
+      "tag": "0005_wide_barracuda",
+      "breakpoints": true
     }
   ]
 }

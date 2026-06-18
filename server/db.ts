@@ -7,6 +7,7 @@ import {
   messages,
   quickReplies,
   ragDocuments,
+  sessionReads,
   surveys,
   users,
   type ChatSession,
@@ -610,4 +611,75 @@ export async function getImageAnalyticsSummary(startDate?: Date, endDate?: Date)
     recentAnalyses,
     totalImages,
   };
+}
+
+// ─── Session Reads (Unread Badge) ─────────────────────────────────────────────
+
+/**
+ * Mark a session as read by a specific user (upsert by userId+sessionId).
+ * Updates readAt to now if the record already exists.
+ */
+export async function markSessionRead(userId: number, sessionId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .insert(sessionReads)
+    .values({ userId, sessionId })
+    .onDuplicateKeyUpdate({ set: { readAt: sql`now()` } })
+    .catch(async () => {
+      // Fallback: update existing row
+      await db
+        .update(sessionReads)
+        .set({ readAt: sql`now()` })
+        .where(and(eq(sessionReads.userId, userId), eq(sessionReads.sessionId, sessionId)));
+    });
+}
+
+/**
+ * Get unread session IDs for a user.
+ * A session is "unread" if lastMessageAt > readAt, or if no read record exists.
+ * Returns a Set of sessionIds that have unread messages.
+ */
+export async function getUnreadSessionIds(userId: number): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db) return new Set();
+
+  // Sessions with messages newer than last read
+  const unreadRows = await db
+    .select({ sessionId: chatSessions.id })
+    .from(chatSessions)
+    .leftJoin(
+      sessionReads,
+      and(eq(sessionReads.sessionId, chatSessions.id), eq(sessionReads.userId, userId))
+    )
+    .where(
+      and(
+        // Only active/waiting sessions (ended sessions don't need badge)
+        or(eq(chatSessions.status, "waiting"), eq(chatSessions.status, "active")),
+        or(
+          // Never read
+          isNull(sessionReads.readAt),
+          // Last message is newer than last read
+          sql`${chatSessions.lastMessageAt} > ${sessionReads.readAt}`
+        ),
+        // Must have at least one message (lastMessageAt is not null)
+        sql`${chatSessions.lastMessageAt} IS NOT NULL`
+      )
+    );
+
+  return new Set(unreadRows.map((r) => r.sessionId));
+}
+
+/**
+ * Update lastMessageAt for a session when a new message is sent.
+ */
+export async function updateSessionLastMessageAt(sessionId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .update(chatSessions)
+    .set({ lastMessageAt: sql`now()` })
+    .where(eq(chatSessions.id, sessionId));
 }

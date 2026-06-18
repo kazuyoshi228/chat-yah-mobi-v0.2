@@ -76,6 +76,18 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
     { enabled: mode === "operator" && isAuthenticated, refetchInterval: 15000 }
   );
 
+  // ── Unread session IDs ────────────────────────────────────────────────────
+  const { data: unreadData, refetch: refetchUnread } = mode === "operator"
+    ? trpc.operator.getUnreadSessionIds.useQuery(undefined, {
+        enabled: isAuthenticated,
+        refetchInterval: 15000,
+      })
+    : trpc.admin.getUnreadSessionIds.useQuery(undefined, {
+        enabled: isAuthenticated,
+        refetchInterval: 15000,
+      });
+  const unreadSet = new Set(unreadData?.unreadIds ?? []);
+
   // ── Socket.io ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const socket: Socket = io(window.location.origin, { path: "/api/socket.io" });
@@ -84,6 +96,7 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
     socket.on("disconnect", () => setSocketConnected(false));
     socket.on("new_session", (data: { sessionId: number; visitorName?: string }) => {
       refetch();
+      refetchUnread();
       if (mode === "operator") {
         toast.info(`New chat: ${data.visitorName ?? "Visitor"}`, {
           description: "A new chat has started",
@@ -94,8 +107,9 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
         }
       }
     });
-    socket.on("session_assigned", () => refetch());
-    socket.on("session_ended", () => refetch());
+    socket.on("session_assigned", () => { refetch(); refetchUnread(); });
+    socket.on("session_ended", () => { refetch(); refetchUnread(); });
+    socket.on("new_message", () => refetchUnread());
     if (mode === "operator") {
       socket.on("escalation_alert", (data: { sessionId: number; visitorName?: string }) => {
         refetch();
@@ -230,12 +244,20 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
                 <button
                   key={session.id}
                   onClick={() => navigate(detailPath(session.id))}
-                  className="w-full text-left bg-white border border-gray-100 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all group"
+                  className={cn(
+                    "w-full text-left bg-white border rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all group",
+                    unreadSet.has(session.id)
+                      ? "border-blue-300 bg-blue-50/40"
+                      : "border-gray-100"
+                  )}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <div className="relative w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                         <User className="w-4 h-4 text-gray-500" />
+                        {unreadSet.has(session.id) && (
+                          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white" />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
