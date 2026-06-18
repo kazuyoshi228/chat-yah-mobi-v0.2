@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, avg, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -682,4 +682,126 @@ export async function updateSessionLastMessageAt(sessionId: number): Promise<voi
     .update(chatSessions)
     .set({ lastMessageAt: sql`now()` })
     .where(eq(chatSessions.id, sessionId));
+}
+
+/**
+ * Get team scorecard metrics for the admin dashboard.
+ * Computes CSAT, resolution rate, AI resolution rate, avg first response time,
+ * and escalation rate for a given time range.
+ *
+ * @param since  Optional start timestamp (ms). If omitted, all-time data is used.
+ * @param until  Optional end timestamp (ms). If omitted, now is used.
+ */
+export async function getTeamScorecard(since?: number, until?: number): Promise<{
+  totalSessions: number;
+  aiHandled: number;
+  operatorHandled: number;
+  escalationRate: number;       // 0-1: sessions that went from waiting → active
+  avgCsat: number | null;       // 1-5
+  resolutionRate: number | null; // 0-1
+  avgFirstResponseMs: number | null; // ms from session created to first operator message
+  totalScore: number;           // 0-100 composite
+}> {
+  const db = await getDb();
+  if (!db) {
+    return {
+      totalSessions: 0, aiHandled: 0, operatorHandled: 0,
+      escalationRate: 0, avgCsat: null, resolutionRate: null,
+      avgFirstResponseMs: null, totalScore: 0,
+    };
+  }
+
+  const sinceDate = since ? new Date(since) : undefined;
+  const untilDate = until ? new Date(until) : undefined;
+
+  const sessionWhere = and(
+    sinceDate ? gte(chatSessions.createdAt, sinceDate) : undefined,
+    untilDate ? lte(chatSessions.createdAt, untilDate) : undefined,
+  );
+
+  // ── Total / AI / Operator handled ────────────────────────────────────────
+  const [sessionStats] = await db
+    .select({
+      total: count(chatSessions.id),
+      operatorHandled: sql<number>`SUM(CASE WHEN ${chatSessions.operatorId} IS NOT NULL THEN 1 ELSE 0 END)`,
+    })
+    .from(chatSessions)
+    .where(sessionWhere);
+
+  const total = Number(sessionStats?.total ?? 0);
+  const opHandled = Number(sessionStats?.operatorHandled ?? 0);
+  const aiHandled = total - opHandled;
+  const escalationRate = total > 0 ? opHandled / total : 0;
+
+  // ── CSAT & resolution rate ────────────────────────────────────────────────
+  const surveyWhere = and(
+    sinceDate
+      ? gte(
+          sql`(SELECT cs.createdAt FROM chat_sessions cs WHERE cs.id = ${surveys.sessionId})`,
+          sinceDate
+        )
+      : undefined,
+    untilDate
+      ? lte(
+          sql`(SELECT cs.createdAt FROM chat_sessions cs WHERE cs.id = ${surveys.sessionId})`,
+          untilDate
+        )
+      : undefined,
+  );
+
+  const [surveyStats] = await db
+    .select({
+      avgRating: avg(surveys.rating),
+      totalSurveys: count(surveys.id),
+      resolvedYes: sql<number>`SUM(CASE WHEN ${surveys.resolved} = 'yes' THEN 1 ELSE 0 END)`,
+    })
+    .from(surveys)
+    .where(surveyWhere);
+
+  const avgCsat = surveyStats?.avgRating ? Number(surveyStats.avgRating) : null;
+  const totalSurveys = Number(surveyStats?.totalSurveys ?? 0);
+  const resolvedYes = Number(surveyStats?.resolvedYes ?? 0);
+  const resolutionRate = totalSurveys > 0 ? resolvedYes / totalSurveys : null;
+
+  // ── Avg first response time (operator messages) ───────────────────────────
+  // For each session, find the earliest operator message and compare to session.createdAt
+  const [frtStats] = await db.execute(sql`
+    SELECT AVG(TIMESTAMPDIFF(SECOND, cs.createdAt, m.first_msg)) AS avg_frt_sec
+    FROM chat_sessions cs
+    JOIN (
+      SELECT sessionId, MIN(createdAt) AS first_msg
+      FROM messages
+      WHERE role = 'operator'
+      GROUP BY sessionId
+    ) m ON m.sessionId = cs.id
+    ${sinceDate ? sql`WHERE cs.createdAt >= ${sinceDate}` : sql``}
+    ${untilDate ? sql`AND cs.createdAt <= ${untilDate}` : sql``}
+  `) as any;
+
+  const avgFrtSec = frtStats?.[0]?.avg_frt_sec ? Number(frtStats[0].avg_frt_sec) : null;
+  const avgFirstResponseMs = avgFrtSec !== null ? avgFrtSec * 1000 : null;
+
+  // ── Composite score (0-100) ───────────────────────────────────────────────
+  // CSAT (30): rating/5 * 30
+  // Resolution rate (25): rate * 25
+  // AI resolution rate (20): aiHandled/total * 20
+  // FRT (15): target = 60s; score = max(0, 1 - frtSec/300) * 15
+  // Low escalation (10): (1 - escalationRate) * 10
+  let score = 0;
+  if (avgCsat !== null) score += (avgCsat / 5) * 30;
+  if (resolutionRate !== null) score += resolutionRate * 25;
+  if (total > 0) score += (aiHandled / total) * 20;
+  if (avgFrtSec !== null) score += Math.max(0, 1 - avgFrtSec / 300) * 15;
+  score += (1 - escalationRate) * 10;
+
+  return {
+    totalSessions: total,
+    aiHandled,
+    operatorHandled: opHandled,
+    escalationRate,
+    avgCsat,
+    resolutionRate,
+    avgFirstResponseMs,
+    totalScore: Math.round(score),
+  };
 }

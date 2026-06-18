@@ -288,3 +288,10 @@
 - [x] 現在のアサイン済みオペレーターを初期値として表示
 - [x] アサイン変更時に admin.assignChat mutation を呼び出す
 - [x] TypeScript: 0エラー確認・テスト 15/15 通過
+
+## Phase 31: チーム成績スコアカード（Data Analysis ページ）
+- [x] DB: getTeamScorecard クエリ追加（CSAT・解決率・AI解決率・FRT・エスカレーション率）
+- [x] API: admin.getTeamScorecard エンドポイント追加（期間フィルター対応）
+- [x] UI: Data Analysis ページにスコアカードセクション追加（総合スコア + 5指標カード）
+- [x] UI: 期間フィルター（今日/今週/今月/全期間）対応
+- [x] TypeScript: 0エラー確認・テスト 15/15 通過

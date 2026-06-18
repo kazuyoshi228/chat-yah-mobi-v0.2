@@ -20,6 +20,7 @@ import {
   listSurveys,
   createMessage,
   getImageAnalyticsSummary,
+  getTeamScorecard,
   markSessionRead,
   scheduleSessionDeletion,
   updateChatSession,
@@ -534,5 +535,17 @@ Do not include any other text.`;
     .query(async ({ ctx }) => {
       const ids = await getUnreadSessionIds(ctx.user.id);
       return { unreadIds: Array.from(ids) };
+    }),
+
+  // Team scorecard: composite performance metrics
+  getTeamScorecard: adminProcedure
+    .input(
+      z.object({
+        since: z.number().optional(), // Unix ms
+        until: z.number().optional(), // Unix ms
+      })
+    )
+    .query(async ({ input }) => {
+      return getTeamScorecard(input.since, input.until);
     }),
 });

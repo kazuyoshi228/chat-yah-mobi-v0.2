@@ -1,9 +1,10 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { YahLogo } from "@/components/YahLogo";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -62,10 +63,53 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   );
 }
 
+// ── Scorecard helpers ────────────────────────────────────────────────────────
+function periodToRange(period: Period): { since?: number; until?: number } {
+  const now = Date.now();
+  if (period === "today") return { since: new Date().setHours(0, 0, 0, 0), until: now };
+  if (period === "week") return { since: now - 7 * 24 * 60 * 60 * 1000, until: now };
+  if (period === "month") return { since: now - 30 * 24 * 60 * 60 * 1000, until: now };
+  return {};
+}
+
+function scoreColor(score: number): string {
+  if (score >= 80) return "text-emerald-600";
+  if (score >= 60) return "text-amber-500";
+  return "text-red-500";
+}
+
+function scoreBadgeVariant(score: number): "default" | "secondary" | "destructive" {
+  if (score >= 80) return "default";
+  if (score >= 60) return "secondary";
+  return "destructive";
+}
+
+function fmtMs(ms: number | null): string {
+  if (ms === null) return "—";
+  const sec = Math.round(ms / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  const rem = sec % 60;
+  return rem > 0 ? `${min}m ${rem}s` : `${min}m`;
+}
+
+function MetricBar({ value, max = 100, color = "#111" }: { value: number; max?: number; color?: string }) {
+  const pct = Math.min(100, Math.round((value / max) * 100));
+  return (
+    <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mt-1.5">
+      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+    </div>
+  );
+}
+
 export default function AdminDataAnalysis() {
   const [period, setPeriod] = useState<Period>("all");
   const { data, isLoading } = trpc.admin.getAnalysis.useQuery({ period });
   const { data: imgData, isLoading: imgLoading } = trpc.admin.getImageAnalytics.useQuery({ period: period as "today" | "week" | "month" | "all" });
+
+  // Scorecard
+  const scoreRange = useMemo(() => periodToRange(period), [period]);
+  const { data: scorecard, isLoading: scoreLoading } = trpc.admin.getTeamScorecard.useQuery(scoreRange);
 
   const aiPct = data && data.total > 0 ? Math.round((data.aiCount / data.total) * 100) : 0;
   const opPct = data && data.total > 0 ? Math.round((data.operatorCount / data.total) * 100) : 0;
@@ -115,6 +159,102 @@ export default function AdminDataAnalysis() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* ── Team Scorecard ─────────────────────────────────────────────── */}
+        <div className="border border-gray-100 rounded-xl p-5 bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold">Team Performance Score</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Composite score based on 5 weighted metrics</p>
+            </div>
+            {scoreLoading ? (
+              <Skeleton className="h-10 w-20 rounded-lg" />
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className={`text-4xl font-bold tabular-nums ${scoreColor(scorecard?.totalScore ?? 0)}`}>
+                  {scorecard?.totalScore ?? 0}
+                </span>
+                <span className="text-lg text-muted-foreground">/100</span>
+                <Badge variant={scoreBadgeVariant(scorecard?.totalScore ?? 0)} className="ml-1 text-xs">
+                  {(scorecard?.totalScore ?? 0) >= 80 ? "Good" : (scorecard?.totalScore ?? 0) >= 60 ? "Fair" : "Needs Work"}
+                </Badge>
+              </div>
+            )}
+          </div>
+
+          {scoreLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {/* CSAT */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground">CSAT Score</p>
+                <p className="text-xl font-semibold mt-1">
+                  {scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined
+                    ? scorecard.avgCsat.toFixed(1)
+                    : "—"}
+                  <span className="text-xs font-normal text-muted-foreground ml-0.5">/5</span>
+                </p>
+                <MetricBar value={scorecard?.avgCsat ?? 0} max={5} color="#111" />
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 30%</p>
+              </div>
+
+              {/* Resolution Rate */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground">Resolution Rate</p>
+                <p className="text-xl font-semibold mt-1">
+                  {scorecard?.resolutionRate !== null && scorecard?.resolutionRate !== undefined
+                    ? `${Math.round(scorecard.resolutionRate * 100)}%`
+                    : "—"}
+                </p>
+                <MetricBar value={(scorecard?.resolutionRate ?? 0) * 100} color="#2563eb" />
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 25%</p>
+              </div>
+
+              {/* AI Resolution Rate */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground">AI Resolution Rate</p>
+                <p className="text-xl font-semibold mt-1">
+                  {scorecard?.totalSessions && scorecard.totalSessions > 0
+                    ? `${Math.round((scorecard.aiHandled / scorecard.totalSessions) * 100)}%`
+                    : "—"}
+                </p>
+                <MetricBar
+                  value={scorecard?.totalSessions ? (scorecard.aiHandled / scorecard.totalSessions) * 100 : 0}
+                  color="#7c3aed"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 20%</p>
+              </div>
+
+              {/* Avg First Response Time */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground">Avg First Response</p>
+                <p className="text-xl font-semibold mt-1">{fmtMs(scorecard?.avgFirstResponseMs ?? null)}</p>
+                <MetricBar
+                  value={scorecard?.avgFirstResponseMs !== null && scorecard?.avgFirstResponseMs !== undefined
+                    ? Math.max(0, 100 - (scorecard.avgFirstResponseMs / 1000 / 300) * 100)
+                    : 0}
+                  color="#059669"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 15% (target &lt;60s)</p>
+              </div>
+
+              {/* Escalation Rate */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground">Escalation Rate</p>
+                <p className="text-xl font-semibold mt-1">
+                  {scorecard?.escalationRate !== undefined
+                    ? `${Math.round(scorecard.escalationRate * 100)}%`
+                    : "—"}
+                </p>
+                <MetricBar value={(1 - (scorecard?.escalationRate ?? 0)) * 100} color="#d97706" />
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 10% (lower is better)</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* KPI row */}
