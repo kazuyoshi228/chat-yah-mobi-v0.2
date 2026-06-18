@@ -9,8 +9,16 @@ const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
+const PRODUCTION_REDIRECT_URI = "https://chat.yah.mobi/api/auth/google/callback";
+
 function getRedirectUri(req: Request): string {
-  // Use the origin from the request or fallback to production domain
+  // In production, always use the fixed production domain so the redirect_uri
+  // matches exactly what is registered in Google Cloud Console.
+  // In development, fall back to the request origin to allow local testing
+  // (add the dev URL to Google Cloud Console's authorized redirect URIs if needed).
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_REDIRECT_URI;
+  }
   const proto = req.headers["x-forwarded-proto"] || req.protocol;
   const host = req.headers["x-forwarded-host"] || req.headers.host;
   return `${proto}://${host}/api/auth/google/callback`;
