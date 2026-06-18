@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Clock, User, Loader2, Bell, AlertCircle, Headphones } from "lucide-react";
+import { MessageCircle, Clock, User, Loader2, Bell, AlertCircle, Headphones, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -119,6 +119,7 @@ export default function OperatorChats() {
 
   const sidebarItems = [
     { title: "Chat List", href: "/ops/chats", icon: MessageCircle },
+    { title: "Quick Replies", href: "/ops/quick-replies", icon: Zap },
   ];
 
   return (

@@ -5,6 +5,7 @@ import ChatStart from "@/pages/ChatStart";
 import ChatRoom from "@/pages/ChatRoom";
 import OperatorChats from "@/pages/operator/OperatorChats";
 import OperatorChatDetail from "@/pages/operator/OperatorChatDetail";
+import OperatorQuickReplies from "@/pages/operator/OperatorQuickReplies";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminOperators from "@/pages/admin/AdminOperators";
 import AdminQuickReplies from "@/pages/admin/AdminQuickReplies";
@@ -35,6 +36,7 @@ export default function App() {
         {/* Operator portal */}
         <Route path="/ops/chats" component={OperatorChats} />
         <Route path="/ops/chats/:id" component={OperatorChatDetail} />
+        <Route path="/ops/quick-replies" component={OperatorQuickReplies} />
         {/* Legacy redirect */}
         <Route path="/operator/chats">{() => { window.location.replace("/ops/chats"); return null; }}</Route>
         <Route path="/operator/chats/:id">{({ id }) => { window.location.replace(`/ops/chats/${id}`); return null; }}</Route>

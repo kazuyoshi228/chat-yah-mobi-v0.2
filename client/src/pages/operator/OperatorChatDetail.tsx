@@ -298,6 +298,7 @@ export default function OperatorChatDetail() {
 
   const sidebarItems = [
     { title: "Chat List", href: "/ops/chats", icon: MessageCircle },
+    { title: "Quick Replies", href: "/ops/quick-replies", icon: Zap },
   ];
 
   return (
