@@ -614,7 +614,7 @@ export default function OperatorChatDetail() {
         </div>
 
         {/* Right Panel: Quick Replies + Summary - hidden on mobile */}
-        <div className="hidden lg:flex w-72 border-l border-gray-100 bg-white flex-col">
+        <div className="hidden lg:flex w-72 border-l border-gray-100 bg-white flex-col min-h-0 overflow-hidden">
           {/* Tab header */}
           <div className="flex border-b border-gray-100">
             <button
@@ -643,7 +643,7 @@ export default function OperatorChatDetail() {
 
           {/* Quick Replies tab */}
           {rightTab === "quickreplies" && (
-            <>
+            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Search box */}
               <div className="px-3 py-2 border-b border-gray-100">
                 <div className="relative">
@@ -658,7 +658,7 @@ export default function OperatorChatDetail() {
                 </div>
               </div>
               {/* List */}
-              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
                 {quickReplies && quickReplies.length > 0 ? (
                   quickReplies
                     .filter((qr) =>
@@ -691,13 +691,13 @@ export default function OperatorChatDetail() {
                   <p className="text-xs text-gray-400 text-center py-6">No results</p>
                 )}
               </div>
-            </>
+            </div>
           )}
 
           {/* Summary tab */}
           {rightTab === "summary" && (
-            <>
-              <div className="flex-1 p-4 overflow-y-auto">
+            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex-1 min-h-0 overflow-y-auto p-4">
                 {session?.summary ? (
                   <p className="text-sm text-gray-600 leading-relaxed">{session.summary}</p>
                 ) : (
@@ -722,7 +722,7 @@ export default function OperatorChatDetail() {
                   </Button>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
