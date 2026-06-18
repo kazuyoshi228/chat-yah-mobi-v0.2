@@ -72,6 +72,7 @@ export default function OperatorQuickReplies() {
 
   return (
     <DashboardLayout sidebarItems={sidebarItems} title="Operator">
+      <div className="flex-1 overflow-y-auto">
       <div className="p-6 max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -176,6 +177,7 @@ export default function OperatorQuickReplies() {
             })}
           </div>
         )}
+      </div>
       </div>
     </DashboardLayout>
   );
