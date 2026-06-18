@@ -18,13 +18,14 @@ import AdminChatReply from "@/pages/admin/AdminChatReply";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
+import RootRedirect from "@/pages/RootRedirect";
 
 export default function App() {
   return (
     <ThemeProvider defaultTheme="light">
       <Switch>
         {/* Root */}
-        <Route path="/">{() => { window.location.replace("/portal"); return null; }}</Route>
+        <Route path="/" component={RootRedirect} />
 
         {/* Auth */}
         <Route path="/portal" component={Portal} />
