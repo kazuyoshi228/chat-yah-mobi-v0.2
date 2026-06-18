@@ -281,3 +281,10 @@
 - [x] ChatDetailBase でセッション開いた時・新メッセージ受信時に自動既読マーク
 - [x] メッセージ送信時に lastMessageAt を更新（chat/operator/admin 全ルーター）
 - [x] テスト 15/15 通過・チェックポイント保存
+
+## Phase 30: Admin Chat Reply にオペレーターアサインUI追加
+- [x] ChatDetailBase: admin モードにオペレーターアサインドロップダウンを追加
+- [x] admin.listOperators クエリを使ってオペレーター一覧を取得
+- [x] 現在のアサイン済みオペレーターを初期値として表示
+- [x] アサイン変更時に admin.assignChat mutation を呼び出す
+- [x] TypeScript: 0エラー確認・テスト 15/15 通過

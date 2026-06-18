@@ -37,7 +37,15 @@ import {
   CheckCircle2,
   XCircle,
   Search,
+  Users,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -137,12 +145,20 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   const adminQuickReplies = (adminDetail as any)?.quickReplies ?? [];
   const quickReplies = mode === "operator" ? (opQuickReplies ?? []) : adminQuickReplies;
 
+  // Admin-only: operator list for assignment dropdown
+  const { data: operatorList } = trpc.admin.listOperators.useQuery(
+    undefined,
+    { enabled: mode === "admin" }
+  );
+  const operators = (operatorList ?? []).filter((op: any) => op.role === "operator" || op.role === "admin");
+
   // ── Mutations ─────────────────────────────────────────────────────────────
   const assignSession = trpc.operator.assignSession.useMutation({
     onSuccess: () => { toast.success("Session assigned"); refetch(); },
   });
   const assignChat = trpc.admin.assignChat.useMutation({
-    onSuccess: () => { toast.success("Session assigned to you"); refetch(); },
+    onSuccess: () => { toast.success("オペレーターをアサインしました"); refetch(); },
+    onError: (e) => { toast.error(e.message); },
   });
 
   const opSendMessage = trpc.operator.sendMessage.useMutation({ onSuccess: () => setInput("") });
@@ -177,9 +193,9 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   };
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const handleAssign = () => {
+  const handleAssign = (operatorId?: number) => {
     if (mode === "operator") assignSession.mutate({ sessionId });
-    else assignChat.mutate({ sessionId });
+    else assignChat.mutate({ sessionId, operatorId });
   };
   const isAssignPending = mode === "operator" ? assignSession.isPending : assignChat.isPending;
 
@@ -395,10 +411,51 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
               <Badge className={cn("text-xs border-0", STATUS_COLORS[session?.status ?? "ended"])}>
                 {session?.status === "waiting" ? "Waiting" : session?.status === "active" ? "Active" : "Ended"}
               </Badge>
-              {!isEnded && !isAssigned && (
-                <Button size="sm" onClick={handleAssign} disabled={isAssignPending} className="bg-black text-white hover:bg-gray-800 text-xs h-7 gap-1">
+              {!isEnded && !isAssigned && mode === "operator" && (
+                <Button size="sm" onClick={() => handleAssign()} disabled={isAssignPending} className="bg-black text-white hover:bg-gray-800 text-xs h-7 gap-1">
                   {isAssignPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <><UserCheck className="w-3 h-3" /> Assign to me</>}
                 </Button>
+              )}
+              {/* Admin: operator assignment dropdown */}
+              {mode === "admin" && !isEnded && (
+                <div className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-gray-400" />
+                  <Select
+                    value={session?.operatorId ? String(session.operatorId) : ""}
+                    onValueChange={(val) => {
+                      if (val === "unassign") {
+                        // no unassign API yet — show info
+                        toast.info("アサイン解除は現在未対応です");
+                        return;
+                      }
+                      handleAssign(Number(val));
+                    }}
+                    disabled={isAssignPending}
+                  >
+                    <SelectTrigger className="h-7 text-xs w-40 border-gray-200 bg-white">
+                      <SelectValue placeholder="オペレーターを選択..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {operators.length === 0 && (
+                        <SelectItem value="__none" disabled>オペレーターなし</SelectItem>
+                      )}
+                      {operators.map((op: any) => {
+                        const displayName = op.firstName
+                          ? `${op.firstName}${op.lastName ? " " + op.lastName : ""}`
+                          : op.name ?? op.email;
+                        return (
+                          <SelectItem key={op.id} value={String(op.id)}>
+                            {displayName}
+                            {op.role === "admin" && (
+                              <span className="ml-1 text-[10px] text-gray-400">(admin)</span>
+                            )}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  {isAssignPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
+                </div>
               )}
               {!isEnded && (
                 <Button size="sm" onClick={handleEnd} disabled={isEndPending} className="bg-red-500 hover:bg-red-600 text-white text-xs h-7 gap-1.5 border-0">
@@ -535,7 +592,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
               {mode === "operator" && !isAssigned && (
                 <div className="mb-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                   <p className="text-xs text-amber-700">このセッションはまだアサインされていません</p>
-                  <Button size="sm" onClick={handleAssign} disabled={isAssignPending} className="bg-black text-white hover:bg-gray-800 text-xs h-6 ml-2">
+                  <Button size="sm" onClick={() => handleAssign()} disabled={isAssignPending} className="bg-black text-white hover:bg-gray-800 text-xs h-6 ml-2">
                     {isAssignPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Assign to me"}
                   </Button>
                 </div>
