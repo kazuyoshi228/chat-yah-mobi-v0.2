@@ -1,14 +1,7 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { useLocation } from "wouter";
 import { YahLogo } from "@/components/YahLogo";
-import { getLoginUrl } from "@/const";
-
 const GOOGLE_LOGIN_URL = "/api/auth/google";
 
 export default function Portal() {
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
-
   const params = new URLSearchParams(window.location.search);
   const errorCode = params.get("error");
   const errorMessages: Record<string, string> = {
@@ -18,8 +11,6 @@ export default function Portal() {
     no_email: "Could not retrieve email from your Google account.",
     internal_error: "An internal error occurred. Please try again later.",
   };
-
-  const manusLoginUrl = getLoginUrl();
 
   return (
     <div className="min-h-screen bg-[#f5f4f0] flex flex-col">
@@ -69,25 +60,6 @@ export default function Portal() {
               </svg>
             </a>
 
-            {/* Manus OAuth Login button */}
-            <a
-              href={manusLoginUrl}
-              className="group flex items-center gap-3 w-full px-5 py-3.5 bg-white/10 hover:bg-white/15 active:scale-[0.98] rounded-xl transition-all duration-150 ease-out border border-white/10"
-            >
-              <ManusIcon className="w-4 h-4 shrink-0 text-white" />
-              <span className="text-[13px] font-semibold text-white tracking-tight flex-1">
-                Log in with Manus
-              </span>
-              <svg
-                className="w-4 h-4 text-white/40 group-hover:translate-x-0.5 transition-transform duration-150"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-              </svg>
-            </a>
 
             {/* Footer note */}
             <p className="mt-6 text-center text-[11px] text-white/60 tracking-wide">
@@ -113,10 +85,3 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-function ManusIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-    </svg>
-  );
-}
