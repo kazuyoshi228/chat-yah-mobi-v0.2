@@ -295,3 +295,10 @@
 - [x] UI: Data Analysis ページにスコアカードセクション追加（総合スコア + 5指標カード）
 - [x] UI: 期間フィルター（今日/今週/今月/全期間）対応
 - [x] TypeScript: 0エラー確認・テスト 15/15 通過
+
+## Phase 32: チャット一覧のリアルタイム更新（Socket.io）
+- [x] サーバー側: new_session / session_assigned / session_ended / escalation_alert イベントが既に実装済みであることを確認
+- [x] ChatListBase: Socket.io 受信時に一覧・未読・KPIカウントを自動リフレッシュ（既存実装を確認・補完）
+- [x] ポーリング（refetchInterval）を全クエリから削除してSocket.ioのみに一本化
+- [x] useEffectの依存配列を正確に設定（refetchCounts / refetchUnread 追加）
+- [x] TypeScript: 0エラー確認・テスト 15/15 通過

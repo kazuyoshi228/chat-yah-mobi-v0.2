@@ -61,31 +61,21 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
   );
   const { data: adminSessions, refetch: refetchAdmin } = trpc.admin.listChats.useQuery(
     { status: statusFilter ?? "all" },
-    {
-      enabled: mode === "admin",
-      refetchInterval: socketConnected ? 30_000 : 10_000,
-      refetchIntervalInBackground: true,
-    }
+    { enabled: mode === "admin" }
   );
 
   const sessions = mode === "operator" ? opSessions : adminSessions;
   const refetch = mode === "operator" ? refetchOp : refetchAdmin;
 
-  const { data: activeCounts, isLoading: isLoadingCounts } = trpc.operator.getActiveCounts.useQuery(
+  const { data: activeCounts, refetch: refetchCounts, isLoading: isLoadingCounts } = trpc.operator.getActiveCounts.useQuery(
     undefined,
-    { enabled: mode === "operator" && isAuthenticated, refetchInterval: 15000 }
+    { enabled: mode === "operator" && isAuthenticated }
   );
 
   // ── Unread session IDs ────────────────────────────────────────────────────
   const { data: unreadData, refetch: refetchUnread } = mode === "operator"
-    ? trpc.operator.getUnreadSessionIds.useQuery(undefined, {
-        enabled: isAuthenticated,
-        refetchInterval: 15000,
-      })
-    : trpc.admin.getUnreadSessionIds.useQuery(undefined, {
-        enabled: isAuthenticated,
-        refetchInterval: 15000,
-      });
+    ? trpc.operator.getUnreadSessionIds.useQuery(undefined, { enabled: isAuthenticated })
+    : trpc.admin.getUnreadSessionIds.useQuery(undefined, { enabled: isAuthenticated });
   const unreadSet = new Set(unreadData?.unreadIds ?? []);
 
   // ── Socket.io ─────────────────────────────────────────────────────────────
@@ -97,6 +87,7 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
     socket.on("new_session", (data: { sessionId: number; visitorName?: string }) => {
       refetch();
       refetchUnread();
+      if (mode === "operator") refetchCounts();
       if (mode === "operator") {
         toast.info(`New chat: ${data.visitorName ?? "Visitor"}`, {
           description: "A new chat has started",
@@ -107,8 +98,8 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
         }
       }
     });
-    socket.on("session_assigned", () => { refetch(); refetchUnread(); });
-    socket.on("session_ended", () => { refetch(); refetchUnread(); });
+    socket.on("session_assigned", () => { refetch(); refetchUnread(); if (mode === "operator") refetchCounts(); });
+    socket.on("session_ended", () => { refetch(); refetchUnread(); if (mode === "operator") refetchCounts(); });
     socket.on("new_message", () => refetchUnread());
     if (mode === "operator") {
       socket.on("escalation_alert", (data: { sessionId: number; visitorName?: string }) => {
@@ -120,7 +111,7 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
       });
     }
     return () => { socket.disconnect(); setSocketConnected(false); };
-  }, [refetch, navigate, mode]);
+  }, [refetch, refetchCounts, refetchUnread, navigate, mode]);
 
   // ── Notification permission ───────────────────────────────────────────────
   useEffect(() => { setNotifPermission(Notification.permission); }, []);
