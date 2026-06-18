@@ -160,6 +160,128 @@ export async function sendEscalationEmail(
 }
 
 /**
+ * Send an assignment notification email to an operator when admin assigns a chat.
+ */
+export async function sendAssignmentEmail(opts: {
+  toEmail: string;
+  operatorName: string;
+  sessionId: number;
+  visitorName?: string | null;
+  language?: string | null;
+  initialMessage?: string | null;
+  appUrl?: string;
+}): Promise<boolean> {
+  const {
+    toEmail,
+    operatorName,
+    sessionId,
+    visitorName,
+    language,
+    initialMessage,
+    appUrl = "https://chat.yah.mobi",
+  } = opts;
+
+  const visitorLabel = visitorName ?? "Anonymous visitor";
+  const langLabel = language ? ` (${language.toUpperCase()})` : "";
+  const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
+  const subject = `チャットがアサインされました: ${visitorLabel}${langLabel} — Session #${sessionId}`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8" /><title>チャットアサイン通知</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+          <tr>
+            <td style="background:#000000;padding:24px 32px;">
+              <p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">YAH.MOBILE</p>
+              <p style="margin:4px 0 0;color:#9ca3af;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Chat Support</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">Hi ${operatorName},</p>
+              <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">
+                管理者があなたにチャットをアサインしました。できるだけ早くご対応ください。
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding:6px 0;color:#6b7280;font-size:13px;width:140px;">Session ID</td>
+                        <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">#${sessionId}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">訪問者</td>
+                        <td style="padding:6px 0;color:#111827;font-size:13px;">${visitorLabel}</td>
+                      </tr>
+                      ${language ? `<tr>
+                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">言語</td>
+                        <td style="padding:6px 0;color:#111827;font-size:13px;">${language.toUpperCase()}</td>
+                      </tr>` : ""}
+                      ${initialMessage ? `<tr>
+                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">最初のメッセージ</td>
+                        <td style="padding:6px 0;color:#111827;font-size:13px;font-style:italic;">&ldquo;${initialMessage.slice(0, 200)}${initialMessage.length > 200 ? "…" : ""}&rdquo;</td>
+                      </tr>` : ""}
+                      <tr>
+                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">時刻</td>
+                        <td style="padding:6px 0;color:#111827;font-size:13px;">${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#000000;border-radius:8px;">
+                    <a href="${chatUrl}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
+                      チャットを開く →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #f3f4f6;">
+              <p style="margin:0;color:#9ca3af;font-size:12px;">
+                このメールはyah.mobile Chat Supportから送信されました。
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+
+  try {
+    const resend = getResend();
+    const { error } = await resend.emails.send({
+      from: ENV.resendFromEmail,
+      to: toEmail,
+      subject,
+      html,
+    });
+    if (error) {
+      console.warn("[Email] Resend error:", error);
+      return false;
+    }
+    console.log(`[Email] Assignment email sent to ${toEmail} for session #${sessionId}`);
+    return true;
+  } catch (err) {
+    console.warn("[Email] Failed to send assignment email:", err);
+    return false;
+  }
+}
+
+/**
  * Send a new chat notification email to all online operators.
  * Used when a new session starts and immediate operator attention is needed.
  */

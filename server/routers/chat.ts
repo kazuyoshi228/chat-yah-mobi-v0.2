@@ -16,7 +16,7 @@ import { generateAIResponse, generateSummary } from "./ai";
 import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
 import { sendEscalationEmail, sendNewChatEmail } from "../email";
-import { getAllOperators } from "../db";
+import { getAllAdmins } from "../db";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
@@ -94,26 +94,21 @@ export const chatRouter = router({
         content: `${input.visitorName ?? "訪問者"} がチャットを開始しました。\n最初のメッセージ: ${input.initialMessage}`,
       }).catch(() => {});
 
-      // Send email notification to all operators if escalation is needed
+      // Send email notification to admins if escalation is needed
       if (shouldEscalate) {
-        const operators = await getAllOperators().catch(() => []);
-        const appUrl = process.env.VITE_FRONTEND_FORGE_API_URL
-          ? "https://chat.yah.mobi"
-          : "https://chat.yah.mobi";
+        const admins = await getAllAdmins().catch(() => []);
         await Promise.allSettled(
-          operators
-            .filter((op) => op.email)
-            .map((op) =>
+          admins
+            .filter((a) => a.email)
+            .map((a) =>
               sendEscalationEmail({
-                toEmail: op.email!,
-                operatorName: op.firstName
-                  ? `${op.firstName} ${op.lastName ?? ""}`.trim()
-                  : (op.name ?? "Operator"),
+                toEmail: a.email!,
+                operatorName: a.name ?? "Admin",
                 sessionId,
                 visitorName: input.visitorName,
                 language: input.language,
                 urgent: true,
-                appUrl,
+                appUrl: "https://chat.yah.mobi",
               })
             )
         );
@@ -364,17 +359,15 @@ export const chatRouter = router({
         });
       }
 
-      // Send escalation email to all operators with email addresses
-      const operators = await getAllOperators().catch(() => []);
+      // Send escalation email to admins only
+      const admins = await getAllAdmins().catch(() => []);
       await Promise.allSettled(
-        operators
-          .filter((op) => op.email)
-          .map((op) =>
+        admins
+          .filter((a) => a.email)
+          .map((a) =>
             sendEscalationEmail({
-              toEmail: op.email!,
-              operatorName: op.firstName
-                ? `${op.firstName} ${op.lastName ?? ""}`.trim()
-                : (op.name ?? "Operator"),
+              toEmail: a.email!,
+              operatorName: a.name ?? "Admin",
               sessionId: input.sessionId,
               visitorName: session.visitorName,
               language: session.language,

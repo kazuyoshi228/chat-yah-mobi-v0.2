@@ -31,6 +31,8 @@ import { TRPCError } from "@trpc/server";
 import { getEmbedding, generateSummary } from "./ai";
 import { invokeLLM } from "../_core/llm";
 import { getIo } from "../socket";
+import { sendAssignmentEmail } from "../email";
+import { getUserById } from "../db";
 
 // Middleware: require admin role
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -286,18 +288,39 @@ export const adminRouter = router({
     }),
 
   assignChat: adminProcedure
-    .input(z.object({ sessionId: z.number() }))
+    .input(z.object({ sessionId: z.number(), operatorId: z.number().optional() }))
     .mutation(async ({ input, ctx }) => {
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
-      await updateChatSession(input.sessionId, { status: "active", operatorId: ctx.user.id });
+      // If operatorId is provided, assign to that operator; otherwise assign to admin (self)
+      const assigneeId = input.operatorId ?? ctx.user.id;
+      await updateChatSession(input.sessionId, { status: "active", operatorId: assigneeId });
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("operator_joined", {
           sessionId: input.sessionId,
           operatorName: ctx.user.name,
         });
-        io.to("operators").emit("session_assigned", { sessionId: input.sessionId, operatorId: ctx.user.id });
+        io.to("operators").emit("session_assigned", { sessionId: input.sessionId, operatorId: assigneeId });
+      }
+      // Send email to the assigned operator (if different from admin self-assign)
+      if (input.operatorId && input.operatorId !== ctx.user.id) {
+        const assignee = await getUserById(input.operatorId).catch(() => null);
+        if (assignee?.email) {
+          const firstMsg = await getMessagesBySessionId(input.sessionId).catch(() => []);
+          const initialMessage = firstMsg.find((m) => m.role === "visitor")?.content ?? null;
+          await sendAssignmentEmail({
+            toEmail: assignee.email,
+            operatorName: assignee.name ?? "Operator",
+            sessionId: input.sessionId,
+            visitorName: session.visitorName,
+            language: session.language,
+            initialMessage,
+            appUrl: "https://chat.yah.mobi",
+          }).catch(() => {});
+        }
+      } else if (!input.operatorId) {
+        // Admin assigned to self — no email needed
       }
       return { success: true };
     }),

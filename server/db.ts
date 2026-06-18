@@ -86,6 +86,13 @@ export async function getUserByEmail(email: string) {
   return result[0];
 }
 
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
+}
+
 export async function getAllOperators() {
   const db = await getDb();
   if (!db) return [];
@@ -93,6 +100,15 @@ export async function getAllOperators() {
     .select()
     .from(users)
     .where(inArray(users.role, ["operator", "admin"]));
+}
+
+export async function getAllAdmins() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(users)
+    .where(eq(users.role, "admin"));
 }
 
 export async function updateUserRole(userId: number, role: "user" | "admin" | "operator") {

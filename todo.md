@@ -254,3 +254,12 @@
 - [x] OperatorChatDetail.tsx: survey_submittedイベントをSocket.ioで受信してsurveResultステートに保存
 - [x] OperatorChatDetail.tsx: アンケート結果カード（星評価・解決済み/未解決・自由コメント）をメッセージ一覧の末尾に表示
 - [x] TypeScript: 0エラー確認
+
+## Phase 27: メール通知をadmin/オペレーター別に整理（2026-06-18）
+- [x] server/email.ts: sendAssignmentEmail 関数を追加（アサイン通知メール）
+- [x] server/db.ts: getAllAdmins ヘルパーを追加（admin ロールのユーザー一覧）
+- [x] server/db.ts: getUserById ヘルパーを追加（ID でユーザー取得）
+- [x] server/routers/chat.ts: 新規チャット開始・エスカレーション時のメール通知を全オペレーター→全 admin のみに変更
+- [x] server/routers/admin.ts: assignChat に sendAssignmentEmail 呼び出しを追加（operatorId 指定時のみ）
+- [x] client/src/pages/operator/OperatorQuickReplies.tsx: JSX 構造エラー（余分な div）を修正
+- [x] TypeScript: 0 エラー確認・チェックポイント保存
