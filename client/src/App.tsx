@@ -19,6 +19,7 @@ import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
 import RootRedirect from "@/pages/RootRedirect";
+import WidgetAuthSuccess from "@/pages/WidgetAuthSuccess";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/admin/chats/:id" component={AdminChatDetail} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
+        <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
 
         <Route component={NotFound} />
       </Switch>

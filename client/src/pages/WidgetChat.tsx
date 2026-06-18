@@ -30,6 +30,25 @@ interface ChatMessage {
   createdAt: Date | string;
 }
 
+const WIDGET_AUTH_KEY = "yah_widget_auth";
+
+function getWidgetAuth(): { name: string; email: string } | null {
+  try {
+    const raw = localStorage.getItem(WIDGET_AUTH_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as { name?: string; email?: string; error?: string; timestamp: number };
+    // Expire after 10 minutes
+    if (Date.now() - data.timestamp > 10 * 60 * 1000) {
+      localStorage.removeItem(WIDGET_AUTH_KEY);
+      return null;
+    }
+    if (data.error || !data.email) return null;
+    return { name: data.name || "", email: data.email };
+  } catch {
+    return null;
+  }
+}
+
 function getOrCreateVisitorId(): string {
   const key = "yah_visitor_id";
   let id = localStorage.getItem(key);
@@ -89,7 +108,19 @@ export default function WidgetChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [visitorName, setVisitorName] = useState("");
+  const [visitorEmail, setVisitorEmail] = useState("");
   const [initialMessage, setInitialMessage] = useState("");
+  const [isGoogleLoggingIn, setIsGoogleLoggingIn] = useState(false);
+  const googlePollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Restore Google auth from localStorage on mount
+  useEffect(() => {
+    const auth = getWidgetAuth();
+    if (auth) {
+      if (auth.name) setVisitorName(auth.name);
+      setVisitorEmail(auth.email);
+    }
+  }, []);
   const [isTyping, setIsTyping] = useState(false);
   const [shouldEscalate, setShouldEscalate] = useState(false);
   const [rating, setRating] = useState(0);
@@ -290,11 +321,40 @@ export default function WidgetChat() {
   }, [imageFile, sessionId, uploadFile, sendMessage]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleGoogleLogin = () => {
+    setIsGoogleLoggingIn(true);
+    // Clear previous auth data
+    localStorage.removeItem(WIDGET_AUTH_KEY);
+    // Open Google auth in a new tab
+    const authUrl = "/api/auth/google/widget";
+    window.open(authUrl, "_blank");
+    // Poll localStorage for auth completion
+    googlePollRef.current = setInterval(() => {
+      const auth = getWidgetAuth();
+      if (auth) {
+        clearInterval(googlePollRef.current!);
+        googlePollRef.current = null;
+        setIsGoogleLoggingIn(false);
+        if (auth.name) setVisitorName(auth.name);
+        setVisitorEmail(auth.email);
+      }
+    }, 500);
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      if (googlePollRef.current) {
+        clearInterval(googlePollRef.current);
+        googlePollRef.current = null;
+        setIsGoogleLoggingIn(false);
+      }
+    }, 5 * 60 * 1000);
+  };
+
   const handleStart = () => {
     if (!initialMessage.trim()) return;
     startSession.mutate({
       visitorId: getOrCreateVisitorId(),
       visitorName: visitorName || undefined,
+      visitorEmail: visitorEmail || undefined,
       initialMessage,
       language: lang,
     });
@@ -353,6 +413,57 @@ export default function WidgetChat() {
       {/* ── Start Form ── */}
       {stage === "start" && (
         <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
+          {/* Google Login CTA */}
+          {!visitorEmail ? (
+            <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 flex flex-col gap-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 leading-snug">
+                  Googleでログインしてチャットを始めよう
+                </p>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                  ログインすると、チャット終了後もメールでご連絡でき、より丁寧なサポートが受けられます。
+                </p>
+              </div>
+              <button
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoggingIn}
+                className="w-full flex items-center justify-center gap-2.5 bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-60"
+              >
+                {isGoogleLoggingIn ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> 認証中...(タブを閉じると反映されます)</>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Googleでログイン
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5">
+              <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-green-800 truncate">{visitorEmail}</p>
+                <p className="text-[10px] text-green-600">Googleアカウントでログイン済み</p>
+              </div>
+              <button
+                onClick={() => { setVisitorEmail(""); setVisitorName(""); localStorage.removeItem(WIDGET_AUTH_KEY); }}
+                className="text-[10px] text-green-600 hover:text-green-800 underline flex-shrink-0"
+              >
+                解除
+              </button>
+            </div>
+          )}
+
           <p className="text-sm text-gray-500">
             Feel free to ask us anything. Our AI will respond instantly.
           </p>
@@ -392,6 +503,15 @@ export default function WidgetChat() {
               "Start Chat"
             )}
           </button>
+          {!visitorEmail && (
+            <button
+              onClick={handleStart}
+              disabled={!initialMessage.trim() || startSession.isPending}
+              className="w-full py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors text-center"
+            >
+              ログインせずにチャットを始める
+            </button>
+          )}
         </div>
       )}
 

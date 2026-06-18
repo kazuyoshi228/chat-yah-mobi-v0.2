@@ -10,6 +10,16 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
 const PRODUCTION_REDIRECT_URI = "https://chat.yah.mobi/api/auth/google/callback";
+const PRODUCTION_WIDGET_REDIRECT_URI = "https://chat.yah.mobi/api/auth/google/widget/callback";
+
+function getWidgetRedirectUri(req: Request): string {
+  if (process.env.NODE_ENV === "production") {
+    return PRODUCTION_WIDGET_REDIRECT_URI;
+  }
+  const proto = req.headers["x-forwarded-proto"] || req.protocol;
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${proto}://${host}/api/auth/google/widget/callback`;
+}
 
 function getRedirectUri(req: Request): string {
   // In production, always use the fixed production domain so the redirect_uri
@@ -41,6 +51,91 @@ export function registerGoogleOAuthRoutes(app: Express) {
     });
 
     res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
+  });
+
+  // Step 1b: Widget visitor Google login (no staff role required)
+  app.get("/api/auth/google/widget", (req: Request, res: Response) => {
+    const widgetRedirectUri = getWidgetRedirectUri(req);
+    const state = Buffer.from(JSON.stringify({ redirectUri: widgetRedirectUri, isWidget: true })).toString("base64");
+
+    const params = new URLSearchParams({
+      client_id: ENV.googleClientId,
+      redirect_uri: widgetRedirectUri,
+      response_type: "code",
+      scope: "openid email profile",
+      state,
+      access_type: "offline",
+      prompt: "select_account",
+    });
+
+    res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
+  });
+
+  // Step 2b: Handle widget Google callback
+  app.get("/api/auth/google/widget/callback", async (req: Request, res: Response) => {
+    const code = req.query.code as string | undefined;
+    const error = req.query.error as string | undefined;
+
+    if (error || !code) {
+      res.redirect("/widget-auth-success?error=auth_failed");
+      return;
+    }
+
+    const widgetRedirectUri = getWidgetRedirectUri(req);
+
+    try {
+      // Exchange code for tokens
+      const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code,
+          client_id: ENV.googleClientId,
+          client_secret: ENV.googleClientSecret,
+          redirect_uri: widgetRedirectUri,
+          grant_type: "authorization_code",
+        }),
+      });
+
+      if (!tokenRes.ok) {
+        res.redirect("/widget-auth-success?error=token_failed");
+        return;
+      }
+
+      const tokenData = (await tokenRes.json()) as { access_token: string };
+
+      // Get user info from Google
+      const userInfoRes = await fetch(GOOGLE_USERINFO_URL, {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+
+      if (!userInfoRes.ok) {
+        res.redirect("/widget-auth-success?error=userinfo_failed");
+        return;
+      }
+
+      const googleUser = (await userInfoRes.json()) as {
+        sub: string;
+        email: string;
+        name: string;
+        given_name?: string;
+      };
+
+      if (!googleUser.email) {
+        res.redirect("/widget-auth-success?error=no_email");
+        return;
+      }
+
+      // Redirect to success page with user info as query params
+      const successParams = new URLSearchParams({
+        name: googleUser.name || googleUser.given_name || "",
+        email: googleUser.email,
+      });
+      res.redirect(`/widget-auth-success?${successParams.toString()}`);
+    } catch (err) {
+      console.error("[GoogleOAuth Widget] Callback error:", err);
+      res.redirect("/widget-auth-success?error=internal_error");
+    }
   });
 
   // Step 2: Handle Google's callback
