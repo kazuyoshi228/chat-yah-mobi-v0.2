@@ -26,6 +26,7 @@ import {
   PhoneOff,
   Star,
   ClipboardCheck,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -67,6 +68,8 @@ export default function OperatorChatDetail() {
   const [input, setInput] = useState("");
   const [typingInfo, setTypingInfo] = useState<{ role: string; isTyping: boolean } | null>(null);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [rightTab, setRightTab] = useState<"summary" | "quickreplies">("quickreplies");
+  const [qrSearch, setQrSearch] = useState("");
   const [surveyResult, setSurveyResult] = useState<SurveyResult | null>(null);
 
   // Image state
@@ -609,35 +612,116 @@ export default function OperatorChatDetail() {
           )}
         </div>
 
-        {/* Right Panel: Summary - hidden on mobile */}
+        {/* Right Panel: Quick Replies + Summary - hidden on mobile */}
         <div className="hidden lg:flex w-72 border-l border-gray-100 bg-white flex-col">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">Conversation Summary</p>
+          {/* Tab header */}
+          <div className="flex border-b border-gray-100">
+            <button
+              onClick={() => setRightTab("quickreplies")}
+              className={cn(
+                "flex-1 px-3 py-2.5 text-xs font-medium transition-colors",
+                rightTab === "quickreplies"
+                  ? "text-black border-b-2 border-black"
+                  : "text-gray-400 hover:text-gray-600"
+              )}
+            >
+              Quick Replies
+            </button>
+            <button
+              onClick={() => setRightTab("summary")}
+              className={cn(
+                "flex-1 px-3 py-2.5 text-xs font-medium transition-colors",
+                rightTab === "summary"
+                  ? "text-black border-b-2 border-black"
+                  : "text-gray-400 hover:text-gray-600"
+              )}
+            >
+              Summary
+            </button>
           </div>
-          <div className="flex-1 p-4 overflow-y-auto">
-            {session?.summary ? (
-              <p className="text-sm text-gray-600 leading-relaxed">{session.summary}</p>
-            ) : (
-              <p className="text-xs text-gray-400">No summary yet</p>
-            )}
-          </div>
-          {!isEnded && (
-            <div className="p-4 border-t border-gray-100">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs gap-2 border-gray-200"
-                onClick={() => generateSummary.mutate({ sessionId })}
-                disabled={generateSummary.isPending}
-              >
-                {generateSummary.isPending ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+
+          {/* Quick Replies tab */}
+          {rightTab === "quickreplies" && (
+            <>
+              {/* Search box */}
+              <div className="px-3 py-2 border-b border-gray-100">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={qrSearch}
+                    onChange={(e) => setQrSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-black bg-gray-50"
+                  />
+                </div>
+              </div>
+              {/* List */}
+              <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                {quickReplies && quickReplies.length > 0 ? (
+                  quickReplies
+                    .filter((qr) =>
+                      qrSearch === "" ||
+                      qr.title.toLowerCase().includes(qrSearch.toLowerCase()) ||
+                      qr.content.toLowerCase().includes(qrSearch.toLowerCase())
+                    )
+                    .map((qr) => (
+                      <button
+                        key={qr.id}
+                        onClick={() => {
+                          setInput(qr.content);
+                          toast.success(`"${qr.title}" をセット`);
+                        }}
+                        className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors group border border-transparent hover:border-gray-200"
+                      >
+                        <p className="text-xs font-medium text-gray-800 group-hover:text-black truncate">{qr.title}</p>
+                        <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">{qr.content}</p>
+                      </button>
+                    ))
                 ) : (
-                  <RefreshCw className="w-3.5 h-3.5" />
+                  <p className="text-xs text-gray-400 text-center py-6">No quick replies</p>
                 )}
-                Update Summary
-              </Button>
-            </div>
+                {quickReplies && quickReplies.length > 0 &&
+                  quickReplies.filter((qr) =>
+                    qrSearch === "" ||
+                    qr.title.toLowerCase().includes(qrSearch.toLowerCase()) ||
+                    qr.content.toLowerCase().includes(qrSearch.toLowerCase())
+                  ).length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-6">No results</p>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Summary tab */}
+          {rightTab === "summary" && (
+            <>
+              <div className="flex-1 p-4 overflow-y-auto">
+                {session?.summary ? (
+                  <p className="text-sm text-gray-600 leading-relaxed">{session.summary}</p>
+                ) : (
+                  <p className="text-xs text-gray-400">No summary yet</p>
+                )}
+              </div>
+              {!isEnded && (
+                <div className="p-4 border-t border-gray-100">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs gap-2 border-gray-200"
+                    onClick={() => generateSummary.mutate({ sessionId })}
+                    disabled={generateSummary.isPending}
+                  >
+                    {generateSummary.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                    Update Summary
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
