@@ -10,6 +10,7 @@ import {
   createSurvey,
   getSurveyBySessionId,
   scheduleSessionDeletion,
+  listQuickReplies,
 } from "../db";
 import { publicProcedure, router } from "../_core/trpc";
 import { generateAIResponse, generateSummary } from "./ai";
@@ -379,4 +380,9 @@ export const chatRouter = router({
 
       return { success: true };
     }),
+
+  // Public read-only quick replies (used by operator and admin panels)
+  listQuickReplies: publicProcedure.query(async () => {
+    return listQuickReplies();
+  }),
 });

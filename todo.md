@@ -263,3 +263,11 @@
 - [x] server/routers/admin.ts: assignChat に sendAssignmentEmail 呼び出しを追加（operatorId 指定時のみ）
 - [x] client/src/pages/operator/OperatorQuickReplies.tsx: JSX 構造エラー（余分な div）を修正
 - [x] TypeScript: 0 エラー確認・チェックポイント保存
+
+## Phase 28: 実装シンプル化リファクタリング（2026-06-18）
+
+- [x] デッドコード削除: Home.tsx / ComponentShowcase.tsx / AdminChats.tsx
+- [x] App.tsx から AdminChatDetail (/admin/chats/:id) ルートを削除し /reply に統合
+- [x] ChatDetailBase 共通コンポーネント作成（OperatorChatDetail + AdminChatReply を統合）
+- [x] ChatListBase 共通コンポーネント作成（OperatorChats + AdminChatList を統合）
+- [x] chat.listQuickReplies を追加して operator/admin の重複エンドポイントを共通化
