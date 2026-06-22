@@ -14,12 +14,12 @@ import {
   listQuickReplies,
 } from "../db";
 import { publicProcedure, router } from "../_core/trpc";
-import { generateAIResponse, generateSummary } from "./ai";
+import { detectLanguageFromMessage, generateAIResponse, generateSummary } from "./ai";
 import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
 import { sendEscalationEmail, sendNewChatEmail } from "../email";
 import { getAllAdmins } from "../db";
-import { translateToJapaneseWithResult } from "../_core/deepl";
+import { toTranslationLabel, translateToJapaneseWithResult } from "../_core/deepl";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
@@ -64,11 +64,7 @@ export const chatRouter = router({
         input.initialMessage,
         input.language
       ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
-      const initialTranslation = initialTxResult.ok
-        ? initialTxResult.text
-        : initialTxResult.reason === "skipped"
-        ? undefined
-        : "[翻訳できませんでした]"; // fallback label for operators
+      const initialTranslation = toTranslationLabel(initialTxResult);
       await createMessage({
         sessionId,
         role: "visitor",
@@ -89,11 +85,7 @@ export const chatRouter = router({
         aiContent,
         input.language
       ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
-      const aiTranslation0 = aiTxResult0.ok
-        ? aiTxResult0.text
-        : aiTxResult0.reason === "skipped"
-        ? undefined
-        : "[翻訳できませんでした]";
+      const aiTranslation0 = toTranslationLabel(aiTxResult0);
 
       await createMessage({
         sessionId,
@@ -225,11 +217,7 @@ export const chatRouter = router({
         input.content,
         session.language ?? "ja"
       ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
-      const visitorTranslation = visitorTxResult.ok
-        ? visitorTxResult.text
-        : visitorTxResult.reason === "skipped"
-        ? null
-        : "[翻訳できませんでした]"; // fallback label for operators
+      const visitorTranslation = toTranslationLabel(visitorTxResult) ?? null;
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "visitor",
@@ -260,24 +248,28 @@ export const chatRouter = router({
       // Get conversation history for context
       const history = await getMessagesBySessionId(input.sessionId);
 
-      // Generate AI response
+      // Detect language from message content; update session if changed
+      const sessionLang = session.language ?? "ja";
+      const detectedLang = detectLanguageFromMessage(input.content) ?? sessionLang;
+      if (detectedLang !== sessionLang) {
+        await updateChatSession(input.sessionId, { language: detectedLang }).catch(() => {});
+      }
+      const effectiveLang = detectedLang;
+
+      // Generate AI response (language detection already done above)
       const { content: aiContent, shouldEscalate } = await generateAIResponse(
         input.sessionId,
         input.content,
         history.map((m) => ({ role: m.role, content: m.content })),
-        session.language ?? "ja"
+        effectiveLang
       );
 
       // Translate AI response to Japanese for operator display (skip if already Japanese)
       const aiTxResult = await translateToJapaneseWithResult(
         aiContent,
-        session.language ?? "ja"
+        effectiveLang
       ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
-      const aiTranslation = aiTxResult.ok
-        ? aiTxResult.text
-        : aiTxResult.reason === "skipped"
-        ? undefined
-        : "[翻訳できませんでした]";
+      const aiTranslation = toTranslationLabel(aiTxResult);
 
       const aiMsgId = await createMessage({
         sessionId: input.sessionId,

@@ -63,10 +63,15 @@ describe("Chat session logic", () => {
 // ─── Language support ─────────────────────────────────────────────────────────
 
 describe("Language support", () => {
-  it("supports all required languages", () => {
-    const supportedLanguages = ["ja", "en", "zh", "es", "ko"];
-    expect(supportedLanguages).toHaveLength(5);
+  it("supports all required languages (JNTO 2024 inbound top 6)", () => {
+    const supportedLanguages = ["ja", "en", "zh", "ko", "th", "vi"];
+    expect(supportedLanguages).toHaveLength(6);
     expect(supportedLanguages).toContain("ja");
     expect(supportedLanguages).toContain("en");
+    expect(supportedLanguages).toContain("zh");
+    expect(supportedLanguages).toContain("ko");
+    expect(supportedLanguages).toContain("th");
+    expect(supportedLanguages).toContain("vi");
+    expect(supportedLanguages).not.toContain("es");
   });
 });

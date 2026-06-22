@@ -18,14 +18,12 @@ import {
   listQuickReplies,
   listRagDocuments,
   listSurveys,
-  createMessage,
   getImageAnalyticsSummary,
   getTeamScorecard,
   markSessionRead,
   scheduleSessionDeletion,
   updateChatSession,
   updateOperatorProfile,
-  updateSessionLastMessageAt,
   updateQuickReply,
   updateRagDocument,
   updateUserRole,
@@ -35,7 +33,7 @@ import { TRPCError } from "@trpc/server";
 import { getEmbedding, generateSummary } from "./ai";
 import { invokeLLM } from "../_core/llm";
 import { getIo } from "../socket";
-import { translateFromJapaneseWithResult } from "../_core/deepl";
+import { sendOperatorMessage } from "../chatService";
 import { sendAssignmentEmail } from "../email";
 import { getUserById } from "../db";
 
@@ -271,46 +269,14 @@ export const adminRouter = router({
         operatorId: session.operatorId ?? ctx.user.id,
       });
 
-      // Layer 2: Auto-translate admin message to visitor's language (server-side)
-      const sessionLang = session.language ?? "ja";
-      const txResult = await translateFromJapaneseWithResult(
-        input.content,
-        sessionLang
-      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
-      const translatedContent = txResult.ok ? txResult.text : null;
-      const translationLabel = txResult.ok
-        ? txResult.text
-        : txResult.reason === "skipped"
-        ? null
-        : txResult.reason === "quota_exceeded"
-        ? "[翻訳上限に達しました]"
-        : "[翻訳できませんでした]";
-
-      const msgId = await createMessage({
-        sessionId: input.sessionId,
-        role: "operator",
-        senderId: ctx.user.id,
+      const { messageId } = await sendOperatorMessage({
+        session,
         content: input.content,
-        translation: translationLabel ?? undefined,
         fileUrl: input.fileUrl,
+        senderId: ctx.user.id,
+        senderName: ctx.user.name,
       });
-      await updateSessionLastMessageAt(input.sessionId);
-      const io = getIo();
-      if (io) {
-        io.to(`session:${input.sessionId}`).emit("new_message", {
-          id: msgId,
-          sessionId: input.sessionId,
-          role: "operator",
-          // Visitor sees translated text (or original if translation failed)
-          content: translatedContent ?? input.content,
-          originalContent: input.content,
-          translation: translationLabel ?? null,
-          fileUrl: input.fileUrl,
-          operatorName: ctx.user.name,
-          createdAt: new Date(),
-        });
-      }
-      return { success: true, messageId: msgId };
+      return { success: true, messageId };
     }),
 
   assignChat: adminProcedure

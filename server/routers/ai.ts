@@ -3,7 +3,6 @@ import {
   createMessage,
   listActiveRagDocuments,
   scheduleSessionDeletion,
-  updateChatSession,
 } from "../db";
 
 const ESCALATION_KEYWORDS = {
@@ -124,12 +123,8 @@ export async function generateAIResponse(
   history: Array<{ role: string; content: string }>,
   language: string
 ): Promise<{ content: string; shouldEscalate: boolean; detectedLanguage: string }> {
-  // Auto-detect language from message content; fallback to session language
-  const detectedLang = detectLanguageFromMessage(userMessage) ?? language;
-  // If detected language differs from session language, update DB
-  if (detectedLang !== language) {
-    await updateChatSession(sessionId, { language: detectedLang }).catch(() => {});
-  }
+  // Use provided language (detection and DB update are handled by the caller)
+  const detectedLang = language;
   const langName = LANGUAGE_NAMES[detectedLang] ?? "English";
   const ragContext = await searchRagDocuments(userMessage);
 

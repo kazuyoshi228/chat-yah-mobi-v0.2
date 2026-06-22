@@ -362,3 +362,11 @@
 - [x] client/src/components/ChatListBase.tsx: LANG_LABELS を更新
 - [x] client/src/pages/admin/AdminDataAnalysis.tsx: LANG_LABEL を更新
 - [x] client/src/pages/admin/AdminFeedback.tsx: LANG_LABEL を更新
+
+## Phase 38: コードシンプル化・安定化リファクタリング（完了）
+- [x] deepl.ts に toTranslationLabel() ユーティリティを追加し、chat.ts の重複パターンを置換
+- [x] chatService.ts を新規作成し、admin.ts・operator.ts の sendMessage 処理を共通化
+- [x] email.ts の buildEmailHtml() 共通テンプレートを作成し、3関数から利用
+- [x] ai.ts の言語検出・DB 更新処理を chat.ts に移動（責務分離）
+- [x] chat.test.ts の言語サポートテストを6言語（ja/en/zh/ko/th/vi）に更新
+- [x] TypeScript: 0 エラー確認・テスト 16/16 通過

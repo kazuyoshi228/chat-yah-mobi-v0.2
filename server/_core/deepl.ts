@@ -99,6 +99,17 @@ export async function translateTextWithResult(
 }
 
 /**
+ * Convert a TranslationResult to a label string for storage.
+ * Returns the translated text, undefined (skipped/Japanese), or an error label.
+ */
+export function toTranslationLabel(result: TranslationResult): string | undefined {
+  if (result.ok) return result.text;
+  if (result.reason === "skipped") return undefined;
+  if (result.reason === "quota_exceeded") return "[翻訳上限に達しました]";
+  return "[翻訳できませんでした]";
+}
+
+/**
  * Translate a visitor message to Japanese for operators.
  * Only translates if the session language is not Japanese.
  */

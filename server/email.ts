@@ -13,54 +13,56 @@ function getResend(): Resend {
   return _resend;
 }
 
-export interface EscalationEmailOptions {
-  /** Operator's email address to notify */
-  toEmail: string;
-  /** Operator's display name */
-  operatorName: string;
-  /** Chat session ID */
-  sessionId: number;
-  /** Visitor's name (may be undefined for anonymous) */
-  visitorName?: string | null;
-  /** Visitor's language */
-  language?: string | null;
-  /** Whether this is an urgent escalation */
-  urgent?: boolean;
-  /** Base URL of the app (e.g. https://chat.yah.mobi) */
-  appUrl?: string;
+// ---------------------------------------------------------------------------
+// Shared HTML email template
+// ---------------------------------------------------------------------------
+
+interface EmailTemplateOptions {
+  /** Language for the html lang attribute */
+  lang?: string;
+  /** Optional alert block at the top of the body */
+  alertHtml?: string;
+  /** Greeting line (e.g. "Hi John,") */
+  greeting: string;
+  /** Main body paragraph */
+  bodyText: string;
+  /** Rows for the details card: [label, value] pairs */
+  detailRows: Array<[string, string]>;
+  /** CTA button text */
+  buttonText: string;
+  /** CTA button URL */
+  buttonUrl: string;
+  /** Footer note */
+  footerText: string;
 }
 
-/**
- * Send an escalation notification email to an operator via Resend.
- * Returns true on success, false on failure (non-throwing).
- */
-export async function sendEscalationEmail(
-  opts: EscalationEmailOptions
-): Promise<boolean> {
+function buildEmailHtml(opts: EmailTemplateOptions): string {
   const {
-    toEmail,
-    operatorName,
-    sessionId,
-    visitorName,
-    language,
-    urgent = false,
-    appUrl = "https://chat.yah.mobi",
+    lang = "en",
+    alertHtml = "",
+    greeting,
+    bodyText,
+    detailRows,
+    buttonText,
+    buttonUrl,
+    footerText,
   } = opts;
 
-  const visitorLabel = visitorName ?? "Anonymous visitor";
-  const langLabel = language ? ` (${language.toUpperCase()})` : "";
-  const urgentBadge = urgent ? "🚨 URGENT — " : "";
-  const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
+  const detailRowsHtml = detailRows
+    .map(
+      ([label, value]) => `
+      <tr>
+        <td style="padding:6px 0;color:#6b7280;font-size:13px;width:140px;">${label}</td>
+        <td style="padding:6px 0;color:#111827;font-size:13px;">${value}</td>
+      </tr>`
+    )
+    .join("");
 
-  const subject = `${urgentBadge}Operator requested: ${visitorLabel}${langLabel} — Session #${sessionId}`;
-
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
+  return `<!DOCTYPE html>
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Operator Request</title>
 </head>
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
@@ -77,34 +79,15 @@ export async function sendEscalationEmail(
           <!-- Body -->
           <tr>
             <td style="padding:32px;">
-              ${urgent ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-bottom:24px;">
-                <p style="margin:0;color:#dc2626;font-size:13px;font-weight:600;">🚨 Urgent escalation request</p>
-              </div>` : ""}
-              <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">Hi ${operatorName},</p>
-              <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">
-                A visitor has requested to speak with a human operator. Please respond as soon as possible.
-              </p>
+              ${alertHtml}
+              <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">${greeting}</p>
+              <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">${bodyText}</p>
               <!-- Details card -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:28px;">
                 <tr>
                   <td style="padding:20px 24px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;width:140px;">Session ID</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">#${sessionId}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">Visitor</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${visitorLabel}</td>
-                      </tr>
-                      ${language ? `<tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">Language</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${language.toUpperCase()}</td>
-                      </tr>` : ""}
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">Time</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST</td>
-                      </tr>
+                      ${detailRowsHtml}
                     </table>
                   </td>
                 </tr>
@@ -113,8 +96,8 @@ export async function sendEscalationEmail(
               <table cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:#000000;border-radius:8px;">
-                    <a href="${chatUrl}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.02em;">
-                      Open Chat →
+                    <a href="${buttonUrl}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;letter-spacing:0.02em;">
+                      ${buttonText}
                     </a>
                   </td>
                 </tr>
@@ -124,9 +107,7 @@ export async function sendEscalationEmail(
           <!-- Footer -->
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #f3f4f6;">
-              <p style="margin:0;color:#9ca3af;font-size:12px;">
-                This notification was sent by yah.mobile Chat Support. You are receiving this because you are registered as an operator.
-              </p>
+              <p style="margin:0;color:#9ca3af;font-size:12px;">${footerText}</p>
             </td>
           </tr>
         </table>
@@ -134,34 +115,98 @@ export async function sendEscalationEmail(
     </tr>
   </table>
 </body>
-</html>
-  `.trim();
+</html>`;
+}
 
+/** Send an email via Resend. Returns true on success, false on failure (non-throwing). */
+async function sendEmail(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  logLabel: string;
+}): Promise<boolean> {
   try {
     const resend = getResend();
     const { error } = await resend.emails.send({
       from: ENV.resendFromEmail,
-      to: toEmail,
-      subject,
-      html,
+      to: opts.to,
+      subject: opts.subject,
+      html: opts.html,
     });
-
     if (error) {
       console.warn("[Email] Resend error:", error);
       return false;
     }
-
-    console.log(`[Email] Escalation email sent to ${toEmail} for session #${sessionId}`);
+    console.log(`[Email] ${opts.logLabel}`);
     return true;
   } catch (err) {
-    console.warn("[Email] Failed to send escalation email:", err);
+    console.warn("[Email] Failed to send:", err);
     return false;
   }
 }
 
-/**
- * Send an assignment notification email to an operator when admin assigns a chat.
- */
+// ---------------------------------------------------------------------------
+// Public email functions
+// ---------------------------------------------------------------------------
+
+export interface EscalationEmailOptions {
+  toEmail: string;
+  operatorName: string;
+  sessionId: number;
+  visitorName?: string | null;
+  language?: string | null;
+  urgent?: boolean;
+  appUrl?: string;
+}
+
+export async function sendEscalationEmail(opts: EscalationEmailOptions): Promise<boolean> {
+  const {
+    toEmail,
+    operatorName,
+    sessionId,
+    visitorName,
+    language,
+    urgent = false,
+    appUrl = "https://chat.yah.mobi",
+  } = opts;
+
+  const visitorLabel = visitorName ?? "Anonymous visitor";
+  const langLabel = language ? ` (${language.toUpperCase()})` : "";
+  const urgentBadge = urgent ? "🚨 URGENT — " : "";
+  const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
+  const subject = `${urgentBadge}Operator requested: ${visitorLabel}${langLabel} — Session #${sessionId}`;
+
+  const detailRows: Array<[string, string]> = [
+    ["Session ID", `#${sessionId}`],
+    ["Visitor", visitorLabel],
+    ...(language ? [["Language", language.toUpperCase()] as [string, string]] : []),
+    ["Time", `${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST`],
+  ];
+
+  const alertHtml = urgent
+    ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-bottom:24px;">
+        <p style="margin:0;color:#dc2626;font-size:13px;font-weight:600;">🚨 Urgent escalation request</p>
+       </div>`
+    : "";
+
+  const html = buildEmailHtml({
+    alertHtml,
+    greeting: `Hi ${operatorName},`,
+    bodyText: "A visitor has requested to speak with a human operator. Please respond as soon as possible.",
+    detailRows,
+    buttonText: "Open Chat →",
+    buttonUrl: chatUrl,
+    footerText: "This notification was sent by yah.mobile Chat Support. You are receiving this because you are registered as an operator.",
+  });
+
+  return sendEmail({
+    to: toEmail,
+    subject,
+    html,
+    logLabel: `Escalation email sent to ${toEmail} for session #${sessionId}`,
+  });
+}
+
 export async function sendAssignmentEmail(opts: {
   toEmail: string;
   operatorName: string;
@@ -186,105 +231,34 @@ export async function sendAssignmentEmail(opts: {
   const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
   const subject = `チャットがアサインされました: ${visitorLabel}${langLabel} — Session #${sessionId}`;
 
-  const html = `
-<!DOCTYPE html>
-<html lang="ja">
-<head><meta charset="UTF-8" /><title>チャットアサイン通知</title></head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
-          <tr>
-            <td style="background:#000000;padding:24px 32px;">
-              <p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">YAH.MOBILE</p>
-              <p style="margin:4px 0 0;color:#9ca3af;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Chat Support</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:32px;">
-              <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">Hi ${operatorName},</p>
-              <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">
-                管理者があなたにチャットをアサインしました。できるだけ早くご対応ください。
-              </p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:20px 24px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;width:140px;">Session ID</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">#${sessionId}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">訪問者</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${visitorLabel}</td>
-                      </tr>
-                      ${language ? `<tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">言語</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${language.toUpperCase()}</td>
-                      </tr>` : ""}
-                      ${initialMessage ? `<tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">最初のメッセージ</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;font-style:italic;">&ldquo;${initialMessage.slice(0, 200)}${initialMessage.length > 200 ? "…" : ""}&rdquo;</td>
-                      </tr>` : ""}
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">時刻</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:#000000;border-radius:8px;">
-                    <a href="${chatUrl}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
-                      チャットを開く →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:20px 32px;border-top:1px solid #f3f4f6;">
-              <p style="margin:0;color:#9ca3af;font-size:12px;">
-                このメールはyah.mobile Chat Supportから送信されました。
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim();
+  const detailRows: Array<[string, string]> = [
+    ["Session ID", `#${sessionId}`],
+    ["訪問者", visitorLabel],
+    ...(language ? [["言語", language.toUpperCase()] as [string, string]] : []),
+    ...(initialMessage
+      ? [["最初のメッセージ", `&ldquo;${initialMessage.slice(0, 200)}${initialMessage.length > 200 ? "…" : ""}&rdquo;`] as [string, string]]
+      : []),
+    ["時刻", `${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST`],
+  ];
 
-  try {
-    const resend = getResend();
-    const { error } = await resend.emails.send({
-      from: ENV.resendFromEmail,
-      to: toEmail,
-      subject,
-      html,
-    });
-    if (error) {
-      console.warn("[Email] Resend error:", error);
-      return false;
-    }
-    console.log(`[Email] Assignment email sent to ${toEmail} for session #${sessionId}`);
-    return true;
-  } catch (err) {
-    console.warn("[Email] Failed to send assignment email:", err);
-    return false;
-  }
+  const html = buildEmailHtml({
+    lang: "ja",
+    greeting: `Hi ${operatorName},`,
+    bodyText: "管理者があなたにチャットをアサインしました。できるだけ早くご対応ください。",
+    detailRows,
+    buttonText: "チャットを開く →",
+    buttonUrl: chatUrl,
+    footerText: "このメールはyah.mobile Chat Supportから送信されました。",
+  });
+
+  return sendEmail({
+    to: toEmail,
+    subject,
+    html,
+    logLabel: `Assignment email sent to ${toEmail} for session #${sessionId}`,
+  });
 }
 
-/**
- * Send a new chat notification email to all online operators.
- * Used when a new session starts and immediate operator attention is needed.
- */
 export async function sendNewChatEmail(opts: {
   toEmail: string;
   operatorName: string;
@@ -309,95 +283,26 @@ export async function sendNewChatEmail(opts: {
   const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
   const subject = `New chat started: ${visitorLabel}${langLabel} — Session #${sessionId}`;
 
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8" /><title>New Chat</title></head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
-    <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
-          <tr>
-            <td style="background:#000000;padding:24px 32px;">
-              <p style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">YAH.MOBILE</p>
-              <p style="margin:4px 0 0;color:#9ca3af;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">Chat Support</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:32px;">
-              <p style="margin:0 0 8px;color:#6b7280;font-size:13px;">Hi ${operatorName},</p>
-              <p style="margin:0 0 24px;color:#111827;font-size:15px;line-height:1.6;">
-                A new chat session has started. The AI is handling it, but you may want to monitor the conversation.
-              </p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:20px 24px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;width:140px;">Session ID</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;">#${sessionId}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">Visitor</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${visitorLabel}</td>
-                      </tr>
-                      ${language ? `<tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">Language</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;">${language.toUpperCase()}</td>
-                      </tr>` : ""}
-                      <tr>
-                        <td style="padding:6px 0;color:#6b7280;font-size:13px;">First message</td>
-                        <td style="padding:6px 0;color:#111827;font-size:13px;font-style:italic;">"${initialMessage.slice(0, 200)}${initialMessage.length > 200 ? "…" : ""}"</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:#000000;border-radius:8px;">
-                    <a href="${chatUrl}" style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;">
-                      View Chat →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:20px 32px;border-top:1px solid #f3f4f6;">
-              <p style="margin:0;color:#9ca3af;font-size:12px;">
-                This notification was sent by yah.mobile Chat Support.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `.trim();
+  const detailRows: Array<[string, string]> = [
+    ["Session ID", `#${sessionId}`],
+    ["Visitor", visitorLabel],
+    ...(language ? [["Language", language.toUpperCase()] as [string, string]] : []),
+    ["First message", `"${initialMessage.slice(0, 200)}${initialMessage.length > 200 ? "…" : ""}"`],
+  ];
 
-  try {
-    const resend = getResend();
-    const { error } = await resend.emails.send({
-      from: ENV.resendFromEmail,
-      to: toEmail,
-      subject,
-      html,
-    });
+  const html = buildEmailHtml({
+    greeting: `Hi ${operatorName},`,
+    bodyText: "A new chat session has started. The AI is handling it, but you may want to monitor the conversation.",
+    detailRows,
+    buttonText: "View Chat →",
+    buttonUrl: chatUrl,
+    footerText: "This notification was sent by yah.mobile Chat Support.",
+  });
 
-    if (error) {
-      console.warn("[Email] Resend error:", error);
-      return false;
-    }
-
-    console.log(`[Email] New chat email sent to ${toEmail} for session #${sessionId}`);
-    return true;
-  } catch (err) {
-    console.warn("[Email] Failed to send new chat email:", err);
-    return false;
-  }
+  return sendEmail({
+    to: toEmail,
+    subject,
+    html,
+    logLabel: `New chat email sent to ${toEmail} for session #${sessionId}`,
+  });
 }
