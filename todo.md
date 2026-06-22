@@ -326,3 +326,12 @@
 - [x] admin.ts: WithResult バリアントに切り替え、同様のフォールバックラベルを保存
 - [x] ChatDetailBase.tsx: 翻訳失敗ラベルを amber 色 + ⚠ アイコンで視覚的に区別表示
 - [x] TypeScript: 0 エラー確認・テスト 15/15 通過
+
+## Phase 35: OpenAI 直接 API への切り替え（2026-06-22）
+- [x] OPENAI_API_KEY を環境変数に登録
+- [x] env.ts に openAiApiKey を追加
+- [x] llm.ts: OPENAI_API_KEY が設定されている場合は api.openai.com に直接リクエスト（フォールバック: Manus Forge）
+- [x] ai.ts: getEmbedding を OpenAI 直接 API に切り替え（フォールバック: Manus Forge）
+- [x] ai.ts: generateAIResponse / generateSummary のモデルを gpt-4o → gpt-4o-mini に変更（コスト削減）
+- [x] server/openai.test.ts: OpenAI エンドポイントルーティングのテストを追加
+- [x] TypeScript: 0 エラー確認・テスト 16/16 通過

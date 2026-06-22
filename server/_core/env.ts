@@ -14,4 +14,5 @@ export const ENV = {
   upstashRedisRestUrl: process.env.UPSTASH_REDIS_REST_URL ?? "",
   upstashRedisRestToken: process.env.UPSTASH_REDIS_REST_TOKEN ?? "",
   deeplApiKey: process.env.DEEPL_API_KEY ?? "",
+  openAiApiKey: process.env.OPENAI_API_KEY ?? "",
 };
