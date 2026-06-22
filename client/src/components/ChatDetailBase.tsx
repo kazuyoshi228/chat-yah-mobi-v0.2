@@ -513,6 +513,17 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                             </div>
                           );
                         })()}
+                        {/* Layer 1b: Show translation for AI messages (non-Japanese sessions) */}
+                        {isAI && msg.translation && (() => {
+                          const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
+                          return (
+                            <div className={`px-3 pb-2 border-t mt-0.5 ${isFailed ? "border-amber-200 bg-amber-50/50" : "border-blue-100"}`}>
+                              <p className={`text-[11px] leading-relaxed ${isFailed ? "text-amber-600" : "text-blue-400"}`}>
+                                <span className="font-medium">{isFailed ? "⚠ " : "🌐 "}</span>{msg.translation}
+                              </p>
+                            </div>
+                          );
+                        })()}
                         {/* Layer 2: Show translated text for operator messages sent to non-Japanese visitors */}
                         {isOp && msg.translation && (() => {
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";

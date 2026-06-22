@@ -335,3 +335,9 @@
 - [x] ai.ts: generateAIResponse / generateSummary のモデルを gpt-4o → gpt-4o-mini に変更（コスト削減）
 - [x] server/openai.test.ts: OpenAI エンドポイントルーティングのテストを追加
 - [x] TypeScript: 0 エラー確認・テスト 16/16 通過
+
+## Phase 36: AI 返信への翻訳表示追加（2026-06-22）
+- [x] chat.ts の startSession: AI 返信生成後に translateToJapaneseWithResult で日本語訳を取得し translation フィールドに保存
+- [x] chat.ts の sendMessage: 同様に AI 返信の翻訳を保存し socket emit にも translation を含める
+- [x] ChatDetailBase.tsx: isAI メッセージに翻訳表示ブロック（Layer 1b）を追加（青色テキスト、エラー時は amber）
+- [x] TypeScript: 0 エラー確認・テスト 16/16 通過

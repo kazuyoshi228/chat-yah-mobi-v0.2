@@ -84,10 +84,22 @@ export const chatRouter = router({
         input.language
       );
 
+      // Translate AI response to Japanese for operator display (skip if already Japanese)
+      const aiTxResult0 = await translateToJapaneseWithResult(
+        aiContent,
+        input.language
+      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
+      const aiTranslation0 = aiTxResult0.ok
+        ? aiTxResult0.text
+        : aiTxResult0.reason === "skipped"
+        ? undefined
+        : "[翻訳できませんでした]";
+
       await createMessage({
         sessionId,
         role: "ai",
         content: aiContent,
+        translation: aiTranslation0,
       });
 
       // Notify via socket
@@ -256,10 +268,22 @@ export const chatRouter = router({
         session.language ?? "ja"
       );
 
+      // Translate AI response to Japanese for operator display (skip if already Japanese)
+      const aiTxResult = await translateToJapaneseWithResult(
+        aiContent,
+        session.language ?? "ja"
+      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
+      const aiTranslation = aiTxResult.ok
+        ? aiTxResult.text
+        : aiTxResult.reason === "skipped"
+        ? undefined
+        : "[翻訳できませんでした]";
+
       const aiMsgId = await createMessage({
         sessionId: input.sessionId,
         role: "ai",
         content: aiContent,
+        translation: aiTranslation,
       });
 
       if (io) {
@@ -268,6 +292,7 @@ export const chatRouter = router({
           sessionId: input.sessionId,
           role: "ai",
           content: aiContent,
+          translation: aiTranslation ?? null,
           createdAt: new Date(),
         });
 
