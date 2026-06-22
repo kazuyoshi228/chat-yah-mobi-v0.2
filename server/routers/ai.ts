@@ -142,7 +142,7 @@ If you cannot answer the question or the user seems frustrated, suggest connecti
   }));
 
   const response = await invokeLLM({
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
       ...conversationHistory,
@@ -180,7 +180,7 @@ export async function generateSummary(
     .join("\n");
 
   const response = await invokeLLM({
-    model: "gpt-4o-mini",
+    model: "gpt-4o",
     messages: [
       {
         role: "system",

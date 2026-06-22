@@ -457,7 +457,7 @@ Return a JSON object with this exact shape:
 Do not include any other text.`;
 
           const resp = await invokeLLM({
-            model: "gpt-4o-mini",
+            model: "gpt-4o",
             messages: [{ role: "user" as const, content: prompt as string }],
             response_format: { type: "json_object" },
           });
