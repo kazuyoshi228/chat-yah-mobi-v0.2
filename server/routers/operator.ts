@@ -16,6 +16,7 @@ import {
 import { protectedProcedure, router } from "../_core/trpc";
 import { generateSummary } from "./ai";
 import { getIo } from "../socket";
+import { translateFromJapanese } from "../_core/deepl";
 
 // Middleware: require operator or admin role
 const operatorProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -117,11 +118,19 @@ export const operatorRouter = router({
         });
       }
 
+      // Translate operator message to visitor's language if non-Japanese
+      const sessionLang = session.language ?? "ja";
+      const translatedContent = await translateFromJapanese(
+        input.content,
+        sessionLang
+      ).catch(() => null);
+      // Send the translated text to the visitor; store original as content, translation as translation
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
         senderId: ctx.user.id, // 5.2: track which staff member sent the message
         content: input.content,
+        translation: translatedContent ?? undefined,
         fileUrl: input.fileUrl,
       });
       await updateSessionLastMessageAt(input.sessionId);
@@ -132,7 +141,10 @@ export const operatorRouter = router({
           id: msgId,
           sessionId: input.sessionId,
           role: "operator",
-          content: input.content,
+          // Visitors see translated text; operators see original
+          content: translatedContent ?? input.content,
+          originalContent: input.content,
+          translation: translatedContent ?? null,
           fileUrl: input.fileUrl,
           operatorName: ctx.user.name,
           createdAt: new Date(),

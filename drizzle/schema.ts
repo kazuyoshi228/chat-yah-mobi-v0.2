@@ -65,6 +65,7 @@ export const messages = mysqlTable("messages", {
   role: mysqlEnum("role", ["visitor", "operator", "ai"]).notNull(),
   senderId: int("senderId").references(() => users.id, { onDelete: "set null" }), // FK to users.id (nullable)
   content: text("content").notNull(),
+  translation: text("translation"), // DeepL translated text (nullable)
   fileUrl: varchar("fileUrl", { length: 1024 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });

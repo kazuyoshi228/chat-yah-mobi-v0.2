@@ -54,6 +54,8 @@ interface ChatMessage {
   sessionId: number;
   role: "visitor" | "operator" | "ai";
   content: string;
+  translation?: string | null; // DeepL translated text
+  originalContent?: string | null; // original text before translation (for operator messages)
   fileUrl?: string | null;
   operatorName?: string;
   createdAt: Date | string;
@@ -495,7 +497,26 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                           </button>
                         )}
                         {msg.content && (
-                          <div className="px-3 py-2 text-sm whitespace-pre-wrap break-words">{msg.content}</div>
+                          <div className="px-3 py-2 text-sm whitespace-pre-wrap break-words">
+                            {/* For operator messages: show originalContent (JP) if available, else content */}
+                            {isOp ? (msg.originalContent ?? msg.content) : msg.content}
+                          </div>
+                        )}
+                        {/* Layer 1: Show translation for visitor messages (non-Japanese sessions) */}
+                        {isVisitor && msg.translation && (
+                          <div className="px-3 pb-2 border-t border-gray-100 mt-0.5">
+                            <p className="text-[11px] text-gray-400 leading-relaxed">
+                              <span className="font-medium text-gray-500">🌐 </span>{msg.translation}
+                            </p>
+                          </div>
+                        )}
+                        {/* Layer 2: Show translated text for operator messages sent to non-Japanese visitors */}
+                        {isOp && msg.translation && (
+                          <div className="px-3 pb-2 border-t border-white/20 mt-0.5">
+                            <p className="text-[11px] text-white/60 leading-relaxed">
+                              <span className="font-medium text-white/70">→ </span>{msg.translation}
+                            </p>
+                          </div>
                         )}
                       </div>
                       <span className="text-[10px] text-gray-400 mt-0.5">

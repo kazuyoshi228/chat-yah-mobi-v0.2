@@ -19,6 +19,7 @@ import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
 import { sendEscalationEmail, sendNewChatEmail } from "../email";
 import { getAllAdmins } from "../db";
+import { translateToJapanese } from "../_core/deepl";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
@@ -58,11 +59,16 @@ export const chatRouter = router({
         return { sessionId: concurrent.id, isNew: false };
       }
 
-      // Save visitor's first message
+      // Save visitor's first message (with translation if non-Japanese)
+      const initialTranslation = await translateToJapanese(
+        input.initialMessage,
+        input.language
+      ).catch(() => null);
       await createMessage({
         sessionId,
         role: "visitor",
         content: input.initialMessage,
+        translation: initialTranslation ?? undefined,
       });
 
       // Generate AI response
@@ -154,7 +160,19 @@ export const chatRouter = router({
         }
       }
 
-      return getMessagesBySessionId(input.sessionId);
+      const msgs = await getMessagesBySessionId(input.sessionId);
+
+      // For visitors: remap operator messages so they see translated content
+      if (!isOperatorOrAdmin) {
+        return msgs.map((m) => {
+          if (m.role === "operator" && m.translation) {
+            return { ...m, content: m.translation, translation: null };
+          }
+          return m;
+        });
+      }
+
+      return msgs;
     }),
 
   // Send a visitor message and get AI response
@@ -185,11 +203,16 @@ export const chatRouter = router({
         });
       }
 
-      // Save visitor message
+      // Save visitor message (with translation if non-Japanese)
+      const visitorTranslation = await translateToJapanese(
+        input.content,
+        session.language ?? "ja"
+      ).catch(() => null);
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "visitor",
         content: input.content,
+        translation: visitorTranslation ?? undefined,
         fileUrl: input.fileUrl,
       });
       await updateSessionLastMessageAt(input.sessionId);
@@ -201,6 +224,7 @@ export const chatRouter = router({
           sessionId: input.sessionId,
           role: "visitor",
           content: input.content,
+          translation: visitorTranslation ?? null,
           fileUrl: input.fileUrl,
           createdAt: new Date(),
         });

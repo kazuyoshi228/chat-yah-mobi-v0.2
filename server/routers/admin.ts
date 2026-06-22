@@ -35,6 +35,7 @@ import { TRPCError } from "@trpc/server";
 import { getEmbedding, generateSummary } from "./ai";
 import { invokeLLM } from "../_core/llm";
 import { getIo } from "../socket";
+import { translateFromJapanese } from "../_core/deepl";
 import { sendAssignmentEmail } from "../email";
 import { getUserById } from "../db";
 
@@ -269,11 +270,20 @@ export const adminRouter = router({
         status: "active",
         operatorId: session.operatorId ?? ctx.user.id,
       });
+
+      // Layer 2: Auto-translate admin message to visitor's language (server-side)
+      const sessionLang = session.language ?? "ja";
+      const translatedContent = await translateFromJapanese(
+        input.content,
+        sessionLang
+      ).catch(() => null);
+
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
-        senderId: ctx.user.id, // 5.2: track which admin sent the message
+        senderId: ctx.user.id,
         content: input.content,
+        translation: translatedContent ?? undefined,
         fileUrl: input.fileUrl,
       });
       await updateSessionLastMessageAt(input.sessionId);
@@ -283,7 +293,10 @@ export const adminRouter = router({
           id: msgId,
           sessionId: input.sessionId,
           role: "operator",
-          content: input.content,
+          // Visitor sees translated text; admin sees original in UI
+          content: translatedContent ?? input.content,
+          originalContent: input.content,
+          translation: translatedContent ?? null,
           fileUrl: input.fileUrl,
           operatorName: ctx.user.name,
           createdAt: new Date(),

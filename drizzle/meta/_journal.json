@@ -43,6 +43,13 @@
       "when": 1781785821474,
       "tag": "0005_wide_barracuda",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1782105454650,
+      "tag": "0006_good_silver_sable",
+      "breakpoints": true
     }
   ]
 }

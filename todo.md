@@ -302,3 +302,18 @@
 - [x] ポーリング（refetchInterval）を全クエリから削除してSocket.ioのみに一本化
 - [x] useEffectの依存配列を正確に設定（refetchCounts / refetchUnread 追加）
 - [x] TypeScript: 0エラー確認・テスト 15/15 通過
+
+## Phase 33: DeepL 双方向翻訳機能（2026-06-22）
+- [x] DEEPL_API_KEY を環境変数に登録・env.ts に追加
+- [x] server/_core/deepl.ts: translateToJapanese / translateFromJapanese ヘルパー作成（DeepL Free API）
+- [x] drizzle/schema.ts: messages テーブルに translation カラム追加（text, nullable）
+- [x] DBマイグレーション実行（0006_good_silver_sable.sql）
+- [x] chat.ts startSession: 訪問者の初回メッセージを日本語に翻訳して translation に保存（レイヤー1）
+- [x] chat.ts sendMessage: 訪問者メッセージを日本語に翻訳して translation に保存（レイヤー1）
+- [x] operator.ts sendMessage: オペレーターの日本語メッセージを訪問者言語に翻訳して translation に保存（レイヤー2）
+- [x] admin.ts sendChatMessage: 管理者の日本語メッセージを訪問者言語に翻訳して translation に保存（レイヤー2）
+- [x] chat.ts getMessages: 訪問者向けレスポンスでオペレーターメッセージを翻訳済みテキストに差し替え
+- [x] ChatDetailBase.tsx: ChatMessage 型に translation / originalContent フィールドを追加
+- [x] ChatDetailBase.tsx: 訪問者メッセージバブル下に日本語訳を表示（🌐 アイコン付き）
+- [x] ChatDetailBase.tsx: オペレーターメッセージバブル下に送信先言語の翻訳を表示（→ プレフィックス）
+- [x] TypeScript: 0 エラー確認・テスト 15/15 通過
