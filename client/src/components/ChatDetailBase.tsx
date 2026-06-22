@@ -503,21 +503,27 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                           </div>
                         )}
                         {/* Layer 1: Show translation for visitor messages (non-Japanese sessions) */}
-                        {isVisitor && msg.translation && (
-                          <div className="px-3 pb-2 border-t border-gray-100 mt-0.5">
-                            <p className="text-[11px] text-gray-400 leading-relaxed">
-                              <span className="font-medium text-gray-500">🌐 </span>{msg.translation}
-                            </p>
-                          </div>
-                        )}
+                        {isVisitor && msg.translation && (() => {
+                          const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
+                          return (
+                            <div className={`px-3 pb-2 border-t mt-0.5 ${isFailed ? "border-amber-100 bg-amber-50/50" : "border-gray-100"}`}>
+                              <p className={`text-[11px] leading-relaxed ${isFailed ? "text-amber-600" : "text-gray-400"}`}>
+                                <span className="font-medium">{isFailed ? "⚠ " : "🌐 "}</span>{msg.translation}
+                              </p>
+                            </div>
+                          );
+                        })()}
                         {/* Layer 2: Show translated text for operator messages sent to non-Japanese visitors */}
-                        {isOp && msg.translation && (
-                          <div className="px-3 pb-2 border-t border-white/20 mt-0.5">
-                            <p className="text-[11px] text-white/60 leading-relaxed">
-                              <span className="font-medium text-white/70">→ </span>{msg.translation}
-                            </p>
-                          </div>
-                        )}
+                        {isOp && msg.translation && (() => {
+                          const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
+                          return (
+                            <div className={`px-3 pb-2 border-t mt-0.5 ${isFailed ? "border-amber-400/40 bg-amber-500/20" : "border-white/20"}`}>
+                              <p className={`text-[11px] leading-relaxed ${isFailed ? "text-amber-200" : "text-white/60"}`}>
+                                <span className="font-medium">{isFailed ? "⚠ " : "→ "}</span>{msg.translation}
+                              </p>
+                            </div>
+                          );
+                        })()}
                       </div>
                       <span className="text-[10px] text-gray-400 mt-0.5">
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

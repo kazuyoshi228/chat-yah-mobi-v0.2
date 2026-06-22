@@ -16,7 +16,7 @@ import {
 import { protectedProcedure, router } from "../_core/trpc";
 import { generateSummary } from "./ai";
 import { getIo } from "../socket";
-import { translateFromJapanese } from "../_core/deepl";
+import { translateFromJapaneseWithResult } from "../_core/deepl";
 
 // Middleware: require operator or admin role
 const operatorProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -118,19 +118,27 @@ export const operatorRouter = router({
         });
       }
 
-      // Translate operator message to visitor's language if non-Japanese
+      // Layer 2: Auto-translate operator message to visitor's language (server-side)
       const sessionLang = session.language ?? "ja";
-      const translatedContent = await translateFromJapanese(
+      const txResult = await translateFromJapaneseWithResult(
         input.content,
         sessionLang
-      ).catch(() => null);
-      // Send the translated text to the visitor; store original as content, translation as translation
+      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
+      const translatedContent = txResult.ok ? txResult.text : null;
+      const translationLabel = txResult.ok
+        ? txResult.text
+        : txResult.reason === "skipped"
+        ? null
+        : txResult.reason === "quota_exceeded"
+        ? "[翻訳上限に達しました]"
+        : "[翻訳できませんでした]";
+
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
-        senderId: ctx.user.id, // 5.2: track which staff member sent the message
+        senderId: ctx.user.id,
         content: input.content,
-        translation: translatedContent ?? undefined,
+        translation: translationLabel ?? undefined,
         fileUrl: input.fileUrl,
       });
       await updateSessionLastMessageAt(input.sessionId);
@@ -141,10 +149,10 @@ export const operatorRouter = router({
           id: msgId,
           sessionId: input.sessionId,
           role: "operator",
-          // Visitors see translated text; operators see original
+          // Visitor sees translated text (or original if translation failed)
           content: translatedContent ?? input.content,
           originalContent: input.content,
-          translation: translatedContent ?? null,
+          translation: translationLabel ?? null,
           fileUrl: input.fileUrl,
           operatorName: ctx.user.name,
           createdAt: new Date(),

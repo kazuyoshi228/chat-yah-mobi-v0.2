@@ -317,3 +317,12 @@
 - [x] ChatDetailBase.tsx: 訪問者メッセージバブル下に日本語訳を表示（🌐 アイコン付き）
 - [x] ChatDetailBase.tsx: オペレーターメッセージバブル下に送信先言語の翻訳を表示（→ プレフィックス）
 - [x] TypeScript: 0 エラー確認・テスト 15/15 通過
+
+## Phase 34: 翻訳失敗時フォールバック表示（2026-06-22）
+- [x] deepl.ts: TranslationResult 型を追加（ok: true/false + reason: quota_exceeded / api_error / no_key / network_error / skipped）
+- [x] deepl.ts: translateTextWithResult / translateToJapaneseWithResult / translateFromJapaneseWithResult を追加
+- [x] chat.ts: WithResult バリアントに切り替え、失敗時は「[翻訳できませんでした]」を translation に保存
+- [x] operator.ts: WithResult バリアントに切り替え、quota_exceeded 時は「[翻訳上限に達しました]」を保存
+- [x] admin.ts: WithResult バリアントに切り替え、同様のフォールバックラベルを保存
+- [x] ChatDetailBase.tsx: 翻訳失敗ラベルを amber 色 + ⚠ アイコンで視覚的に区別表示
+- [x] TypeScript: 0 エラー確認・テスト 15/15 通過

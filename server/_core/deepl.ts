@@ -26,6 +26,10 @@ function toDeepLLang(lang: string): string {
   return LANG_MAP[lang.toLowerCase()] ?? lang.toUpperCase();
 }
 
+export type TranslationResult =
+  | { ok: true; text: string }
+  | { ok: false; reason: "quota_exceeded" | "api_error" | "no_key" | "network_error" | "skipped" };
+
 /**
  * Translate text using DeepL API.
  * Returns null if translation fails or API key is not configured.
@@ -35,11 +39,23 @@ export async function translateText(
   targetLang: string,
   sourceLang?: string
 ): Promise<string | null> {
+  const result = await translateTextWithResult(text, targetLang, sourceLang);
+  return result.ok ? result.text : null;
+}
+
+/**
+ * Translate text using DeepL API, returning a structured result with error reason.
+ */
+export async function translateTextWithResult(
+  text: string,
+  targetLang: string,
+  sourceLang?: string
+): Promise<TranslationResult> {
   if (!ENV.deeplApiKey) {
     console.warn("[DeepL] API key not configured");
-    return null;
+    return { ok: false, reason: "no_key" };
   }
-  if (!text.trim()) return null;
+  if (!text.trim()) return { ok: false, reason: "skipped" };
 
   const target = toDeepLLang(targetLang);
   const body: Record<string, string | string[]> = {
@@ -63,16 +79,22 @@ export async function translateText(
     if (!res.ok) {
       const errText = await res.text();
       console.error(`[DeepL] API error ${res.status}: ${errText}`);
-      return null;
+      // 456 = quota exceeded (DeepL-specific)
+      if (res.status === 456 || res.status === 429) {
+        return { ok: false, reason: "quota_exceeded" };
+      }
+      return { ok: false, reason: "api_error" };
     }
 
     const data = (await res.json()) as {
       translations: { detected_source_language: string; text: string }[];
     };
-    return data.translations[0]?.text ?? null;
+    const translated = data.translations[0]?.text;
+    if (!translated) return { ok: false, reason: "api_error" };
+    return { ok: true, text: translated };
   } catch (err) {
     console.error("[DeepL] Request failed:", err);
-    return null;
+    return { ok: false, reason: "network_error" };
   }
 }
 
@@ -88,6 +110,14 @@ export async function translateToJapanese(
   return translateText(text, "ja", sessionLang);
 }
 
+export async function translateToJapaneseWithResult(
+  text: string,
+  sessionLang: string
+): Promise<TranslationResult> {
+  if (sessionLang === "ja") return { ok: false, reason: "skipped" };
+  return translateTextWithResult(text, "ja", sessionLang);
+}
+
 /**
  * Translate an operator message to the visitor's language.
  * Only translates if the session language is not Japanese.
@@ -98,4 +128,12 @@ export async function translateFromJapanese(
 ): Promise<string | null> {
   if (sessionLang === "ja") return null;
   return translateText(text, sessionLang, "ja");
+}
+
+export async function translateFromJapaneseWithResult(
+  text: string,
+  sessionLang: string
+): Promise<TranslationResult> {
+  if (sessionLang === "ja") return { ok: false, reason: "skipped" };
+  return translateTextWithResult(text, sessionLang, "ja");
 }

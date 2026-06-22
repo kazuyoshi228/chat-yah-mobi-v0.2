@@ -35,7 +35,7 @@ import { TRPCError } from "@trpc/server";
 import { getEmbedding, generateSummary } from "./ai";
 import { invokeLLM } from "../_core/llm";
 import { getIo } from "../socket";
-import { translateFromJapanese } from "../_core/deepl";
+import { translateFromJapaneseWithResult } from "../_core/deepl";
 import { sendAssignmentEmail } from "../email";
 import { getUserById } from "../db";
 
@@ -273,17 +273,25 @@ export const adminRouter = router({
 
       // Layer 2: Auto-translate admin message to visitor's language (server-side)
       const sessionLang = session.language ?? "ja";
-      const translatedContent = await translateFromJapanese(
+      const txResult = await translateFromJapaneseWithResult(
         input.content,
         sessionLang
-      ).catch(() => null);
+      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
+      const translatedContent = txResult.ok ? txResult.text : null;
+      const translationLabel = txResult.ok
+        ? txResult.text
+        : txResult.reason === "skipped"
+        ? null
+        : txResult.reason === "quota_exceeded"
+        ? "[翻訳上限に達しました]"
+        : "[翻訳できませんでした]";
 
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "operator",
         senderId: ctx.user.id,
         content: input.content,
-        translation: translatedContent ?? undefined,
+        translation: translationLabel ?? undefined,
         fileUrl: input.fileUrl,
       });
       await updateSessionLastMessageAt(input.sessionId);
@@ -293,10 +301,10 @@ export const adminRouter = router({
           id: msgId,
           sessionId: input.sessionId,
           role: "operator",
-          // Visitor sees translated text; admin sees original in UI
+          // Visitor sees translated text (or original if translation failed)
           content: translatedContent ?? input.content,
           originalContent: input.content,
-          translation: translatedContent ?? null,
+          translation: translationLabel ?? null,
           fileUrl: input.fileUrl,
           operatorName: ctx.user.name,
           createdAt: new Date(),

@@ -19,7 +19,7 @@ import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
 import { sendEscalationEmail, sendNewChatEmail } from "../email";
 import { getAllAdmins } from "../db";
-import { translateToJapanese } from "../_core/deepl";
+import { translateToJapaneseWithResult } from "../_core/deepl";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
@@ -60,15 +60,20 @@ export const chatRouter = router({
       }
 
       // Save visitor's first message (with translation if non-Japanese)
-      const initialTranslation = await translateToJapanese(
+      const initialTxResult = await translateToJapaneseWithResult(
         input.initialMessage,
         input.language
-      ).catch(() => null);
+      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
+      const initialTranslation = initialTxResult.ok
+        ? initialTxResult.text
+        : initialTxResult.reason === "skipped"
+        ? undefined
+        : "[翻訳できませんでした]"; // fallback label for operators
       await createMessage({
         sessionId,
         role: "visitor",
         content: input.initialMessage,
-        translation: initialTranslation ?? undefined,
+        translation: initialTranslation,
       });
 
       // Generate AI response
@@ -204,10 +209,15 @@ export const chatRouter = router({
       }
 
       // Save visitor message (with translation if non-Japanese)
-      const visitorTranslation = await translateToJapanese(
+      const visitorTxResult = await translateToJapaneseWithResult(
         input.content,
         session.language ?? "ja"
-      ).catch(() => null);
+      ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
+      const visitorTranslation = visitorTxResult.ok
+        ? visitorTxResult.text
+        : visitorTxResult.reason === "skipped"
+        ? null
+        : "[翻訳できませんでした]"; // fallback label for operators
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "visitor",
