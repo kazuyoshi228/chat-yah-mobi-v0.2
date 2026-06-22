@@ -31,7 +31,7 @@ const PERIOD_LABELS: Record<Period, string> = {
 };
 
 const LANG_LABEL: Record<string, string> = {
-  ja: "日本語", en: "English", zh: "中文", es: "Español", ko: "한국어", unknown: "Unknown",
+  ja: "日本語", en: "English", zh: "中文", ko: "한국어", th: "ภาษาไทย", vi: "Tiếng Việt", unknown: "Unknown",
 };
 
 const PIE_COLORS = ["#111", "#6b7280", "#d1d5db", "#f3f4f6", "#e5e7eb"];

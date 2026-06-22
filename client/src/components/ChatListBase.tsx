@@ -38,8 +38,9 @@ const LANG_LABELS: Record<string, string> = {
   ja: "🇯🇵",
   en: "🇺🇸",
   zh: "🇨🇳",
-  es: "🇪🇸",
   ko: "🇰🇷",
+  th: "🇹🇭",
+  vi: "🇻🇳",
 };
 
 interface Props {

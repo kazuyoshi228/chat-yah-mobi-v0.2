@@ -20,12 +20,13 @@ const STORAGE_KEY = "yah_chat_lang";
 
 function detectBrowserLang(): Lang {
   const stored = localStorage.getItem(STORAGE_KEY) as Lang | null;
-  if (stored && ["en", "ja", "zh", "es", "ko"].includes(stored)) return stored;
+  if (stored && ["en", "ja", "zh", "ko", "th", "vi"].includes(stored)) return stored;
   const nav = navigator.language.toLowerCase();
   if (nav.startsWith("ja")) return "ja";
   if (nav.startsWith("zh")) return "zh";
-  if (nav.startsWith("es")) return "es";
   if (nav.startsWith("ko")) return "ko";
+  if (nav.startsWith("th")) return "th";
+  if (nav.startsWith("vi")) return "vi";
   return "en";
 }
 

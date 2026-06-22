@@ -10,16 +10,18 @@ const ESCALATION_KEYWORDS = {
   ja: ["人間", "オペレーター", "担当者", "スタッフ", "つないで", "繋いで", "怒", "最悪", "ひどい", "解決しない"],
   en: ["human", "operator", "agent", "staff", "person", "angry", "terrible", "awful", "not working", "escalate"],
   zh: ["人工", "客服", "转接", "愤怒", "糟糕", "无法解决"],
-  es: ["humano", "operador", "agente", "persona", "enojado", "terrible", "escalar"],
   ko: ["사람", "상담원", "직원", "연결", "화나", "최악", "해결안"],
+  th: ["คน", "เจ้าหน้าที่", "ผู้ดูแล", "โกรธ", "แย่มาก", "แก้ไขไม่ได้"],
+  vi: ["người", "nhân viên", "tổng đài", "tức giận", "tệ", "không giải quyết"],
 };
 
 const LANGUAGE_NAMES: Record<string, string> = {
   ja: "Japanese",
   en: "English",
   zh: "Chinese",
-  es: "Spanish",
   ko: "Korean",
+  th: "Thai",
+  vi: "Vietnamese",
 };
 
 // Cosine similarity for RAG
@@ -98,8 +100,10 @@ export function detectLanguageFromMessage(message: string): string | null {
   if (/[\uAC00-\uD7AF\u1100-\u11FF]/.test(message)) return "ko";
   // Chinese: CJK unified (no hiragana/katakana)
   if (/[\u4E00-\u9FFF]/.test(message) && !/[\u3040-\u309F\u30A0-\u30FF]/.test(message)) return "zh";
-  // Spanish: common Spanish-specific chars or words
-  if (/[áéíóúüñ¿¡]/i.test(message)) return "es";
+  // Thai: Thai script
+  if (/[\u0E00-\u0E7F]/.test(message)) return "th";
+  // Vietnamese: Latin with Vietnamese diacritics
+  if (/[àáâãèéêìíòóôõùúýăđơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(message)) return "vi";
   // English: mostly ASCII letters
   if (/^[\x00-\x7F]+$/.test(message.trim())) return "en";
   return null;
@@ -155,7 +159,8 @@ If you cannot answer the question or the user seems frustrated, suggest connecti
     en: "Sorry, I'm unable to respond right now.",
     ko: "죄송합니다, 현재 응답할 수 없습니다.",
     zh: "抱歉，我目前无法回复。",
-    es: "Lo siento, no puedo responder en este momento.",
+    th: "ขอโทษ ขณะนี้ไม่สามารถตอบได้",
+    vi: "Xin lỗi, hiện tại tôi không thể phản hồi.",
   };
   const content =
     (response as any)?.choices?.[0]?.message?.content ??

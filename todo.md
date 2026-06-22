@@ -341,3 +341,24 @@
 - [x] chat.ts の sendMessage: 同様に AI 返信の翻訳を保存し socket emit にも translation を含める
 - [x] ChatDetailBase.tsx: isAI メッセージに翻訳表示ブロック（Layer 1b）を追加（青色テキスト、エラー時は amber）
 - [x] TypeScript: 0 エラー確認・テスト 16/16 通過
+
+## Phase 37: 対応言語を6言語に更新（ja/en/zh/ko/th/vi）
+- [ ] server/routers/chat.ts の z.enum を更新（es削除、th/vi追加）
+- [ ] server/routers/ai.ts の言語検出ロジックを更新（タイ語・ベトナム語の文字コード検出追加）
+- [ ] server/_core/deepl.ts の言語コードマッピングを更新（th/vi追加）
+- [ ] client/src/pages/ChatStart.tsx の言語選択 UI を更新（スペイン語削除、タイ語・ベトナム語追加）
+- [ ] shared/i18n.ts の翻訳辞書にタイ語・ベトナム語を追加
+- [ ] TypeScript: 0エラー確認・テスト通過
+
+## Phase 37: 対応言語を6言語に更新（ja/en/zh/ko/th/vi）
+- [x] shared/i18n.ts: Lang 型・LANG_OPTIONS をタイ語・ベトナム語対応に更新（スペイン語削除）
+- [x] shared/i18n.ts: タイ語・ベトナム語の全翻訳辞書を追加
+- [x] server/routers/chat.ts: z.enum を ja/en/zh/ko/th/vi に更新
+- [x] server/routers/ai.ts: ESCALATION_KEYWORDS・LANGUAGE_NAMES・detectLanguageFromMessage・FALLBACK を更新
+- [x] client/src/pages/ChatStart.tsx: LANGUAGES 定数と型を更新
+- [x] client/src/contexts/LanguageContext.tsx: detectBrowserLang を更新
+- [x] client/src/pages/WidgetChat.tsx: validLangs を更新
+- [x] client/src/components/ChatDetailBase.tsx: LANG_LABELS を更新
+- [x] client/src/components/ChatListBase.tsx: LANG_LABELS を更新
+- [x] client/src/pages/admin/AdminDataAnalysis.tsx: LANG_LABEL を更新
+- [x] client/src/pages/admin/AdminFeedback.tsx: LANG_LABEL を更新

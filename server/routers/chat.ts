@@ -30,7 +30,7 @@ export const chatRouter = router({
         visitorName: z.string().optional(),
         visitorEmail: z.string().email().optional(),
         initialMessage: z.string().min(1),
-        language: z.enum(["ja", "en", "zh", "es", "ko"]).default("ja"),
+        language: z.enum(["ja", "en", "zh", "ko", "th", "vi"]).default("ja"),
       })
     )
     .mutation(async ({ input }) => {

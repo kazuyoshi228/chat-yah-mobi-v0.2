@@ -7,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { Star, MessageSquare, CheckCircle, XCircle, Minus } from "lucide-react";
 
 const LANG_LABEL: Record<string, string> = {
-  ja: "日本語", en: "English", zh: "中文", es: "Español", ko: "한국어",
+  ja: "日本語", en: "English", zh: "中文", ko: "한국어", th: "ภาษาไทย", vi: "Tiếng Việt",
 };
 
 function StarRating({ rating }: { rating: number }) {

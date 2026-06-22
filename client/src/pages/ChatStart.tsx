@@ -14,8 +14,9 @@ const LANGUAGES = [
   { value: "ja", label: "日本語" },
   { value: "en", label: "English" },
   { value: "zh", label: "中文" },
-  { value: "es", label: "Español" },
   { value: "ko", label: "한국어" },
+  { value: "th", label: "ภาษาไทย" },
+  { value: "vi", label: "Tiếng Việt" },
 ];
 
 function getOrCreateVisitorId(): string {
@@ -34,7 +35,7 @@ export default function ChatStart() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [language, setLanguage] = useState<"ja" | "en" | "zh" | "es" | "ko">(lang as "ja" | "en" | "zh" | "es" | "ko");
+  const [language, setLanguage] = useState<"ja" | "en" | "zh" | "ko" | "th" | "vi">(lang as "ja" | "en" | "zh" | "ko" | "th" | "vi");
 
   const startSession = trpc.chat.startSession.useMutation({
     onSuccess: (data) => {

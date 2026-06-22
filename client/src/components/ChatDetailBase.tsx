@@ -73,8 +73,9 @@ const LANG_LABELS: Record<string, string> = {
   ja: "🇯🇵 日本語",
   en: "🇺🇸 English",
   zh: "🇨🇳 中文",
-  es: "🇪🇸 Español",
   ko: "🇰🇷 한국어",
+  th: "🇹🇭 ภาษาไทย",
+  vi: "🇻🇳 Tiếng Việt",
 };
 
 const STATUS_COLORS: Record<string, string> = {

@@ -97,7 +97,7 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
 
 export default function WidgetChat() {
   const rawLang = useQueryParam("lang") || "en";
-  const validLangs = ["ja", "en", "zh", "es", "ko"] as const;
+  const validLangs = ["ja", "en", "zh", "ko", "th", "vi"] as const;
   type Lang = typeof validLangs[number];
   const lang: Lang = (validLangs as readonly string[]).includes(rawLang) ? (rawLang as Lang) : "en";
   const accentColor = useQueryParam("color") || "#000000";
