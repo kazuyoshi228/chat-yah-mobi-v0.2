@@ -357,6 +357,7 @@ export default function WidgetChat() {
       visitorEmail: visitorEmail || undefined,
       initialMessage,
       language: lang,
+      isGoogleLogin: !!visitorEmail, // true if visitor authenticated via Google
     });
   };
 

@@ -342,13 +342,13 @@
 - [x] ChatDetailBase.tsx: isAI メッセージに翻訳表示ブロック（Layer 1b）を追加（青色テキスト、エラー時は amber）
 - [x] TypeScript: 0 エラー確認・テスト 16/16 通過
 
-## Phase 37: 対応言語を6言語に更新（ja/en/zh/ko/th/vi）
-- [ ] server/routers/chat.ts の z.enum を更新（es削除、th/vi追加）
-- [ ] server/routers/ai.ts の言語検出ロジックを更新（タイ語・ベトナム語の文字コード検出追加）
-- [ ] server/_core/deepl.ts の言語コードマッピングを更新（th/vi追加）
-- [ ] client/src/pages/ChatStart.tsx の言語選択 UI を更新（スペイン語削除、タイ語・ベトナム語追加）
-- [ ] shared/i18n.ts の翻訳辞書にタイ語・ベトナム語を追加
-- [ ] TypeScript: 0エラー確認・テスト通過
+## Phase 37: 対応言語を6言語に更新（ja/en/zh/ko/th/vi）- 初期計画（完了済み）
+- [x] server/routers/chat.ts の z.enum を更新（es削除、th/vi追加）
+- [x] server/routers/ai.ts の言語検出ロジックを更新（タイ語・ベトナム語の文字コード検出追加）
+- [x] server/_core/deepl.ts の言語コードマッピングを更新（th/vi追加）
+- [x] client/src/pages/ChatStart.tsx の言語選択 UI を更新（スペイン語削除、タイ語・ベトナム語追加）
+- [x] shared/i18n.ts の翻訳辞書にタイ語・ベトナム語を追加
+- [x] TypeScript: 0エラー確認・テスト通過
 
 ## Phase 37: 対応言語を6言語に更新（ja/en/zh/ko/th/vi）
 - [x] shared/i18n.ts: Lang 型・LANG_OPTIONS をタイ語・ベトナム語対応に更新（スペイン語削除）
@@ -369,4 +369,14 @@
 - [x] email.ts の buildEmailHtml() 共通テンプレートを作成し、3関数から利用
 - [x] ai.ts の言語検出・DB 更新処理を chat.ts に移動（責務分離）
 - [x] chat.test.ts の言語サポートテストを6言語（ja/en/zh/ko/th/vi）に更新
+- [x] TypeScript: 0 エラー確認・テスト 16/16 通過
+
+## Phase 39: Googleログイン済みビジター情報をチャット一覧に表示
+
+- [x] drizzle/schema.ts: chat_sessions に isGoogleLogin (INT DEFAULT 0) カラム追加
+- [x] DB マイグレーション: ALTER TABLE chat_sessions ADD COLUMN isGoogleLogin INT DEFAULT 0 実行
+- [x] server/routers/chat.ts: startSession に isGoogleLogin フィールド追加、createChatSession に渡す
+- [x] client/src/pages/WidgetChat.tsx: handleStart で isGoogleLogin: !!visitorEmail を送信
+- [x] client/src/pages/ChatStart.tsx: handleSubmit で isGoogleLogin: false を明示
+- [x] client/src/components/ChatListBase.tsx: isGoogleLogin===1 の場合に Google カラーバッジ「ログイン済み」を表示
 - [x] TypeScript: 0 エラー確認・テスト 16/16 通過

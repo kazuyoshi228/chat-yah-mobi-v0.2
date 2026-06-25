@@ -31,6 +31,7 @@ export const chatRouter = router({
         visitorEmail: z.string().email().optional(),
         initialMessage: z.string().min(1),
         language: z.enum(["ja", "en", "zh", "ko", "th", "vi"]).default("ja"),
+        isGoogleLogin: z.boolean().optional().default(false),
       })
     )
     .mutation(async ({ input }) => {
@@ -48,6 +49,7 @@ export const chatRouter = router({
         visitorEmail: input.visitorEmail,
         status: "waiting",
         language: input.language,
+        isGoogleLogin: input.isGoogleLogin ? 1 : 0,
       });
 
       // 5.3: Post-insert re-check — if a concurrent request created a session first,

@@ -53,6 +53,7 @@ export default function ChatStart() {
       visitorEmail: email || undefined,
       initialMessage: message,
       language,
+      isGoogleLogin: false,
     });
   };
 
