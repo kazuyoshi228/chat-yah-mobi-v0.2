@@ -380,3 +380,11 @@
 - [x] client/src/pages/ChatStart.tsx: handleSubmit で isGoogleLogin: false を明示
 - [x] client/src/components/ChatListBase.tsx: isGoogleLogin===1 の場合に Google カラーバッジ「ログイン済み」を表示
 - [x] TypeScript: 0 エラー確認・テスト 16/16 通過
+
+## Phase 40: Admin AI Chatbot ページ追加・システムプロンプト更新
+
+- [x] client/src/pages/admin/AIChatbot.tsx を新規作成（仕様表示・システムプロンプト編集UI）
+- [x] DashboardLayout のサイドバーに AI Chatbot メニュー追加（Operators の下）
+- [x] App.tsx に /admin/ai-chatbot ルートを追加
+- [x] server/routers/ai.ts のシステムプロンプトを yah.mobile 専用に更新
+- [x] TypeScript: 0 エラー確認

@@ -14,6 +14,7 @@ import AdminFeedback from "@/pages/admin/AdminFeedback";
 import AdminDataAnalysis from "@/pages/admin/AdminDataAnalysis";
 import AdminChatList from "@/pages/admin/AdminChatList";
 import AdminChatReply from "@/pages/admin/AdminChatReply";
+import AIChatbot from "@/pages/admin/AIChatbot";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/admin/data-analysis" component={AdminDataAnalysis} />
         <Route path="/admin/chats" component={AdminChatList} />
         <Route path="/admin/chats/:id/reply" component={AdminChatReply} />
+        <Route path="/admin/ai-chatbot" component={AIChatbot} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
         <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
