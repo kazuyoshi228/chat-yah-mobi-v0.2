@@ -306,3 +306,66 @@ export async function sendNewChatEmail(opts: {
     logLabel: `New chat email sent to ${toEmail} for session #${sessionId}`,
   });
 }
+
+// ---------------------------------------------------------------------------
+// AI Escalation Notification (owner alert when AI cannot answer)
+// ---------------------------------------------------------------------------
+
+export async function sendAIEscalationNotificationEmail(opts: {
+  sessionId: number;
+  visitorName?: string | null;
+  visitorEmail?: string | null;
+  language?: string | null;
+  userMessage: string;
+  aiResponse: string;
+  appUrl?: string;
+}): Promise<boolean> {
+  const {
+    sessionId,
+    visitorName,
+    visitorEmail,
+    language,
+    userMessage,
+    aiResponse,
+    appUrl = "https://chat.yah.mobi",
+  } = opts;
+
+  const OWNER_EMAIL = "kazuyoshi.yamada@bonfire.co.jp";
+  const visitorLabel = visitorName ?? "Anonymous visitor";
+  const langLabel = language ? language.toUpperCase() : "Unknown";
+  const chatUrl = `${appUrl}/admin/chats/${sessionId}/reply`;
+  const subject = `[yah.mobile] AIが回答できなかった質問 — Session #${sessionId}`;
+
+  const detailRows: Array<[string, string]> = [
+    ["Session ID", `#${sessionId}`],
+    ["Visitor", visitorLabel],
+    ...(visitorEmail ? [["Email", visitorEmail] as [string, string]] : []),
+    ["Language", langLabel],
+    ["Time", `${new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST`],
+    ["Visitor's message", `"${userMessage.slice(0, 300)}${userMessage.length > 300 ? "…" : ""}"`],
+    ["AI response", `"${aiResponse.slice(0, 300)}${aiResponse.length > 300 ? "…" : ""}"`],
+  ];
+
+  const alertHtml = `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:24px;">
+    <p style="margin:0;color:#92400e;font-size:13px;font-weight:600;">💡 RAGドキュメントへの追加を検討してください</p>
+    <p style="margin:4px 0 0;color:#92400e;font-size:12px;">この質問をFAQに追加することで、AIの回答率が向上します。</p>
+  </div>`;
+
+  const html = buildEmailHtml({
+    lang: "ja",
+    alertHtml,
+    greeting: "Yoshi さん,",
+    bodyText: "AIチャットボットがオペレーターへのエスカレーションを判断しました。以下の質問内容をRAGドキュメントに追加することで、今後のAI回答率向上につながります。",
+    detailRows,
+    buttonText: "チャットを確認する →",
+    buttonUrl: chatUrl,
+    footerText: "このメールはyah.mobile Chat Supportから自動送信されました。AIがエスカレーションを判断するたびに通知されます。",
+  });
+
+  return sendEmail({
+    to: OWNER_EMAIL,
+    subject,
+    html,
+    logLabel: `AI escalation notification sent to owner for session #${sessionId}`,
+  });
+}

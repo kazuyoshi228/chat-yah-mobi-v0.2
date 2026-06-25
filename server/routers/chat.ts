@@ -17,7 +17,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { detectLanguageFromMessage, generateAIResponse, generateSummary } from "./ai";
 import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
-import { sendEscalationEmail, sendNewChatEmail } from "../email";
+import { sendEscalationEmail, sendNewChatEmail, sendAIEscalationNotificationEmail } from "../email";
 import { getAllAdmins } from "../db";
 import { toTranslationLabel, translateToJapaneseWithResult } from "../_core/deepl";
 
@@ -298,6 +298,16 @@ export const chatRouter = router({
             sessionId: input.sessionId,
             visitorName: session.visitorName,
           });
+          // Notify owner via email so they can add the question to RAG
+          sendAIEscalationNotificationEmail({
+            sessionId: input.sessionId,
+            visitorName: session.visitorName,
+            visitorEmail: session.visitorEmail,
+            language: effectiveLang,
+            userMessage: input.content,
+            aiResponse: aiContent,
+            appUrl: "https://chat.yah.mobi",
+          }).catch(() => {});
         }
       }
 

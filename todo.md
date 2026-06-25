@@ -388,3 +388,20 @@
 - [x] App.tsx に /admin/ai-chatbot ルートを追加
 - [x] server/routers/ai.ts のシステムプロンプトを yah.mobile 専用に更新
 - [x] TypeScript: 0 エラー確認
+
+## Phase 41: RAG整理・エスカレーション通知メール実装
+
+- [ ] スペイン語RAGドキュメント（id: 30005）をDBから削除
+- [ ] タイ語FAQドキュメントを作成・DB登録（embedding付き）
+- [ ] ベトナム語FAQドキュメントを作成・DB登録（embedding付き）
+- [ ] email.ts にエスカレーション通知メール関数を追加（送信先: kazuyoshi.yamada@bonfire.co.jp）
+- [ ] server/routers/chat.ts のエスカレーション処理でメール通知を呼び出す
+- [ ] TypeScript: 0 エラー確認・テスト通過
+
+## Phase 41: RAG整理・エスカレーション通知（完了）
+- [x] スペイン語RAGドキュメント（id: 30005）を削除
+- [x] タイ語FAQドキュメントをDBに登録（id: 90001, 約3,551文字）
+- [x] ベトナム語FAQドキュメントをDBに登録（id: 90002, 約3,676文字）
+- [x] email.ts に sendAIEscalationNotificationEmail() 関数を追加（送信先: kazuyoshi.yamada@bonfire.co.jp）
+- [x] chat.ts の sendMessage でエスカレーション時にオーナーへメール通知を追加
+- [x] TypeScript: 0 エラー確認
