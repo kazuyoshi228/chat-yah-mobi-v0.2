@@ -482,3 +482,20 @@
 - [x] chat.tsでshouldRedirectToForm発火時にDB保存（formRedirected=1）
 - [x] getKpiStatsにフォーム誘導率・平均AIメッセージ数・平均セッション時間を追加
 - [x] AdminDataAnalysis.tsxをボットファーストKPI構成に全面書き換え
+
+## Phase 53: テストインフラ整備・RAG Embedding自動化
+- [x] ai.logic.test.ts: 100パターンVitestモックテスト作成（103テスト通過）
+- [x] ai.e2e.test.ts: 23件E2Eテスト作成（実LLM/Embedding API呼び出し）
+- [x] getEmbedding()をForge API→OpenAI API直接呼び出しに変更
+- [x] 全6件RAGドキュメントのembedding（1536次元）を再生成・DB保存
+- [x] AdminTesting.tsxを新規作成（Testing管理画面）
+- [x] test_run_logsテーブル作成・DBマイグレーション実行
+- [x] Testing画面に「今すぐ実行」ボタン追加（tRPC経由）
+- [x] RAG embedding週次自動チェックHeartbeat登録（task_uid: mLfigxmjie4GmAZNPcj8Y8）
+- [x] タイ語・ベトナム語フォーム誘導E2Eテスト追加（6言語完全カバー）
+
+## Phase 54: チャットシミュレーション修正・実行
+- [x] run_chat_simulation.mjsのembedding parse エラーを修正（mysql2がJSON型を自動パースするためArray.isArrayチェックに変更）
+- [x] 10セッション・31ターンのシミュレーション実行完了（エラー0件）
+- [x] 全セッション✅ PASS（フォーム誘導テストは正常に🔴 FORM発火確認）
+- [x] 平均RAGスコア: 0.324、最高スコア: 0.597（ベトナム語）
