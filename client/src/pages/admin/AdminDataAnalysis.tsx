@@ -111,6 +111,13 @@ export default function AdminDataAnalysis() {
   const scoreRange = useMemo(() => periodToRange(period), [period]);
   const { data: scorecard, isLoading: scoreLoading } = trpc.admin.getTeamScorecard.useQuery(scoreRange);
 
+  // HERO KPI: AI Resolution Rate from getKpi
+  const { data: kpi, isLoading: kpiLoading } = trpc.admin.getKpi.useQuery({ period });
+  const aiResolvedRate = kpi?.aiResolvedRate ?? null;
+  const heroColor = aiResolvedRate === null ? "text-gray-400" : aiResolvedRate >= 99 ? "text-emerald-600" : aiResolvedRate >= 90 ? "text-amber-500" : "text-red-500";
+  const heroTarget = 99.9;
+  const heroGap = aiResolvedRate !== null ? (heroTarget - aiResolvedRate).toFixed(1) : null;
+
   const aiPct = data && data.total > 0 ? Math.round((data.aiCount / data.total) * 100) : 0;
   const opPct = data && data.total > 0 ? Math.round((data.operatorCount / data.total) * 100) : 0;
 
@@ -158,6 +165,51 @@ export default function AdminDataAnalysis() {
                 {PERIOD_LABELS[p]}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* ── HERO KPI: AI Resolution Rate ──────────────────────────────── */}
+        <div className="relative overflow-hidden rounded-2xl bg-black text-white p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium tracking-widest uppercase text-white/50 mb-1">HERO KPI — AI Resolution Rate</p>
+              <div className="flex items-end gap-3">
+                {kpiLoading ? (
+                  <div className="h-16 w-32 bg-white/10 rounded-lg animate-pulse" />
+                ) : (
+                  <>
+                    <span className={`text-7xl font-bold tabular-nums leading-none ${heroColor.replace('text-', 'text-')}`}
+                      style={{ color: aiResolvedRate === null ? 'rgba(255,255,255,0.3)' : aiResolvedRate >= 99 ? '#34d399' : aiResolvedRate >= 90 ? '#fbbf24' : '#f87171' }}>
+                      {aiResolvedRate !== null ? `${aiResolvedRate}%` : '—'}
+                    </span>
+                    <div className="mb-2">
+                      <p className="text-sm text-white/60">Target: {heroTarget}%</p>
+                      {heroGap !== null && (
+                        <p className="text-sm" style={{ color: Number(heroGap) <= 0 ? '#34d399' : '#fbbf24' }}>
+                          {Number(heroGap) <= 0 ? `✓ ${Math.abs(Number(heroGap))}% above target` : `${heroGap}% to target`}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="md:text-right">
+              <p className="text-xs text-white/50 mb-1">Based on post-chat surveys</p>
+              <p className="text-xs text-white/50">Sessions resolved by AI without operator intervention</p>
+              <div className="mt-3 h-2 bg-white/10 rounded-full overflow-hidden w-full md:w-64">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min(100, aiResolvedRate ?? 0)}%`,
+                    background: aiResolvedRate !== null && aiResolvedRate >= 99 ? '#34d399' : aiResolvedRate !== null && aiResolvedRate >= 90 ? '#fbbf24' : '#f87171'
+                  }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-white/30 mt-0.5 md:w-64">
+                <span>0%</span><span>Target {heroTarget}%</span><span>100%</span>
+              </div>
+            </div>
           </div>
         </div>
 
