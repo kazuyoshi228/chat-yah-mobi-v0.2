@@ -16,6 +16,7 @@ import AdminChatList from "@/pages/admin/AdminChatList";
 import AdminChatReply from "@/pages/admin/AdminChatReply";
 import AIChatbot from "@/pages/admin/AIChatbot";
 import UserManuals from "@/pages/admin/UserManuals";
+import AdminTesting from "@/pages/admin/AdminTesting";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/admin/chats/:id/reply" component={AdminChatReply} />
         <Route path="/admin/ai-chatbot" component={AIChatbot} />
         <Route path="/admin/user-manuals" component={UserManuals} />
+        <Route path="/admin/testing" component={AdminTesting} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
         <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
