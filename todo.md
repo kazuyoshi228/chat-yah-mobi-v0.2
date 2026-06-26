@@ -583,3 +583,12 @@
 - [x] RAGドキュメントに反映しCONNECTION解決率を検証 (15件の端末対応・SIMロック情報を投入)
 - [x] シミュレーション結果: CONNECTION 0.933✅ | PRICING 0.891 | REFUND 0.931✅ | GENERAL 0.950✅ | 全体 0.922
 - [x] チェックポイント保存
+
+## Phase 62: ホスピタリティガイド作成・RAG反映
+- [x] 世界最高峰ホスピタリティ施設の接客哲学・マニュアルを調査
+- [x] yah.mobile向けホスピタリティガイドをマークダウンで作成 (docs/hospitality-guide.md)
+- [x] Hospitalityページにガイドを表示 (/admin/hospitality)
+- [x] RAGドキュメントにホスピタリティ指針を反映 (13件: HEARD法・感情レベル対応・デエスカレーション・先読みサービス・禁止表現・WOW体験・返金3Yes・リッツ3ステップ + 多言語5件)
+- [x] デシジョンツリーflowContextにホスピタリティ指針を組み込み (ai.ts system prompt)
+- [x] シミュレーションで効果検証: CONNECTION 0.939✅ | PRICING 0.936✅ | REFUND 0.925✅ | GENERAL 0.925✅ | 全体 0.933
+- [ ] チェックポイント保存
