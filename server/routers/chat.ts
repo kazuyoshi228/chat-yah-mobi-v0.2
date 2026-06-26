@@ -291,6 +291,8 @@ export const chatRouter = router({
         });
 
         if (shouldRedirectToForm) {
+          // Persist form-redirect flag for analytics
+          await updateChatSession(input.sessionId, { formRedirected: 1 }).catch(() => {});
           io.to(`session:${input.sessionId}`).emit("redirect_to_form", {
             sessionId: input.sessionId,
           });

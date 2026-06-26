@@ -50,6 +50,13 @@
       "when": 1782105454650,
       "tag": "0006_good_silver_sable",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1782446118296,
+      "tag": "0007_jazzy_tag",
+      "breakpoints": true
     }
   ]
 }

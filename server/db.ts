@@ -247,7 +247,7 @@ export async function listChatSessions(status?: "waiting" | "active" | "ended") 
 
 export async function updateChatSession(
   id: number,
-  data: Partial<Pick<ChatSession, "status" | "operatorId" | "summary" | "language" | "scheduledDeleteAt">>
+  data: Partial<Pick<ChatSession, "status" | "operatorId" | "summary" | "language" | "scheduledDeleteAt" | "formRedirected">>
 ) {
   const db = await getDb();
   if (!db) return;
@@ -503,6 +503,33 @@ export async function getKpiStats(since?: Date) {
     ? Math.round((operatorEndedCount / endedSessions.length) * 100)
     : null;
 
+  // ── Bot-first KPIs ─────────────────────────────────────────────────────────
+  // Form redirect rate: sessions where AI redirected to contact form / total ended sessions
+  const formRedirectedCount = endedSessions.filter((s) => s.formRedirected === 1).length;
+  const formRedirectRate = endedSessions.length > 0
+    ? Math.round((formRedirectedCount / endedSessions.length) * 100)
+    : null;
+
+  // Average AI messages per session (ended sessions only)
+  let avgAiMessagesPerSession: number | null = null;
+  if (endedSessions.length > 0) {
+    const sessionIds = endedSessions.map((s) => s.id);
+    const aiMessages = since
+      ? await db.select().from(messages).where(and(eq(messages.role, "ai"), gte(messages.createdAt, since)))
+      : await db.select().from(messages).where(eq(messages.role, "ai"));
+    const aiMsgForEnded = aiMessages.filter((m) => sessionIds.includes(m.sessionId));
+    avgAiMessagesPerSession = Math.round((aiMsgForEnded.length / endedSessions.length) * 10) / 10;
+  }
+
+  // Average session duration (ms): from session createdAt to lastMessageAt for ended sessions
+  const sessionsWithDuration = endedSessions.filter((s) => s.lastMessageAt);
+  const avgSessionDurationMs = sessionsWithDuration.length > 0
+    ? Math.round(
+        sessionsWithDuration.reduce((sum, s) => sum + (s.lastMessageAt!.getTime() - s.createdAt.getTime()), 0)
+        / sessionsWithDuration.length
+      )
+    : null;
+
   return {
     total,
     aiResolved,
@@ -514,6 +541,11 @@ export async function getKpiStats(since?: Date) {
     resolvedRate,       // overall % resolved (null if no survey data)
     aiResolvedRate,     // AI-handled sessions % resolved
     operatorResolvedRate, // Operator-handled sessions % resolved
+    // Bot-first KPIs
+    formRedirectedCount,
+    formRedirectRate,
+    avgAiMessagesPerSession,
+    avgSessionDurationMs,
   };
 }
 

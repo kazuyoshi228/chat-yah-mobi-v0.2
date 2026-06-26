@@ -476,3 +476,9 @@
 - [x] ChatRoom.tsxのヘッダー「AI Support」確認（対応済み）
 - [x] ai.tsの会話履歴を全件参照に変更（30件超の場合は古いメッセージをテキスト要約として先頭に挿入、直近20件は逐語的に渡す）
 - [x] AIサマリー自動生成の確認（chat.ts・operator.ts・admin.tsで会話終了時に実装済み）
+
+## Phase 52: Data Analysis ボットファーストKPI再設計
+- [x] chat_sessionsにformRedirectedカラムを追加（スキーマ変更・マイグレーション実行）
+- [x] chat.tsでshouldRedirectToForm発火時にDB保存（formRedirected=1）
+- [x] getKpiStatsにフォーム誘導率・平均AIメッセージ数・平均セッション時間を追加
+- [x] AdminDataAnalysis.tsxをボットファーストKPI構成に全面書き換え

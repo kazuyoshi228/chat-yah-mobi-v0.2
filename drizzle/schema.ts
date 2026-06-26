@@ -47,6 +47,7 @@ export const chatSessions = mysqlTable("chat_sessions", {
   scheduledDeleteAt: timestamp("scheduledDeleteAt"),
   lastMessageAt: timestamp("lastMessageAt"),
   isGoogleLogin: int("isGoogleLogin").default(0), // 1 = visitor authenticated via Google OAuth
+  formRedirected: int("formRedirected").default(0), // 1 = AI redirected visitor to contact form
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

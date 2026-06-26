@@ -12,13 +12,13 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
   LineChart,
   Line,
+  Legend,
 } from "recharts";
 
 type Period = "all" | "today" | "week" | "month";
@@ -35,9 +35,7 @@ const LANG_LABEL: Record<string, string> = {
 };
 
 const PIE_COLORS = ["#111", "#6b7280", "#d1d5db", "#f3f4f6", "#e5e7eb"];
-const AI_COLOR = "#7c3aed";
-const OP_COLOR = "#2563eb";
-
+const CATEGORY_COLORS = ["#111", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f3f4f6", "#f9fafb"];
 const CATEGORY_LABELS: Record<string, string> = {
   error_screen: "Error Screen",
   product: "Product",
@@ -49,48 +47,32 @@ const CATEGORY_LABELS: Record<string, string> = {
   uncategorized: "Uncategorized",
 };
 
-const CATEGORY_COLORS = ["#111", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb", "#f3f4f6", "#f9fafb"];
-
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+function StatCard({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  accent?: "green" | "amber" | "red" | "blue";
+}) {
+  const accentClass =
+    accent === "green" ? "text-emerald-600" :
+    accent === "amber" ? "text-amber-500" :
+    accent === "red" ? "text-red-500" :
+    accent === "blue" ? "text-blue-600" :
+    "";
   return (
     <Card className="border border-gray-100 shadow-none">
       <CardContent className="pt-4 pb-3">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="text-2xl font-semibold mt-1">{value}</p>
+        <p className={`text-2xl font-semibold mt-1 ${accentClass}`}>{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
       </CardContent>
     </Card>
   );
-}
-
-// ── Scorecard helpers ────────────────────────────────────────────────────────
-function periodToRange(period: Period): { since?: number; until?: number } {
-  const now = Date.now();
-  if (period === "today") return { since: new Date().setHours(0, 0, 0, 0), until: now };
-  if (period === "week") return { since: now - 7 * 24 * 60 * 60 * 1000, until: now };
-  if (period === "month") return { since: now - 30 * 24 * 60 * 60 * 1000, until: now };
-  return {};
-}
-
-function scoreColor(score: number): string {
-  if (score >= 80) return "text-emerald-600";
-  if (score >= 60) return "text-amber-500";
-  return "text-red-500";
-}
-
-function scoreBadgeVariant(score: number): "default" | "secondary" | "destructive" {
-  if (score >= 80) return "default";
-  if (score >= 60) return "secondary";
-  return "destructive";
-}
-
-function fmtMs(ms: number | null): string {
-  if (ms === null) return "—";
-  const sec = Math.round(ms / 1000);
-  if (sec < 60) return `${sec}s`;
-  const min = Math.floor(sec / 60);
-  const rem = sec % 60;
-  return rem > 0 ? `${min}m ${rem}s` : `${min}m`;
 }
 
 function MetricBar({ value, max = 100, color = "#111" }: { value: number; max?: number; color?: string }) {
@@ -102,36 +84,51 @@ function MetricBar({ value, max = 100, color = "#111" }: { value: number; max?: 
   );
 }
 
+function periodToRange(period: Period): { since?: number; until?: number } {
+  const now = Date.now();
+  if (period === "today") return { since: new Date().setHours(0, 0, 0, 0), until: now };
+  if (period === "week") return { since: now - 7 * 24 * 60 * 60 * 1000, until: now };
+  if (period === "month") return { since: now - 30 * 24 * 60 * 60 * 1000, until: now };
+  return {};
+}
+
+function fmtMs(ms: number | null): string {
+  if (ms === null) return "—";
+  const sec = Math.round(ms / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  const rem = sec % 60;
+  return rem > 0 ? `${min}m ${rem}s` : `${min}m`;
+}
+
 export default function AdminDataAnalysis() {
   const [period, setPeriod] = useState<Period>("all");
   const { data, isLoading } = trpc.admin.getAnalysis.useQuery({ period });
   const { data: imgData, isLoading: imgLoading } = trpc.admin.getImageAnalytics.useQuery({ period: period as "today" | "week" | "month" | "all" });
 
-  // Scorecard
   const scoreRange = useMemo(() => periodToRange(period), [period]);
   const { data: scorecard, isLoading: scoreLoading } = trpc.admin.getTeamScorecard.useQuery(scoreRange);
 
-  // HERO KPI: AI Resolution Rate from getKpi
   const { data: kpi, isLoading: kpiLoading } = trpc.admin.getKpi.useQuery({ period });
+
+  // ── HERO KPI: AI自己解決率 ──────────────────────────────────────────────────
   const aiResolvedRate = kpi?.aiResolvedRate ?? null;
-  const heroColor = aiResolvedRate === null ? "text-gray-400" : aiResolvedRate >= 99 ? "text-emerald-600" : aiResolvedRate >= 90 ? "text-amber-500" : "text-red-500";
   const heroTarget = 99.9;
   const heroGap = aiResolvedRate !== null ? (heroTarget - aiResolvedRate).toFixed(1) : null;
-  // Survey response rate: surveyCount (answered) / total (sessions)
+  const heroColor = aiResolvedRate === null ? "rgba(255,255,255,0.3)" : aiResolvedRate >= 99 ? "#34d399" : aiResolvedRate >= 90 ? "#fbbf24" : "#f87171";
+
+  // ── Survey Response Rate ────────────────────────────────────────────────────
   const totalSessions = kpi?.total ?? 0;
   const surveysAnswered = kpi?.surveyCount ?? 0;
   const surveyResponseRate = totalSessions > 0 ? Math.round((surveysAnswered / totalSessions) * 100) : null;
 
-  const aiPct = data && data.total > 0 ? Math.round((data.aiCount / data.total) * 100) : 0;
-  const opPct = data && data.total > 0 ? Math.round((data.operatorCount / data.total) * 100) : 0;
+  // ── Bot-first KPIs ──────────────────────────────────────────────────────────
+  const formRedirectRate = kpi?.formRedirectRate ?? null;
+  const formRedirectedCount = kpi?.formRedirectedCount ?? 0;
+  const avgAiMsgs = kpi?.avgAiMessagesPerSession ?? null;
+  const avgSessionMs = kpi?.avgSessionDurationMs ?? null;
 
-  const aiOpData = data
-    ? [
-        { name: "AI Handled", value: data.aiCount, color: AI_COLOR },
-        { name: "Operator Handled", value: data.operatorCount, color: OP_COLOR },
-      ]
-    : [];
-
+  // ── Chart data ──────────────────────────────────────────────────────────────
   const langData = (data?.languageBreakdown ?? []).map((l) => ({
     name: LANG_LABEL[l.language] ?? l.language,
     count: l.count,
@@ -143,9 +140,8 @@ export default function AdminDataAnalysis() {
   }));
 
   const dailyData = (data?.dailyTrend ?? []).map((d) => ({
-    date: d.date.slice(5), // MM-DD
-    AI: d.ai,
-    Operator: d.operator,
+    date: d.date.slice(5),
+    Total: (d.ai ?? 0) + (d.operator ?? 0),
   }));
 
   return (
@@ -172,24 +168,24 @@ export default function AdminDataAnalysis() {
           </div>
         </div>
 
-        {/* ── HERO KPI: AI Resolution Rate ──────────────────────────────── */}
+        {/* ── HERO KPI: AI自己解決率 ─────────────────────────────────────────── */}
         <div className="relative overflow-hidden rounded-2xl bg-black text-white p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            {/* Left: AI Resolution Rate */}
             <div>
-              <p className="text-xs font-medium tracking-widest uppercase text-white/50 mb-1">HERO KPI — AI Resolution Rate</p>
+              <p className="text-xs font-medium tracking-widest uppercase text-white/50 mb-1">HERO KPI — AI Self-Resolution Rate</p>
               <div className="flex items-end gap-3">
                 {kpiLoading ? (
                   <div className="h-16 w-32 bg-white/10 rounded-lg animate-pulse" />
                 ) : (
                   <>
-                    <span className={`text-7xl font-bold tabular-nums leading-none ${heroColor.replace('text-', 'text-')}`}
-                      style={{ color: aiResolvedRate === null ? 'rgba(255,255,255,0.3)' : aiResolvedRate >= 99 ? '#34d399' : aiResolvedRate >= 90 ? '#fbbf24' : '#f87171' }}>
-                      {aiResolvedRate !== null ? `${aiResolvedRate}%` : '—'}
+                    <span className="text-7xl font-bold tabular-nums leading-none" style={{ color: heroColor }}>
+                      {aiResolvedRate !== null ? `${aiResolvedRate}%` : "—"}
                     </span>
                     <div className="mb-2">
                       <p className="text-sm text-white/60">Target: {heroTarget}%</p>
                       {heroGap !== null && (
-                        <p className="text-sm" style={{ color: Number(heroGap) <= 0 ? '#34d399' : '#fbbf24' }}>
+                        <p className="text-sm" style={{ color: Number(heroGap) <= 0 ? "#34d399" : "#fbbf24" }}>
                           {Number(heroGap) <= 0 ? `✓ ${Math.abs(Number(heroGap))}% above target` : `${heroGap}% to target`}
                         </p>
                       )}
@@ -197,57 +193,123 @@ export default function AdminDataAnalysis() {
                   </>
                 )}
               </div>
-            </div>
-            <div className="md:text-right space-y-3">
-              <div>
-                <p className="text-xs text-white/50 mb-1">Based on post-chat surveys</p>
-                <p className="text-xs text-white/50">Sessions resolved by AI without operator intervention</p>
-                <div className="mt-3 h-2 bg-white/10 rounded-full overflow-hidden w-full md:w-64">
-                  <div
-                    className="h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: `${Math.min(100, aiResolvedRate ?? 0)}%`,
-                      background: aiResolvedRate !== null && aiResolvedRate >= 99 ? '#34d399' : aiResolvedRate !== null && aiResolvedRate >= 90 ? '#fbbf24' : '#f87171'
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] text-white/30 mt-0.5 md:w-64">
-                  <span>0%</span><span>Target {heroTarget}%</span><span>100%</span>
-                </div>
+              <p className="text-xs text-white/40 mt-2">Sessions resolved by AI · based on post-chat surveys</p>
+              <div className="mt-2 h-2 bg-white/10 rounded-full overflow-hidden w-full md:w-64">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${Math.min(100, aiResolvedRate ?? 0)}%`, background: heroColor }}
+                />
               </div>
+              <div className="flex justify-between text-[10px] text-white/30 mt-0.5 md:w-64">
+                <span>0%</span><span>Target {heroTarget}%</span><span>100%</span>
+              </div>
+            </div>
+
+            {/* Right: Supporting KPIs */}
+            <div className="grid grid-cols-2 gap-4 md:text-right">
               {/* Survey Response Rate */}
-              <div className="border-t border-white/10 pt-3">
+              <div className="bg-white/5 rounded-xl p-4">
                 <p className="text-xs text-white/40 mb-1">Survey Response Rate</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-semibold tabular-nums" style={{ color: surveyResponseRate === null ? 'rgba(255,255,255,0.3)' : surveyResponseRate >= 40 ? '#34d399' : surveyResponseRate >= 20 ? '#fbbf24' : '#f87171' }}>
-                    {surveyResponseRate !== null ? `${surveyResponseRate}%` : '—'}
-                  </span>
-                  <span className="text-xs text-white/40">
-                    {surveysAnswered > 0 ? `${surveysAnswered} / ${totalSessions} sessions` : 'No surveys yet'}
-                  </span>
-                </div>
-                <p className="text-[10px] text-white/30 mt-0.5">Low rate (&lt;20%) reduces KPI reliability</p>
+                <p className="text-2xl font-semibold tabular-nums" style={{ color: surveyResponseRate === null ? "rgba(255,255,255,0.3)" : surveyResponseRate >= 40 ? "#34d399" : surveyResponseRate >= 20 ? "#fbbf24" : "#f87171" }}>
+                  {surveyResponseRate !== null ? `${surveyResponseRate}%` : "—"}
+                </p>
+                <p className="text-[10px] text-white/30 mt-0.5">
+                  {surveysAnswered > 0 ? `${surveysAnswered} / ${totalSessions} sessions` : "No surveys yet"}
+                </p>
+                <p className="text-[10px] text-white/25 mt-0.5">Low (&lt;20%) reduces KPI reliability</p>
+              </div>
+
+              {/* Form Redirect Rate */}
+              <div className="bg-white/5 rounded-xl p-4">
+                <p className="text-xs text-white/40 mb-1">Form Redirect Rate</p>
+                <p className="text-2xl font-semibold tabular-nums" style={{ color: formRedirectRate === null ? "rgba(255,255,255,0.3)" : formRedirectRate <= 5 ? "#34d399" : formRedirectRate <= 15 ? "#fbbf24" : "#f87171" }}>
+                  {formRedirectRate !== null ? `${formRedirectRate}%` : "—"}
+                </p>
+                <p className="text-[10px] text-white/30 mt-0.5">
+                  {formRedirectedCount > 0 ? `${formRedirectedCount} sessions redirected` : "No redirects yet"}
+                </p>
+                <p className="text-[10px] text-white/25 mt-0.5">Lower is better · target &lt;5%</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Team Scorecard ─────────────────────────────────────────────── */}
+        {/* ── Volume & Quality KPI Row ──────────────────────────────────────── */}
+        {kpiLoading || isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard label="Total Chats" value={data?.total ?? 0} sub="sessions started" />
+            <StatCard
+              label="CSAT Score"
+              value={scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined ? `${scorecard.avgCsat.toFixed(1)} / 5` : "—"}
+              sub={`${surveysAnswered} survey responses`}
+              accent={scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined ? (scorecard.avgCsat >= 4 ? "green" : scorecard.avgCsat >= 3 ? "amber" : "red") : undefined}
+            />
+            <StatCard
+              label="Resolution Rate"
+              value={kpi?.resolvedRate !== null && kpi?.resolvedRate !== undefined ? `${kpi.resolvedRate}%` : "—"}
+              sub="survey-confirmed resolved"
+              accent={kpi?.resolvedRate !== null && kpi?.resolvedRate !== undefined ? (kpi.resolvedRate >= 80 ? "green" : kpi.resolvedRate >= 60 ? "amber" : "red") : undefined}
+            />
+            <StatCard label="Languages" value={data?.languageBreakdown.length ?? 0} sub="unique languages" />
+          </div>
+        )}
+
+        {/* ── Bot Health KPI Row ────────────────────────────────────────────── */}
+        <div>
+          <h2 className="text-sm font-semibold mb-3">Bot Health</h2>
+          {kpiLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <StatCard
+                label="Avg AI Messages / Session"
+                value={avgAiMsgs !== null ? avgAiMsgs : "—"}
+                sub="ended sessions only"
+                accent={avgAiMsgs !== null ? (avgAiMsgs >= 3 && avgAiMsgs <= 8 ? "green" : "amber") : undefined}
+              />
+              <StatCard
+                label="Avg Session Duration"
+                value={fmtMs(avgSessionMs)}
+                sub="from start to last message"
+              />
+              <StatCard
+                label="AI-Only Sessions"
+                value={data ? `${data.aiCount}` : "—"}
+                sub={data && data.total > 0 ? `${Math.round((data.aiCount / data.total) * 100)}% of total` : undefined}
+                accent="blue"
+              />
+              <StatCard
+                label="Operator-Assisted"
+                value={data ? `${data.operatorCount}` : "—"}
+                sub={data && data.total > 0 ? `${Math.round((data.operatorCount / data.total) * 100)}% of total` : undefined}
+                accent={data && data.total > 0 && (data.operatorCount / data.total) < 0.05 ? "green" : "amber"}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* ── Quality Scorecard ─────────────────────────────────────────────── */}
         <div className="border border-gray-100 rounded-xl p-5 bg-white">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold">Team Performance Score</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Composite score based on 5 weighted metrics</p>
+              <h2 className="text-sm font-semibold">Quality Scorecard</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Bot-first composite score (CSAT · Resolution · AI Rate · Redirect Rate)</p>
             </div>
             {scoreLoading ? (
               <Skeleton className="h-10 w-20 rounded-lg" />
             ) : (
               <div className="flex items-center gap-2">
-                <span className={`text-4xl font-bold tabular-nums ${scoreColor(scorecard?.totalScore ?? 0)}`}>
+                <span className={`text-4xl font-bold tabular-nums ${(scorecard?.totalScore ?? 0) >= 80 ? "text-emerald-600" : (scorecard?.totalScore ?? 0) >= 60 ? "text-amber-500" : "text-red-500"}`}>
                   {scorecard?.totalScore ?? 0}
                 </span>
                 <span className="text-lg text-muted-foreground">/100</span>
-                <Badge variant={scoreBadgeVariant(scorecard?.totalScore ?? 0)} className="ml-1 text-xs">
+                <Badge variant={(scorecard?.totalScore ?? 0) >= 80 ? "default" : (scorecard?.totalScore ?? 0) >= 60 ? "secondary" : "destructive"} className="ml-1 text-xs">
                   {(scorecard?.totalScore ?? 0) >= 80 ? "Good" : (scorecard?.totalScore ?? 0) >= 60 ? "Fair" : "Needs Work"}
                 </Badge>
               </div>
@@ -255,145 +317,57 @@ export default function AdminDataAnalysis() {
           </div>
 
           {scoreLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {/* CSAT */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-[11px] text-muted-foreground">CSAT Score</p>
                 <p className="text-xl font-semibold mt-1">
-                  {scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined
-                    ? scorecard.avgCsat.toFixed(1)
-                    : "—"}
+                  {scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined ? scorecard.avgCsat.toFixed(1) : "—"}
                   <span className="text-xs font-normal text-muted-foreground ml-0.5">/5</span>
                 </p>
                 <MetricBar value={scorecard?.avgCsat ?? 0} max={5} color="#111" />
-                <p className="text-[10px] text-muted-foreground mt-1">Weight: 30%</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 35%</p>
               </div>
 
               {/* Resolution Rate */}
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-[11px] text-muted-foreground">Resolution Rate</p>
                 <p className="text-xl font-semibold mt-1">
-                  {scorecard?.resolutionRate !== null && scorecard?.resolutionRate !== undefined
-                    ? `${Math.round(scorecard.resolutionRate * 100)}%`
-                    : "—"}
+                  {scorecard?.resolutionRate !== null && scorecard?.resolutionRate !== undefined ? `${Math.round(scorecard.resolutionRate * 100)}%` : "—"}
                 </p>
                 <MetricBar value={(scorecard?.resolutionRate ?? 0) * 100} color="#2563eb" />
+                <p className="text-[10px] text-muted-foreground mt-1">Weight: 30%</p>
+              </div>
+
+              {/* AI Rate */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-[11px] text-muted-foreground">AI Handling Rate</p>
+                <p className="text-xl font-semibold mt-1">
+                  {scorecard?.totalSessions && scorecard.totalSessions > 0 ? `${Math.round((scorecard.aiHandled / scorecard.totalSessions) * 100)}%` : "—"}
+                </p>
+                <MetricBar value={scorecard?.totalSessions ? (scorecard.aiHandled / scorecard.totalSessions) * 100 : 0} color="#7c3aed" />
                 <p className="text-[10px] text-muted-foreground mt-1">Weight: 25%</p>
               </div>
 
-              {/* AI Resolution Rate */}
+              {/* Form Redirect Rate (lower = better) */}
               <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-[11px] text-muted-foreground">AI Resolution Rate</p>
+                <p className="text-[11px] text-muted-foreground">Form Redirect Rate</p>
                 <p className="text-xl font-semibold mt-1">
-                  {scorecard?.totalSessions && scorecard.totalSessions > 0
-                    ? `${Math.round((scorecard.aiHandled / scorecard.totalSessions) * 100)}%`
-                    : "—"}
+                  {formRedirectRate !== null ? `${formRedirectRate}%` : "—"}
                 </p>
-                <MetricBar
-                  value={scorecard?.totalSessions ? (scorecard.aiHandled / scorecard.totalSessions) * 100 : 0}
-                  color="#7c3aed"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">Weight: 20%</p>
-              </div>
-
-              {/* Avg First Response Time */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-[11px] text-muted-foreground">Avg First Response</p>
-                <p className="text-xl font-semibold mt-1">{fmtMs(scorecard?.avgFirstResponseMs ?? null)}</p>
-                <MetricBar
-                  value={scorecard?.avgFirstResponseMs !== null && scorecard?.avgFirstResponseMs !== undefined
-                    ? Math.max(0, 100 - (scorecard.avgFirstResponseMs / 1000 / 300) * 100)
-                    : 0}
-                  color="#059669"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">Weight: 15% (target &lt;60s)</p>
-              </div>
-
-              {/* Escalation Rate */}
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-[11px] text-muted-foreground">Escalation Rate</p>
-                <p className="text-xl font-semibold mt-1">
-                  {scorecard?.escalationRate !== undefined
-                    ? `${Math.round(scorecard.escalationRate * 100)}%`
-                    : "—"}
-                </p>
-                <MetricBar value={(1 - (scorecard?.escalationRate ?? 0)) * 100} color="#d97706" />
+                <MetricBar value={formRedirectRate !== null ? Math.max(0, 100 - formRedirectRate * 4) : 0} color="#059669" />
                 <p className="text-[10px] text-muted-foreground mt-1">Weight: 10% (lower is better)</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* KPI row */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Chats" value={data?.total ?? 0} />
-            <StatCard label="AI Handled" value={data?.aiCount ?? 0} sub={`${aiPct}% of total`} />
-            <StatCard label="Operator Handled" value={data?.operatorCount ?? 0} sub={`${opPct}% of total`} />
-            <StatCard
-              label="Languages"
-              value={data?.languageBreakdown.length ?? 0}
-              sub="unique languages"
-            />
-          </div>
-        )}
-
-        {/* Charts row 1: AI vs Operator pie + Language bar */}
+        {/* ── Charts Row 1: Language + Daily Volume ─────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* AI vs Operator pie */}
-          <Card className="border border-gray-100 shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">AI vs Operator Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-52 w-full rounded-lg" />
-              ) : data?.total === 0 ? (
-                <div className="flex items-center justify-center h-52 text-sm text-muted-foreground">No data</div>
-              ) : (
-                <div className="flex items-center gap-6">
-                  <ResponsiveContainer width="50%" height={180}>
-                    <PieChart>
-                      <Pie
-                        data={aiOpData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={75}
-                        paddingAngle={3}
-                        dataKey="value"
-                      >
-                        {aiOpData.map((entry, index) => (
-                          <Cell key={index} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v: number) => [`${v} chats`]} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="space-y-3">
-                    {aiOpData.map((entry) => (
-                      <div key={entry.name} className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full shrink-0" style={{ background: entry.color }} />
-                        <div>
-                          <p className="text-xs font-medium">{entry.name}</p>
-                          <p className="text-lg font-semibold leading-tight">{entry.value}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Language breakdown */}
           <Card className="border border-gray-100 shadow-none">
             <CardHeader className="pb-2">
@@ -421,35 +395,33 @@ export default function AdminDataAnalysis() {
               )}
             </CardContent>
           </Card>
+
+          {/* Daily volume (total only) */}
+          <Card className="border border-gray-100 shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Daily Chat Volume</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <Skeleton className="h-52 w-full rounded-lg" />
+              ) : dailyData.length === 0 ? (
+                <div className="flex items-center justify-center h-52 text-sm text-muted-foreground">No data</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart data={dailyData} margin={{ left: 0, right: 16, top: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="Total" stroke="#111" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Daily trend line chart */}
-        <Card className="border border-gray-100 shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Daily Chat Volume (AI vs Operator)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-56 w-full rounded-lg" />
-            ) : dailyData.length === 0 ? (
-              <div className="flex items-center justify-center h-56 text-sm text-muted-foreground">No data</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={dailyData} margin={{ left: 0, right: 16, top: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                  <Tooltip />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-                  <Line type="monotone" dataKey="AI" stroke={AI_COLOR} strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="Operator" stroke={OP_COLOR} strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Category breakdown (LLM-classified) */}
+        {/* ── Inquiry Category Breakdown ────────────────────────────────────── */}
         <Card className="border border-gray-100 shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
@@ -484,7 +456,7 @@ export default function AdminDataAnalysis() {
                           className="h-full rounded-full transition-all"
                           style={{
                             width: `${pct}%`,
-                            background: PIE_COLORS[i % PIE_COLORS.length] === "#f3f4f6" ? "#9ca3af" : PIE_COLORS[i % PIE_COLORS.length],
+                            background: CATEGORY_COLORS[i % CATEGORY_COLORS.length] === "#f3f4f6" ? "#9ca3af" : CATEGORY_COLORS[i % CATEGORY_COLORS.length],
                           }}
                         />
                       </div>
@@ -505,7 +477,7 @@ export default function AdminDataAnalysis() {
           </CardContent>
         </Card>
 
-        {/* Hourly distribution bar chart */}
+        {/* ── Hourly Distribution ───────────────────────────────────────────── */}
         <Card className="border border-gray-100 shadow-none">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Hourly Distribution (UTC)</CardTitle>
@@ -530,8 +502,8 @@ export default function AdminDataAnalysis() {
         </Card>
       </div>
 
-      {/* ── Image Analytics Section ──────────────────────────────────────── */}
-      <div className="space-y-4">
+      {/* ── Image Analytics Section ──────────────────────────────────────────── */}
+      <div className="px-6 pb-6 space-y-4">
         <h2 className="text-base font-semibold text-gray-900">Image Analytics (Vision AI)</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard
@@ -552,7 +524,7 @@ export default function AdminDataAnalysis() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Category distribution bar chart */}
+          {/* Category distribution */}
           <Card className="border border-gray-100 shadow-none">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Category Distribution</CardTitle>
@@ -619,26 +591,23 @@ export default function AdminDataAnalysis() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {imgData.recentAnalyses.slice(0, 10).map((a) => (
+                {imgData.recentAnalyses.slice(0, 10).map((a: any) => (
                   <div key={a.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
                     <a href={a.fileUrl} target="_blank" rel="noopener noreferrer">
                       <img src={a.fileUrl} alt="analyzed" className="w-12 h-12 object-cover rounded border border-gray-200 flex-shrink-0" />
                     </a>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
-                          {CATEGORY_LABELS[a.category ?? ""] ?? a.category ?? "—"}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {a.confidence != null ? `${Math.round((a.confidence as number) * 100)}% confidence` : ""}
+                        <Badge variant="secondary" className="text-[10px]">
+                          {CATEGORY_LABELS[a.category] ?? a.category}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {new Date(a.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">{a.description ?? "—"}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {(a.keywords as string[] | null)?.slice(0, 5).map((kw) => (
-                          <span key={kw} className="text-xs text-muted-foreground">#{kw}</span>
-                        ))}
-                      </div>
+                      {a.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.description}</p>
+                      )}
                     </div>
                   </div>
                 ))}
