@@ -413,3 +413,10 @@
 - [x] PDFをウェブストレージにアップロード（/manus-storage/yah_mobile_user_guide_3aded696.pdf）
 - [x] WidgetChat.tsx のスタートフォーム下部にPDFダウンロードボタンを追加
 - [x] TypeScript: 0 エラー確認
+
+## Phase 43: AI Chatbot スクロール修正・取扱説明書メニュー追加
+- [x] DashboardLayout.tsx の main タグを overflow-y-auto に変更（全ページのスクロール修正）
+- [x] DashboardLayout のサイドバーに「取扱説明書」メニューを追加（RAG Documents の下）
+- [x] client/src/pages/admin/UserManuals.tsx を新規作成（PDF一覧・ダウンロードページ）
+- [x] App.tsx に /admin/user-manuals ルートを追加
+- [x] TypeScript: 0 エラー確認

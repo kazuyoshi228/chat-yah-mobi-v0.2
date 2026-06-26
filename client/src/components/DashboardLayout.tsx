@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -44,6 +44,7 @@ const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "AI Chatbot", href: "/admin/ai-chatbot", icon: Bot },
   { title: "Quick Replies", href: "/admin/quick-replies", icon: Zap },
   { title: "RAG Documents", href: "/admin/rag", icon: BookOpen },
+  { title: "取扱説明書", href: "/admin/user-manuals", icon: FileText },
   { title: "Feedback", href: "/admin/feedback", icon: Star },
   { title: "Data Analysis", href: "/admin/data-analysis", icon: BarChart2 },
 ];
@@ -250,7 +251,7 @@ function DashboardLayoutContent({
             </div>
           </div>
         )}
-        <main className="flex-1 overflow-hidden min-h-0 flex flex-col">{children}</main>
+        <main className="flex-1 overflow-y-auto min-h-0 flex flex-col">{children}</main>
       </SidebarInset>
     </>
   );
