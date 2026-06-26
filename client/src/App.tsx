@@ -19,6 +19,8 @@ import UserManuals from "@/pages/admin/UserManuals";
 import AdminTesting from "@/pages/admin/AdminTesting";
 import AdminFlowTree from "@/pages/admin/AdminFlowTree";
 import HistoricalDocs from "@/pages/admin/HistoricalDocs";
+import Refund from "@/pages/admin/Refund";
+import Hospitality from "@/pages/admin/Hospitality";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -57,6 +59,8 @@ export default function App() {
         <Route path="/admin/testing" component={AdminTesting} />
         <Route path="/admin/flow-tree" component={AdminFlowTree} />
         <Route path="/admin/historical-docs" component={HistoricalDocs} />
+        <Route path="/admin/refund" component={Refund} />
+        <Route path="/admin/hospitality" component={Hospitality} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
         <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
