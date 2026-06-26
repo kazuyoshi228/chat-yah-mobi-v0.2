@@ -529,4 +529,14 @@
 - [x] チャットウィジェット: AIチャットフォールバックボタンを全ノードに常時表示
 - [x] チャットウィジェット: 返金/キャンセルノードでフォーム入力・オーナー通知連携
 - [x] TypeScript: 0エラー確認・テスト 103/103 通過
+- [x] チェックポイント保存
+
+## Phase 58: シミュレーション再実行 + デシジョンツリー管理画面（完了）
+- [x] シミュレーション再実行（平均RAGスコア 0.391、全意局PASS確認）
+- [x] server/db.ts: listAllChatFlowNodes / upsertChatFlowNode / deactivateChatFlowNode ヘルパー追加
+- [x] server/routers/admin.ts: listFlowNodes / upsertFlowNode / deactivateFlowNode クエリ追加
+- [x] client/src/pages/admin/AdminFlowTree.tsx: デシジョンツリー管理画面（ツリー表示・ノード追加・編集・無効化）
+- [x] DashboardLayout.tsx: サイドバーに「Flow Tree」メニュー追加
+- [x] TypeScript: 0エラー確認・テスト 103/103 通過
+- [x] App.tsx: /admin/flow-tree ルートを追加（完了）
 - [ ] チェックポイント保存

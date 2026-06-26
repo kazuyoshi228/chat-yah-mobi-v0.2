@@ -14,6 +14,7 @@ import {
   simulationRunResults,
   users,
   type ChatFlowNode,
+  type InsertChatFlowNode,
   type ChatSession,
   type ImageAnalysis,
   type InsertChatSession,
@@ -943,4 +944,49 @@ export async function getChatFlowNode(id: string): Promise<ChatFlowNode | null> 
     .where(eq(chatFlowNodes.id, id))
     .limit(1);
   return rows[0] ?? null;
+}
+
+/** List ALL chat flow nodes (including inactive) for admin management. */
+export async function listAllChatFlowNodes(): Promise<ChatFlowNode[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(chatFlowNodes)
+    .orderBy(chatFlowNodes.sortOrder, chatFlowNodes.id);
+}
+
+/** Upsert (insert or update) a chat flow node. */
+export async function upsertChatFlowNode(
+  node: InsertChatFlowNode
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .insert(chatFlowNodes)
+    .values(node)
+    .onDuplicateKeyUpdate({
+      set: {
+        parentId: node.parentId,
+        type: node.type,
+        label: node.label,
+        content: node.content,
+        options: node.options,
+        icon: node.icon,
+        formTrigger: node.formTrigger,
+        aiTrigger: node.aiTrigger,
+        sortOrder: node.sortOrder,
+        isActive: node.isActive,
+      },
+    });
+}
+
+/** Soft-delete a chat flow node (set isActive = 0). */
+export async function deactivateChatFlowNode(id: string): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(chatFlowNodes)
+    .set({ isActive: 0 })
+    .where(eq(chatFlowNodes.id, id));
 }

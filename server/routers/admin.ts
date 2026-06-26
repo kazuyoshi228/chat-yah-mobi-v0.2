@@ -24,6 +24,9 @@ import {
   getImageAnalyticsSummary,
   getTeamScorecard,
   getChatFlowNodes,
+  listAllChatFlowNodes,
+  upsertChatFlowNode,
+  deactivateChatFlowNode,
   getLatestSimulationResult,
   listSimulationResults,
   markSessionRead,
@@ -643,4 +646,51 @@ Do not include any other text.`;
     if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
     return getChatFlowNodes();
   }),
+
+  /** List ALL chat flow nodes including inactive (admin management) */
+  listFlowNodes: adminProcedure.query(async () => {
+    return listAllChatFlowNodes();
+  }),
+
+  /** Upsert a chat flow node */
+  upsertFlowNode: adminProcedure
+    .input(
+      z.object({
+        id: z.string().max(64),
+        parentId: z.string().max(64).nullable().optional(),
+        type: z.enum(["question", "answer", "redirect_form", "redirect_ai"]),
+        label: z.string(),
+        content: z.string().nullable().optional(),
+        options: z.string().nullable().optional(),
+        icon: z.string().max(32).nullable().optional(),
+        formTrigger: z.number().int().min(0).max(1).optional(),
+        aiTrigger: z.number().int().min(0).max(1).optional(),
+        sortOrder: z.number().int().optional(),
+        isActive: z.number().int().min(0).max(1).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      await upsertChatFlowNode({
+        id: input.id,
+        parentId: input.parentId ?? null,
+        type: input.type,
+        label: input.label,
+        content: input.content ?? null,
+        options: input.options ?? null,
+        icon: input.icon ?? null,
+        formTrigger: input.formTrigger ?? 0,
+        aiTrigger: input.aiTrigger ?? 0,
+        sortOrder: input.sortOrder ?? 0,
+        isActive: input.isActive ?? 1,
+      });
+      return { success: true };
+    }),
+
+  /** Soft-delete (deactivate) a chat flow node */
+  deactivateFlowNode: adminProcedure
+    .input(z.object({ id: z.string().max(64) }))
+    .mutation(async ({ input }) => {
+      await deactivateChatFlowNode(input.id);
+      return { success: true };
+    }),
 });

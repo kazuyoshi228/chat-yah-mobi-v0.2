@@ -17,6 +17,7 @@ import AdminChatReply from "@/pages/admin/AdminChatReply";
 import AIChatbot from "@/pages/admin/AIChatbot";
 import UserManuals from "@/pages/admin/UserManuals";
 import AdminTesting from "@/pages/admin/AdminTesting";
+import AdminFlowTree from "@/pages/admin/AdminFlowTree";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/admin/ai-chatbot" component={AIChatbot} />
         <Route path="/admin/user-manuals" component={UserManuals} />
         <Route path="/admin/testing" component={AdminTesting} />
+        <Route path="/admin/flow-tree" component={AdminFlowTree} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
         <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
