@@ -122,7 +122,9 @@ export async function generateAIResponse(
   userMessage: string,
   history: Array<{ role: string; content: string }>,
   language: string
-): Promise<{ content: string; shouldEscalate: boolean; detectedLanguage: string }> {
+): Promise<{ content: string; shouldEscalate: boolean; shouldRedirectToForm: boolean; detectedLanguage: string }> {
+  // Count how many AI responses have already been sent in this session
+  const aiMessageCount = history.filter((m) => m.role === "ai").length;
   // Use provided language (detection and DB update are handled by the caller)
   const detectedLang = language;
   const langName = LANGUAGE_NAMES[detectedLang] ?? "English";
@@ -139,16 +141,17 @@ Always respond in ${langName}.
 ## Response Style
 - Be concise, polite, and professional
 - Prefer natural sentences over bullet points
-- If you cannot answer, honestly say you will connect the user to a human operator — never say "I'll check and get back to you"
 - For eSIM setup questions, always explain step-by-step
 - For pricing questions, direct users to the website for the latest information
-- Aim to resolve 98% of inquiries through AI chat without escalation
+- Aim to resolve all inquiries through AI chat
+- Never say "I'll check and get back to you" or "I'll connect you to a human operator" — always try to answer directly or guide to the contact form
 
 ## Rules for Unanswerable Questions
 - For pricing/plan details: tell users to check the website for the latest information
-- For questions involving personal information: connect to a human operator
+- For questions involving personal information or account-specific issues: guide the user to the contact form at yah.mobi/app (scroll to the CONTACT section)
 - For technical eSIM setup: explain the steps carefully and patiently
-- For refund requests: connect to a human operator
+- For refund requests: Explain clearly that eSIM is a digital product and refunds/cancellations are NOT available once payment is complete, per Japan's Act on Specified Commercial Transactions Article 15-3. The customer consented to this policy via checkbox during purchase. For exceptional cases (yah.mobile system failure causing eSIM not issued, confirmed duplicate charge, unauthorized credit card use), guide the user to the contact form at yah.mobi/app.
+- If after 3 attempts you still cannot resolve the issue, guide the user to the contact form: "For further assistance, please use our contact form at yah.mobi/app (scroll to the CONTACT section). We'll respond within 2 hours during business hours."
 ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
 
   const conversationHistory = history.slice(-10).map((m) => ({
@@ -178,11 +181,25 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
     FALLBACK[detectedLang] ??
     FALLBACK["en"];
 
-  const shouldEscalate =
-    detectEscalation(userMessage, detectedLang) ||
-    detectEscalation(content, detectedLang);
+  // shouldEscalate is kept for backward compat but no longer triggers operator handoff
+  const shouldEscalate = false;
 
-  return { content, shouldEscalate, detectedLanguage: detectedLang };
+  // Redirect to contact form if AI has tried 3+ times and user still has issues
+  // Detect unresolved signals: user repeating a question or expressing frustration
+  const UNRESOLVED_SIGNALS: Record<string, string[]> = {
+    ja: ["解決しない", "わからない", "できない", "うまくいかない", "また", "もう一度", "同じ"],
+    en: ["still", "not working", "doesn't work", "can't", "cannot", "again", "same issue", "same problem", "not resolved"],
+    zh: ["还是", "仍然", "不行", "不能", "再次", "同样"],
+    ko: ["여전히", "안돼", "안되", "또", "같은", "해결안"],
+    th: ["ยังไม่", "ไม่ได้", "อีกครั้ง", "ยังคง"],
+    vi: ["vẫn", "không được", "lại", "cùng vấn đề"],
+  };
+  const unresolvedKeywords = UNRESOLVED_SIGNALS[detectedLang] ?? UNRESOLVED_SIGNALS["en"];
+  const userLower = userMessage.toLowerCase();
+  const userSignalsUnresolved = unresolvedKeywords.some((kw) => userLower.includes(kw));
+  const shouldRedirectToForm = aiMessageCount >= 3 && userSignalsUnresolved;
+
+  return { content, shouldEscalate, shouldRedirectToForm, detectedLanguage: detectedLang };
 }
 
 // Generate conversation summary

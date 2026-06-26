@@ -259,7 +259,7 @@ export const chatRouter = router({
       const effectiveLang = detectedLang;
 
       // Generate AI response (language detection already done above)
-      const { content: aiContent, shouldEscalate } = await generateAIResponse(
+      const { content: aiContent, shouldEscalate, shouldRedirectToForm } = await generateAIResponse(
         input.sessionId,
         input.content,
         history.map((m) => ({ role: m.role, content: m.content })),
@@ -290,13 +290,9 @@ export const chatRouter = router({
           createdAt: new Date(),
         });
 
-        if (shouldEscalate) {
-          io.to(`session:${input.sessionId}`).emit("escalation_suggested", {
+        if (shouldRedirectToForm) {
+          io.to(`session:${input.sessionId}`).emit("redirect_to_form", {
             sessionId: input.sessionId,
-          });
-          io.to("operators").emit("escalation_alert", {
-            sessionId: input.sessionId,
-            visitorName: session.visitorName,
           });
           // Notify owner via email so they can add the question to RAG
           sendAIEscalationNotificationEmail({
@@ -311,7 +307,7 @@ export const chatRouter = router({
         }
       }
 
-      return { aiResponse: aiContent, shouldEscalate };
+      return { aiResponse: aiContent, shouldEscalate, shouldRedirectToForm };
     }),
 
   // End a session

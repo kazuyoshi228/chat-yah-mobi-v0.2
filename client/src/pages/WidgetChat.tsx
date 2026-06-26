@@ -123,6 +123,7 @@ export default function WidgetChat() {
   }, []);
   const [isTyping, setIsTyping] = useState(false);
   const [shouldEscalate, setShouldEscalate] = useState(false);
+  const [shouldRedirectToForm, setShouldRedirectToForm] = useState(false);
   const [rating, setRating] = useState(0);
   const [resolved, setResolved] = useState<"yes" | "no" | null>(null);
   const [freeComment, setFreeComment] = useState("");
@@ -164,7 +165,7 @@ export default function WidgetChat() {
 
   const sendMessage = trpc.chat.sendMessage.useMutation({
     onSuccess: (data) => {
-      if (data.shouldEscalate) setShouldEscalate(true);
+      if (data.shouldRedirectToForm) setShouldRedirectToForm(true);
       setSendError(null);
     },
     onError: (_err, variables) => {
@@ -182,9 +183,7 @@ export default function WidgetChat() {
     },
   });
 
-  const requestEscalation = trpc.chat.requestEscalation.useMutation({
-    onSuccess: () => setShouldEscalate(false),
-  });
+  // requestEscalation kept for API compatibility but no longer used in UI
 
   const submitSurvey = trpc.chat.submitSurvey.useMutation({
     onSuccess: () => setSurveyDone(true),
@@ -244,6 +243,7 @@ export default function WidgetChat() {
       if (data.role !== "visitor") setIsTyping(data.isTyping);
     });
     socket.on("session_ended", () => setStage("ended"));
+    socket.on("redirect_to_form", () => setShouldRedirectToForm(true));
     return () => { socket.disconnect(); setSocketConnected(false); };
   }, [sessionId, parentOrigin]);
 
@@ -521,20 +521,23 @@ export default function WidgetChat() {
       {/* ── Chat ── */}
       {stage === "chat" && (
         <>
-          {/* Operator connect button — always visible */}
-          <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Headphones className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-              <p className="text-xs text-gray-500">Connect with an operator</p>
+          {/* Contact form redirect banner — shown when AI cannot resolve after 3 attempts */}
+          {shouldRedirectToForm && (
+            <div className="bg-amber-50 border-b border-amber-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                <Headphones className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <p className="text-xs text-amber-700">Need more help?</p>
+              </div>
+              <a
+                href="https://yah.mobi/app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium px-2.5 py-1 rounded-full border border-amber-300 text-amber-700 hover:bg-amber-100 transition-all"
+              >
+                Contact Form ↗
+              </a>
             </div>
-            <button
-              onClick={() => requestEscalation.mutate({ sessionId: sessionId!, visitorId: getOrCreateVisitorId() })}
-              disabled={requestEscalation.isPending || requestEscalation.isSuccess}
-              className="text-xs font-medium px-2.5 py-1 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 transition-all"
-            >
-              {requestEscalation.isSuccess ? "Requested ✓" : requestEscalation.isPending ? "..." : "Connect"}
-            </button>
-          </div>
+          )}
 
           {/* Message list */}
           <div
