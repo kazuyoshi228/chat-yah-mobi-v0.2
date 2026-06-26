@@ -184,6 +184,55 @@ async function startServer() {
     }
   });
 
+  // Heartbeat: weekly RAG embedding check & auto-regeneration
+  app.post("/api/scheduled/check-rag-embeddings", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+
+      const { listRagDocuments, updateRagDocument } = await import("../db");
+      const { getEmbedding } = await import("../routers/ai");
+
+      const docs = await listRagDocuments();
+      const nullEmbeddingDocs = docs.filter(
+        (d) => !d.embedding || (Array.isArray(d.embedding) && (d.embedding as number[]).length === 0)
+      );
+
+      let regenerated = 0;
+      let failed = 0;
+
+      for (const doc of nullEmbeddingDocs) {
+        try {
+          const embedding = await getEmbedding(`${doc.title}\n${doc.content}`);
+          if (embedding.length > 0) {
+            await updateRagDocument(doc.id, { embedding } as any);
+            regenerated++;
+            console.log(`[RAG-Heartbeat] Regenerated embedding for doc ${doc.id}: ${doc.title}`);
+          } else {
+            failed++;
+          }
+        } catch (e) {
+          console.error(`[RAG-Heartbeat] Failed to regenerate embedding for doc ${doc.id}:`, e);
+          failed++;
+        }
+      }
+
+      const result = {
+        ok: true,
+        totalDocs: docs.length,
+        nullEmbeddings: nullEmbeddingDocs.length,
+        regenerated,
+        failed,
+        timestamp: new Date().toISOString(),
+      };
+      console.log("[RAG-Heartbeat] Check complete:", result);
+      res.json(result);
+    } catch (err: any) {
+      console.error("[RAG-Heartbeat] Error:", err);
+      res.status(500).json({ error: err?.message ?? "unknown", timestamp: new Date().toISOString() });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

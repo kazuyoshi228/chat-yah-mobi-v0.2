@@ -213,6 +213,36 @@ describe("AI Response Quality — Real LLM", () => {
     expect(result.detectedLanguage).toBe("vi");
   }, TIMEOUT);
 
+  it("form-redirect-th: タイ語で未解決シグナルがある場合フォーム誘導が発火する", async () => {
+    const history = Array.from({ length: 5 }, (_, i) => [
+      { role: "visitor", content: `คำถาม ${i}` },
+      { role: "ai", content: `คำตอบ ${i}` },
+    ]).flat();
+    const result = await generateAIResponse(
+      9999,
+      "ยังไม่ได้รับการแก้ไข ยังไม่ได้",
+      history,
+      "th"
+    );
+    expect(result.shouldRedirectToForm).toBe(true);
+    expect(containsAny(result.content, ["แบบฟอร์ม", "ติดต่อ", "yah.mobi", "contact", "form", "CONTACT"])).toBe(true);
+  }, TIMEOUT);
+
+  it("form-redirect-vi: ベトナム語で未解決シグナルがある場合フォーム誘導が発火する", async () => {
+    const history = Array.from({ length: 5 }, (_, i) => [
+      { role: "visitor", content: `câu hỏi ${i}` },
+      { role: "ai", content: `câu trả lời ${i}` },
+    ]).flat();
+    const result = await generateAIResponse(
+      9999,
+      "vẫn không được giải quyết, vẫn không hoạt động",
+      history,
+      "vi"
+    );
+    expect(result.shouldRedirectToForm).toBe(true);
+    expect(containsAny(result.content, ["biểu mẫu", "liên hệ", "yah.mobi", "contact", "form", "CONTACT"])).toBe(true);
+  }, TIMEOUT);
+
   it("lang-no-operator-mention: AI must never offer to connect to human operator", async () => {
     const result = await generateAIResponse(
       9999,
