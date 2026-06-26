@@ -221,3 +221,18 @@ export const chatFlowNodes = mysqlTable("chat_flow_nodes", {
 });
 export type ChatFlowNode = typeof chatFlowNodes.$inferSelect;
 export type InsertChatFlowNode = typeof chatFlowNodes.$inferInsert;
+
+/**
+ * Improvement cards - tracks periodic improvement tasks with scheduled dates.
+ * Each card represents a recurring improvement action (e.g., AI model review, RAG translation).
+ */
+export const improvementCards = mysqlTable("improvement_cards", {
+  id: int("id").autoincrement().primaryKey(),
+  cardKey: varchar("cardKey", { length: 64 }).notNull().unique(), // e.g. "ai_model", "rag_translation"
+  nextDate: timestamp("nextDate"),
+  lastDate: timestamp("lastDate"),
+  notes: text("notes"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ImprovementCard = typeof improvementCards.$inferSelect;
+export type InsertImprovementCard = typeof improvementCards.$inferInsert;
