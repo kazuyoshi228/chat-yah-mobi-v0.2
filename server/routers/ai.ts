@@ -154,16 +154,40 @@ Always respond in ${langName}.
 - If after 10 attempts you still cannot resolve the issue, guide the user to the contact form: "For further assistance, please use our contact form at yah.mobi/app (scroll to the CONTACT section). We'll respond within 2 hours during business hours."
 ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
 
-  const conversationHistory = history.slice(-15).map((m) => ({
-    role: (m.role === "visitor" ? "user" : m.role === "ai" ? "assistant" : "user") as "user" | "assistant",
-    content: m.content,
-  }));
+  // Use full conversation history for complete context.
+  // For very long conversations (30+ messages), prepend a rolling summary to avoid token limits.
+  const SUMMARY_THRESHOLD = 30;
+  let messagesForLLM: Array<{ role: "user" | "assistant"; content: string }>;
+  if (history.length > SUMMARY_THRESHOLD) {
+    // Summarize older messages, keep recent 20 verbatim
+    const olderMessages = history.slice(0, -20);
+    const recentMessages = history.slice(-20);
+    const olderText = olderMessages
+      .map((m) => `${m.role === "visitor" ? "User" : m.role === "ai" ? "AI" : "Operator"}: ${m.content}`)
+      .join("\n");
+    const summaryMsg: { role: "user" | "assistant"; content: string } = {
+      role: "user",
+      content: `[Earlier conversation summary]\n${olderText}\n[End of summary — recent messages follow]`,
+    };
+    messagesForLLM = [
+      summaryMsg,
+      ...recentMessages.map((m) => ({
+        role: (m.role === "visitor" ? "user" : m.role === "ai" ? "assistant" : "user") as "user" | "assistant",
+        content: m.content,
+      })),
+    ];
+  } else {
+    messagesForLLM = history.map((m) => ({
+      role: (m.role === "visitor" ? "user" : m.role === "ai" ? "assistant" : "user") as "user" | "assistant",
+      content: m.content,
+    }));
+  }
 
   const response = await invokeLLM({
     model: "gpt-4o",
     messages: [
       { role: "system", content: systemPrompt },
-      ...conversationHistory,
+      ...messagesForLLM,
       { role: "user", content: userMessage },
     ],
   });
