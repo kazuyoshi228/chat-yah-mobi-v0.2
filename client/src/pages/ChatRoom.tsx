@@ -187,7 +187,7 @@ export default function ChatRoom() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [typingInfo, setTypingInfo] = useState<{ role: string; name?: string } | null>(null);
-  const [shouldEscalate, setShouldEscalate] = useState(false);
+  const [shouldRedirectToForm, setShouldRedirectToForm] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [showSurvey, setShowSurvey] = useState(false);
   const [operatorJoined, setOperatorJoined] = useState(false);
@@ -209,7 +209,7 @@ export default function ChatRoom() {
 
   const sendMessage = trpc.chat.sendMessage.useMutation({
     onSuccess: (data) => {
-      if (data.shouldEscalate) setShouldEscalate(true);
+      if ((data as { shouldRedirectToForm?: boolean }).shouldRedirectToForm) setShouldRedirectToForm(true);
     },
   });
 
@@ -218,10 +218,6 @@ export default function ChatRoom() {
       setSessionEnded(true);
       setShowSurvey(true);
     },
-  });
-
-  const requestEscalation = trpc.chat.requestEscalation.useMutation({
-    onSuccess: () => setShouldEscalate(false),
   });
 
   const uploadFile = trpc.upload.uploadFile.useMutation();
@@ -250,11 +246,11 @@ export default function ChatRoom() {
       }
     });
 
-    socket.on("escalation_suggested", () => setShouldEscalate(true));
+    socket.on("redirect_to_form", () => setShouldRedirectToForm(true));
 
     socket.on("operator_joined", (data: { operatorName?: string }) => {
       setOperatorJoined(true);
-      setShouldEscalate(false);
+      setShouldRedirectToForm(false);
       setMessages((prev) => [
         ...prev,
         {
@@ -409,22 +405,23 @@ export default function ChatRoom() {
         )}
       </div>
 
-      {/* Escalation Banner */}
-      {shouldEscalate && !operatorJoined && !sessionEnded && (
+      {/* Form Redirect Banner - shown after 10 unresolved AI attempts */}
+      {shouldRedirectToForm && !sessionEnded && (
         <div className="bg-amber-50 border-b border-amber-100 px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
             <p className="text-xs text-amber-700">
-              Need to connect with an operator?
+              お問い合わせフォームよりご連絡ください
             </p>
           </div>
-          <Button
-            size="sm"
-            onClick={() => requestEscalation.mutate({ sessionId, visitorId })}
-            className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1 h-auto"
+          <a
+            href="https://yah.mobi/app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1 h-auto rounded-md font-medium transition-colors"
           >
-            Connect to operator
-          </Button>
+            Contact Form ↗
+          </a>
         </div>
       )}
 
@@ -511,19 +508,7 @@ export default function ChatRoom() {
       {/* Input Area */}
       {!sessionEnded && (
         <div className="bg-white border-t border-gray-100 px-4 py-3">
-          {/* Connect to operator button - always visible when no operator yet */}
-          {!operatorJoined && (
-            <div className="max-w-2xl mx-auto mb-2">
-              <button
-                onClick={() => requestEscalation.mutate({ sessionId, visitorId })}
-                disabled={requestEscalation.isPending}
-                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg border border-gray-200 text-xs text-gray-500 hover:border-black hover:text-black transition-colors duration-150 disabled:opacity-50"
-              >
-                <Headphones className="w-3.5 h-3.5" />
-                オペレーターに繋ぐ
-              </button>
-            </div>
-          )}
+
           <div className="max-w-2xl mx-auto flex items-end gap-2">
             <input
               ref={(el) => { fileInputRef.current = el; }}

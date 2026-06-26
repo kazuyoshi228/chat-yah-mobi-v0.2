@@ -187,17 +187,18 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
   // Redirect to contact form if AI has tried 10+ times and user still has issues
   // Detect unresolved signals: user repeating a question or expressing frustration
   const UNRESOLVED_SIGNALS: Record<string, string[]> = {
-    ja: ["解決しない", "わからない", "できない", "うまくいかない", "また", "もう一度", "同じ"],
-    en: ["still", "not working", "doesn't work", "can't", "cannot", "again", "same issue", "same problem", "not resolved"],
-    zh: ["还是", "仍然", "不行", "不能", "再次", "同样"],
-    ko: ["여전히", "안돼", "안되", "또", "같은", "해결안"],
-    th: ["ยังไม่", "ไม่ได้", "อีกครั้ง", "ยังคง"],
-    vi: ["vẫn", "không được", "lại", "cùng vấn đề"],
+    ja: ["解決しない", "わからない", "できない", "うまくいかない", "また", "もう一度", "同じ", "繋がらない", "表示されない", "インストールできない", "使えない", "開かない", "エラー", "失敗", "困って", "困った", "助けて"],
+    en: ["still", "not working", "doesn't work", "can't", "cannot", "again", "same issue", "same problem", "not resolved", "not connecting", "not showing", "failed", "error", "help me", "stuck"],
+    zh: ["还是", "仍然", "不行", "不能", "再次", "同样", "连不上", "显示不了", "安装失败", "错误"],
+    ko: ["여전히", "안돼", "안되", "또", "같은", "해결안", "연결안", "표시안", "설치안", "오류"],
+    th: ["ยังไม่", "ไม่ได้", "อีกครั้ง", "ยังคง", "เชื่อมต่อไม่ได้", "ไม่แสดง", "ติดตั้งไม่ได้", "ข้อผิดพลาด"],
+    vi: ["vẫn", "không được", "lại", "cùng vấn đề", "không kết nối", "không hiển thị", "lỗi", "cài đặt thất bại"],
   };
   const unresolvedKeywords = UNRESOLVED_SIGNALS[detectedLang] ?? UNRESOLVED_SIGNALS["en"];
   const userLower = userMessage.toLowerCase();
   const userSignalsUnresolved = unresolvedKeywords.some((kw) => userLower.includes(kw));
-  const shouldRedirectToForm = aiMessageCount >= 10 && userSignalsUnresolved;
+  // OR condition: redirect if 10+ AI attempts OR user signals unresolved after 5+ attempts
+  const shouldRedirectToForm = aiMessageCount >= 10 || (aiMessageCount >= 5 && userSignalsUnresolved);
 
   return { content, shouldEscalate, shouldRedirectToForm, detectedLanguage: detectedLang };
 }

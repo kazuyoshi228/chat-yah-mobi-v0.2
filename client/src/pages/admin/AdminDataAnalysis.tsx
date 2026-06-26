@@ -117,6 +117,10 @@ export default function AdminDataAnalysis() {
   const heroColor = aiResolvedRate === null ? "text-gray-400" : aiResolvedRate >= 99 ? "text-emerald-600" : aiResolvedRate >= 90 ? "text-amber-500" : "text-red-500";
   const heroTarget = 99.9;
   const heroGap = aiResolvedRate !== null ? (heroTarget - aiResolvedRate).toFixed(1) : null;
+  // Survey response rate: surveyCount (answered) / total (sessions)
+  const totalSessions = kpi?.total ?? 0;
+  const surveysAnswered = kpi?.surveyCount ?? 0;
+  const surveyResponseRate = totalSessions > 0 ? Math.round((surveysAnswered / totalSessions) * 100) : null;
 
   const aiPct = data && data.total > 0 ? Math.round((data.aiCount / data.total) * 100) : 0;
   const opPct = data && data.total > 0 ? Math.round((data.operatorCount / data.total) * 100) : 0;
@@ -194,20 +198,35 @@ export default function AdminDataAnalysis() {
                 )}
               </div>
             </div>
-            <div className="md:text-right">
-              <p className="text-xs text-white/50 mb-1">Based on post-chat surveys</p>
-              <p className="text-xs text-white/50">Sessions resolved by AI without operator intervention</p>
-              <div className="mt-3 h-2 bg-white/10 rounded-full overflow-hidden w-full md:w-64">
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${Math.min(100, aiResolvedRate ?? 0)}%`,
-                    background: aiResolvedRate !== null && aiResolvedRate >= 99 ? '#34d399' : aiResolvedRate !== null && aiResolvedRate >= 90 ? '#fbbf24' : '#f87171'
-                  }}
-                />
+            <div className="md:text-right space-y-3">
+              <div>
+                <p className="text-xs text-white/50 mb-1">Based on post-chat surveys</p>
+                <p className="text-xs text-white/50">Sessions resolved by AI without operator intervention</p>
+                <div className="mt-3 h-2 bg-white/10 rounded-full overflow-hidden w-full md:w-64">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(100, aiResolvedRate ?? 0)}%`,
+                      background: aiResolvedRate !== null && aiResolvedRate >= 99 ? '#34d399' : aiResolvedRate !== null && aiResolvedRate >= 90 ? '#fbbf24' : '#f87171'
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-white/30 mt-0.5 md:w-64">
+                  <span>0%</span><span>Target {heroTarget}%</span><span>100%</span>
+                </div>
               </div>
-              <div className="flex justify-between text-[10px] text-white/30 mt-0.5 md:w-64">
-                <span>0%</span><span>Target {heroTarget}%</span><span>100%</span>
+              {/* Survey Response Rate */}
+              <div className="border-t border-white/10 pt-3">
+                <p className="text-xs text-white/40 mb-1">Survey Response Rate</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-semibold tabular-nums" style={{ color: surveyResponseRate === null ? 'rgba(255,255,255,0.3)' : surveyResponseRate >= 40 ? '#34d399' : surveyResponseRate >= 20 ? '#fbbf24' : '#f87171' }}>
+                    {surveyResponseRate !== null ? `${surveyResponseRate}%` : '—'}
+                  </span>
+                  <span className="text-xs text-white/40">
+                    {surveysAnswered > 0 ? `${surveysAnswered} / ${totalSessions} sessions` : 'No surveys yet'}
+                  </span>
+                </div>
+                <p className="text-[10px] text-white/30 mt-0.5">Low rate (&lt;20%) reduces KPI reliability</p>
               </div>
             </div>
           </div>

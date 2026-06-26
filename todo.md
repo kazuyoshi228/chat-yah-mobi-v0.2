@@ -456,3 +456,8 @@
 - [x] AIシステムプロンプトの目標解決率を実績値の98% → 99.9%に変更
 - [x] 既存のtrpc.admin.getKpiのaiResolvedRateをHERO KPIのデータソースとして再利用
 - [x] Data Analysis画面のヘッダー直下に黒バンドのHERO KPIブロックを追加（特大文字・バーグラフ・目標差表示）
+
+## Phase 49: CSレビュー重大問題3件の修正
+- [ ] ChatRoom.tsxの「オペレーターに繋ぐ」ボタンを削除・フォーム誘導バナーに置き換え（WidgetChatと同一体験に統一）
+- [ ] ai.tsのフォーム誘導条件をAND→ORに変更・日本語キーワード（繋がらない・表示されない等）を追加
+- [ ] Data Analysis画面のHERO KPIにアンケート回答率（Survey Response Rate）を追加
