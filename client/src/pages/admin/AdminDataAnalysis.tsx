@@ -475,7 +475,7 @@ export default function AdminDataAnalysis() {
                   const total = data.categoryBreakdown.reduce((s, c) => s + c.count, 0);
                   const pct = total > 0 ? Math.round((cat.count / total) * 100) : 0;
                   return (
-                    <div key={cat.category}>
+                    <div key={`${cat.category}-${i}`}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium">{cat.category}</span>
                         <span className="text-xs text-muted-foreground">{cat.count} ({pct}%)</span>
@@ -597,9 +597,9 @@ export default function AdminDataAnalysis() {
                 <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">No keyword data yet</div>
               ) : (
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {imgData.topKeywords.map((kw) => (
+                  {imgData.topKeywords.map((kw, kwIdx) => (
                     <span
-                      key={kw.keyword}
+                      key={`${kw.keyword}-${kwIdx}`}
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
                     >
                       {kw.keyword}

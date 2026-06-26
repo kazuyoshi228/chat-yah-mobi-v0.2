@@ -8,28 +8,28 @@
         "turn": 1,
         "userMessage": "eSIMをインストールしたのですが、インターネットに繋がりません",
         "detectedLanguage": "ja",
-        "aiResponse": "eSIMのインストール後、インターネットに接続できないとのこと、ご不便をおかけしております。\n\n以下の手順でトラブルシューティングをお試しください。\n\n**1. 機内モードのオン/オフ**\n10秒間機内モードをオンにしてからオフにしてくださ…",
+        "aiResponse": "eSIMのインストール後、インターネットに接続できないとのこと、ご不便をおかけし申し訳ございません。\n\n以下の手順でトラブルシューティングをお試しください。\n\n### 接続できない場合のトラブルシューティング\n\n**ステップ1：機内モードの…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.507
+        "ragTopScore": 0.614
       },
       {
         "turn": 2,
         "userMessage": "設定を確認しましたが、まだ繋がりません",
         "detectedLanguage": "ja",
-        "aiResponse": "設定をご確認いただいたにもかかわらず、まだインターネットに接続できないとのこと、大変申し訳ございません。\n\n承知いたしました。上記のトラブルシューティングで解決しない場合、さらに詳細な状況を確認させていただく必要がございます。\n\nお手数です…",
+        "aiResponse": "設定をご確認いただきありがとうございます。まだインターネットに接続できないとのこと、重ねてお詫び申し上げます。\n\nこれまでの手順で改善が見られない場合、さらにいくつかの確認事項と最終的なトラブルシューティングをお試しいただけますでしょうか。…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.276
+        "ragTopScore": 0.292
       },
       {
         "turn": 3,
         "userMessage": "データローミングもオンにしました。それでも繋がらないです",
         "detectedLanguage": "ja",
-        "aiResponse": "データローミングもオンにしていただいたにもかかわらず、まだ接続できないとのこと、重ねてお詫び申し上げます。\n\n承知いたしました。データローミング設定は適切に完了しているようですので、さらに別の要因が考えられます。\n\nこの状況ですと、お客様の…",
+        "aiResponse": "データローミングもオンにしていただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nこれまでの手順をすべてお試しいただいても改善しない場合、お客様のeSIMの状態や端末固有の問題の可能性もございます。\n\n恐れ入りますが…",
         "shouldRedirectToForm": false,
         "ragTopScore": 0.25
       }
     ],
-    "summary": "顧客はeSIMをインストールしたがインターネットに接続できないと訴えており、AIはトラブルシューティングの手順を複数提示しました。しかし、顧客がそれらすべてを試しても問題が解決しなかったため、AIは詳細な状況確認のためチャットサポートへの連絡を促し、注文情報や端末情報などを準備するよう案内しました。",
+    "summary": "顧客はeSIMをインストールしたがインターネットに接続できないと訴えており、データローミングをオンにしても解決しない。AIは、機内モードのオンオフ、データローミングの確認、モバイルデータ通信の選択、ネットワークの手動選択、4G/LTEへの切り替え、端末の再起動、キャリア設定の更新、APN設定の確認、ネットワーク設定のリセットなどのトラブルシューティング手順を案内している。最終的には、端末情報やeSIMの状況、エラーメッセージ、現在地などの詳細情報の提供を求めている。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -43,20 +43,20 @@
         "turn": 1,
         "userMessage": "購入したeSIMが使えないので返金してほしいです",
         "detectedLanguage": "ja",
-        "aiResponse": "ご購入いただいたeSIMがご利用いただけないとのこと、ご不便をおかけし申し訳ございません。\n\nyah.mobileのeSIMはデジタル商品であり、特定商取引法第15条の3に基づき、**お支払い完了後の返金・キャンセルは承っておりません。**…",
+        "aiResponse": "eSIMがご利用いただけないとのこと、ご不便をおかけし申し訳ございません。\n\nyah.mobileのeSIMはデジタルコンテンツであり、特定商取引法第15条の3に基づき、**QRコード発行後の返金・キャンセルは原則としてお受けできません。*…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.567
+        "ragTopScore": 0.607
       },
       {
         "turn": 2,
         "userMessage": "でも一度も使えていないのに返金できないのはおかしいと思います",
         "detectedLanguage": "ja",
-        "aiResponse": "ご不不満に思われるお気持ち、お察しいたします。\n\neSIMはデジタルコンテンツという特性上、一度発行されると物理的な返品が不可能となります。そのため、日本国の「特定商取引法」という法律に基づき、デジタルコンテンツの提供開始後は消費者の撤回権…",
+        "aiResponse": "ご不便をおかけし、大変申し訳ございません。\n\n一度もご利用いただけていない状況で返金ができないことについて、ご不満に思われるお気持ち、お察しいたします。\n\nyah.mobileのeSIMは、QRコードが発行された時点で、お客様のためにネット…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.294
+        "ragTopScore": 0.343
       }
     ],
-    "summary": "お客様は購入したeSIMが使えないため返金を求めていますが、yah.mobileはデジタル商品の特性と特定商取引法に基づき、支払い完了後の返金・キャンセルはできないと説明しています。ただし、eSIMのインストールや接続に関する問題であれば、トラブルシューティングのサポートを提供すると申し出ています。",
+    "summary": "顧客は購入したeSIMが使えないため返金を求めていますが、AIはQRコード発行後の返金・キャンセルは原則としてできないと説明しています。その代わり、AIはトラブルシューティングの手順を提案し、それでも解決しない場合は技術的なサポートを提供すると述べています。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -70,20 +70,20 @@
         "turn": 1,
         "userMessage": "How do I install the eSIM on my iPhone?",
         "detectedLanguage": "en",
-        "aiResponse": "To install your eSIM on an iPhone, please follow these steps:\n\n1.  Ensure you have a **stable Wi-Fi connection**.\n2.  Go…",
+        "aiResponse": "To install the eSIM on your iPhone, please follow these steps:\n\n### Before You Start\n- You need a stable Wi-Fi connectio…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.503
+        "ragTopScore": 0.687
       },
       {
         "turn": 2,
         "userMessage": "I followed the steps but it's not showing in my settings",
         "detectedLanguage": "en",
-        "aiResponse": "I'm sorry to hear that your eSIM is not showing in your settings after following the installation steps.\n\nPlease try the…",
+        "aiResponse": "I'm sorry to hear the eSIM is not showing in your settings. Please try the following troubleshooting steps for iPhone:\n\n…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.203
+        "ragTopScore": 0.332
       }
     ],
-    "summary": "顧客はiPhoneへのeSIMインストール手順に従ったにもかかわらず、設定にeSIMが表示されないという問題に直面しています。AIは、iPhoneの再起動、設定の確認、QRコードスキャンの再確認を提案し、それでも解決しない場合は、単回使用のQRコードの特性上、新しいQRコードの発行のためにサポートチームに連絡するよう案内しています。",
+    "summary": "訪問者はiPhoneへのeSIMインストール手順に従ったものの、設定に表示されない問題を抱えています。AIは、まずスマートフォンの再起動とiOSバージョンの確認を提案し、それでも解決しない場合は新しいQRコードを再発行するためにお問い合わせフォームから連絡するよう案内しています。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -97,20 +97,20 @@
         "turn": 1,
         "userMessage": "I want to cancel my order and get a refund",
         "detectedLanguage": "en",
-        "aiResponse": "Thank you for reaching out.\n\nRegarding cancellations and refunds, please note that once payment is complete, refunds are…",
+        "aiResponse": "Thank you for reaching out.\n\nPlease note that refunds and cancellations are not available once the QR code for your eSIM…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.26
+        "ragTopScore": 0.376
       },
       {
         "turn": 2,
         "userMessage": "But I haven't used it yet, can't you make an exception?",
         "detectedLanguage": "en",
-        "aiResponse": "I understand your situation. However, as per our policy, which is based on Japan's Act on Specified Commercial Transacti…",
+        "aiResponse": "I understand your concern about not having used the eSIM yet. However, our policy states that refunds are not available …",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.18
+        "ragTopScore": 0.228
       }
     ],
-    "summary": "顧客はeSIMの注文キャンセルと返金を希望していますが、AIは日本の特定商取引法に基づき、支払い完了後の返金はできないと説明しています。未利用であってもデジタル製品の特性上、QRコード発行時点でサービス提供済みとみなされるため、例外は認められないとのことです。",
+    "summary": "お客様はeSIMの注文キャンセルと返金を希望していますが、QRコード発行後は日本の特定商取引法に基づき返金不可であると説明されています。未使用であっても返金はできず、技術的な問題があれば24時間年中無休のサポートチームがトラブルシューティングや再発行で対応するとのことです。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -124,20 +124,20 @@
         "turn": 1,
         "userMessage": "요금제는 어떻게 되나요?",
         "detectedLanguage": "ko",
-        "aiResponse": "안녕하세요! yah.mobile은 일본 방문 여행자를 위한 일본 국내 전용 eSIM 서비스입니다.\n\n저희는 업계 최저 수준의 GB당 단가로 다양한 요금제를 제공하고 있습니다. 구체적인 요금제 정보는 yah.mobil…",
+        "aiResponse": "안녕하세요! yah.mobile은 일본 여행객을 위한 eSIM 서비스로, 다양한 요금제를 제공하고 있습니다.\n\n저희 요금제는 다음과 같습니다:\n\n| 요금제 | 데이터 | 유효기간 | 가격 | GB당 |\n|------…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.212
+        "ragTopScore": 0.357
       },
       {
         "turn": 2,
         "userMessage": "가장 저렴한 플랜을 알려주세요",
         "detectedLanguage": "ko",
-        "aiResponse": "가장 저렴한 플랜은 그때그때 프로모션이나 요금제 업데이트에 따라 달라질 수 있습니다.\n\n정확하고 최신 정보는 yah.mobile 웹사이트에서 직접 확인하시는 것이 가장 좋습니다. 웹사이트에 접속하시면 현재 제공되는 …",
+        "aiResponse": "가장 저렴한 플랜은 **라이트 플랜**입니다.\n\n*   **데이터:** 1GB\n*   **유효기간:** 7일\n*   **가격:** ¥490\n\n단기 여행이나 데이터 사용량이 적으신 분들께 적합합니다.",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.203
+        "ragTopScore": 0.267
       }
     ],
-    "summary": "お客様はyah.mobileの料金プランについて質問しており、特に最安値のプランを知りたいと考えています。AIは、料金プランはプロモーションや更新によって変動するため、最新かつ正確な情報はyah.mobileのウェブサイトで直接確認するように案内しています。",
+    "summary": "顧客はyah.mobileの料金プランについて質問し、特に最も安いプランを知りたいと尋ねました。AIは、日本旅行者向けeSIMサービスであるyah.mobileの全料金プランを提示し、最も安いプランは1GB/7日間で490円の「ライトプラン」であると案内しました。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -151,20 +151,20 @@
         "turn": 1,
         "userMessage": "我的eSIM安装不上，怎么办？",
         "detectedLanguage": "ja",
-        "aiResponse": "您好！很抱歉您在安装 eSIM 时遇到问题。请您按照以下步骤进行排查和操作：\n\n**请在稳定的 Wi-Fi 环境下操作。**\n\n**第一步：确认您的手机是否支持 eSIM**\n*   **iPhone：** 前往「设置」→「通用」→「关于本…",
+        "aiResponse": "很抱歉您在安装 eSIM 时遇到了问题。请您按照以下步骤进行排查和操作：\n\n**1. 确认您的设备和网络条件：**\n\n*   **稳定的 Wi-Fi 连接：** eSIM 安装需要稳定的 Wi-Fi 网络。请确保您已连接到 Wi-Fi。\n*…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.497
+        "ragTopScore": 0.664
       },
       {
         "turn": 2,
         "userMessage": "我按照步骤操作了，但还是显示不了",
         "detectedLanguage": "ja",
-        "aiResponse": "您好！很抱歉您按照步骤操作后仍然无法显示。为了更好地帮助您，请您提供更详细的信息：\n\n1.  **您使用的是哪种手机型号和操作系统版本？** (例如：iPhone 14 Pro, iOS 17.4.1 或 Samsung Galaxy S2…",
+        "aiResponse": "很抱歉您按照步骤操作后 eSIM 仍然没有显示。这确实令人沮丧。\n\n请您提供更多信息，以便我能更好地帮助您：\n\n1.  **您的设备型号是什么？** (例如：iPhone 13 Pro, Samsung Galaxy S22 等)\n2.  …",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.29
+        "ragTopScore": 0.383
       }
     ],
-    "summary": "顧客はeSIMのインストールができないと訴えており、AIはまず携帯電話のeSIM対応状況やロック解除、正しいインストール手順の確認を促しました。それでも解決しないため、AIはより詳細な情報（携帯電話のモデル、エラーメッセージ、問題が発生した手順など）を求め、データローミングの有効化やネットワークの手動選択などの追加のトラブルシューティング手順を案内しています。",
+    "summary": "顧客はeSIMのインストールに問題があり、提供された手順に従ってもeSIMが表示されないと報告しました。AIは、デバイスモデル、オペレーティングシステム、問題が発生した具体的な手順、およびデバイスの再起動の有無など、より詳細な情報の提供を求めています。また、安定したWi-Fi接続、QRコードの鮮明さ、および手動入力の試行を再度確認するようアドバイスしました。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -178,20 +178,20 @@
         "turn": 1,
         "userMessage": "วิธีติดตั้ง eSIM บน iPhone ทำอย่างไร",
         "detectedLanguage": "th",
-        "aiResponse": "สวัสดีค่ะ! การติดตั้ง eSIM บน iPhone ทำได้ง่ายๆ เลยค่ะ กรุณาทำตามขั้นตอนดังนี้:\n\n**สิ่งสำคัญ:** ตรวจสอบให้แน่ใจว่าคุณเชื…",
+        "aiResponse": "สวัสดีค่ะ! สำหรับการติดตั้ง eSIM บน iPhone มีขั้นตอนดังนี้ค่ะ\n\n**สิ่งที่ต้องเตรียม:**\n*   การเชื่อมต่อ Wi-Fi ที่เสถียร\n*…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.466
+        "ragTopScore": 0.638
       },
       {
         "turn": 2,
         "userMessage": "ติดตั้งแล้วแต่ยังไม่แสดงในการตั้งค่า",
         "detectedLanguage": "th",
-        "aiResponse": "ขออภัยในความไม่สะดวกค่ะ หากติดตั้ง eSIM แล้วแต่ยังไม่แสดงในการตั้งค่า กรุณาลองทำตามขั้นตอนเหล่านี้เพื่อแก้ไขปัญหาเบื้องต…",
+        "aiResponse": "ขออภัยในความไม่สะดวกที่เกิดขึ้นนะคะ หากติดตั้ง eSIM แล้วแต่ยังไม่แสดงในการตั้งค่าบน iPhone ลองทำตามขั้นตอนเหล่านี้ค่ะ\n\n1…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.264
+        "ragTopScore": 0.336
       }
     ],
-    "summary": "お客様はiPhoneへのeSIMインストール方法を尋ね、AIは手順を説明しました。しかし、インストール後もeSIMが設定に表示されないという問題が発生し、AIはWi-Fi接続の確認、iPhoneの再起動、設定の再確認、QRコードの再スキャンなどのトラブルシューティング手順を提案しました。解決しない場合は、新しいQRコードが必要になる可能性があることを伝え、注文番号とメールアドレスの提供を求めています。",
+    "summary": "顧客はiPhoneへのeSIMインストール方法を尋ね、AIは手順を説明しました。しかし、顧客はインストール後にeSIMが設定に表示されないと報告し、AIは再起動を提案し、それでも解決しない場合は新しいQRコードを発行するためサポートに連絡するよう案内しました。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -205,20 +205,20 @@
         "turn": 1,
         "userMessage": "Làm thế nào để cài đặt eSIM trên iPhone?",
         "detectedLanguage": "vi",
-        "aiResponse": "Để cài đặt eSIM trên iPhone, vui lòng thực hiện theo các bước sau, đảm bảo bạn có kết nối Wi-Fi ổn định:\n\n1.  Vào **Cài …",
+        "aiResponse": "Chào bạn, tôi sẽ hướng dẫn bạn cách cài đặt eSIM yah.mobile trên iPhone nhé.\n\n**Chuẩn bị:**\n*   Cần có kết nối Wi-Fi ổn …",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.597
+        "ragTopScore": 0.776
       },
       {
         "turn": 2,
         "userMessage": "Tôi đã làm theo hướng dẫn nhưng vẫn không kết nối được",
         "detectedLanguage": "vi",
-        "aiResponse": "Tôi xin lỗi vì sự bất tiện này. Đừng lo lắng, chúng ta hãy cùng kiểm tra một số bước để khắc phục sự cố kết nối nhé:\n\n**…",
+        "aiResponse": "Tôi hiểu rằng bạn đã làm theo hướng dẫn nhưng vẫn gặp khó khăn trong việc kết nối Internet. Đừng lo lắng, chúng ta hãy c…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.376
+        "ragTopScore": 0.451
       }
     ],
-    "summary": "顧客はiPhoneでのeSIM設定方法を尋ね、AIはQRコードを使った手順を案内しました。しかし、顧客は接続できないと報告したため、AIは機内モードのオンオフ、データローミングの確認、手動でのネットワーク選択、そしてスマートフォンの再起動というトラブルシューティングの手順を提示しました。",
+    "summary": "顧客はiPhoneにeSIMをインストールしたが、インターネットに接続できないという問題に直面しています。AIは、機内モードのオン/オフ、データローミングの確認、モバイルデータの選択、手動でのネットワーク選択、4G/LTEへの切り替え、デバイスの再起動など、段階的なトラブルシューティング手順を提供しました。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
@@ -232,15 +232,15 @@
         "turn": 1,
         "userMessage": "eSIMが繋がりません",
         "detectedLanguage": "ja",
-        "aiResponse": "eSIMが繋がらないとのこと、ご不便をおかけし申し訳ございません。\n\n以下の手順でトラブルシューティングをお試しいただけますでしょうか。\n\n**1. 機内モードのオン/オフ**\n機内モードを10秒間オンにしてからオフにしてください。多くの場…",
+        "aiResponse": "yah.mobileをご利用いただきありがとうございます。eSIMがインターネットに接続できないとのこと、ご不便をおかけし申し訳ございません。\n\n以下の手順でトラブルシューティングをお試しください。\n\n### 接続できない場合のトラブルシュ…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.481
+        "ragTopScore": 0.544
       },
       {
         "turn": 2,
         "userMessage": "まだ繋がりません",
         "detectedLanguage": "ja",
-        "aiResponse": "まだ繋がらないとのこと、大変申し訳ございません。\n\n上記の手順をすべてお試しいただいても改善しない場合、さらに詳しい状況を確認させていただく必要がございます。\n\n恐れ入りますが、ウェブサイト右下のチャットボタンから、以下の情報と合わせてお問…",
+        "aiResponse": "承知いたしました。上記のトラブルシューティングをお試しいただいても接続できないとのこと、大変申し訳ございません。\n\n恐れ入りますが、より詳細な状況をお伺いし、個別に対応させていただくため、以下の情報をご準備の上、ウェブサイト右下のチャットボ…",
         "shouldRedirectToForm": false,
         "ragTopScore": 0.166
       },
@@ -248,23 +248,23 @@
         "turn": 3,
         "userMessage": "設定を確認しましたが繋がりません",
         "detectedLanguage": "ja",
-        "aiResponse": "設定をご確認いただきありがとうございます。それでも接続できないとのこと、大変申し訳ございません。\n\nお客様の状況を詳しく把握し、解決策を見つけるために、以下の情報をお聞かせいただけますでしょうか。\n\n1.  **現在、どのステップで問題が発…",
+        "aiResponse": "設定をご確認いただいたにもかかわらず、まだ接続できないとのこと、大変申し訳ございません。\n\neSIMのインストール自体は完了し、設定画面にyah.mobileのプランが表示されている状態でしょうか？\n\nもしeSIMのインストールが完了してい…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.299
+        "ragTopScore": 0.324
       },
       {
         "turn": 4,
         "userMessage": "データローミングもオンにしました",
         "detectedLanguage": "ja",
-        "aiResponse": "データローミングをオンにしていただいたにも関わらず、まだ繋がらないとのこと、大変申し訳ございません。\n\nそれでは、以下の追加の確認と手順をお試しいただけますでしょうか。\n\n1.  **データSIMの選択確認:**\n    *   iPhon…",
+        "aiResponse": "データローミングもオンにしていただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nデータローミングがオンになっていることは、yah.mobileのeSIMをご利用いただく上で非常に重要な設定ですので、ご確認ありがとう…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.236
+        "ragTopScore": 0.254
       },
       {
         "turn": 5,
         "userMessage": "それでも繋がりません",
         "detectedLanguage": "ja",
-        "aiResponse": "それでも接続できないとのこと、大変申し訳ございません。\n\nこれまでの手順をすべてお試しいただいても改善しない場合、お客様の端末やeSIMの設定状況を詳細に確認させていただく必要がございます。\n\n恐れ入りますが、**ウェブサイト右下のチャット…",
+        "aiResponse": "度重なるご確認にも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様のご不便、お察しいたします。\n\nこれまでに基本的なトラブルシューティング、データローミングの確認、APN設定の確認までお試しいただいたにもかかわらず改善しな…",
         "shouldRedirectToForm": false,
         "ragTopScore": 0.157
       },
@@ -272,15 +272,15 @@
         "turn": 6,
         "userMessage": "APN設定もしました",
         "detectedLanguage": "ja",
-        "aiResponse": "APN設定も試していただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nyah.mobileのeSIMは、通常、APN設定を自動で行うため、手動での設定は不要です。もし手動でAPN設定を変更された場合、それが原因で接…",
+        "aiResponse": "APN設定も完了されたにもかかわらず、まだ接続できないとのこと、大変申し訳ございません。\n\nお客様には何度も設定をご確認いただき、ご不便をおかけしております。\n\nこれまでの情報から、以下の点が確認できております。\n*   eSIMが繋がらな…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.389
+        "ragTopScore": 0.496
       },
       {
         "turn": 7,
         "userMessage": "まだダメです",
         "detectedLanguage": "ja",
-        "aiResponse": "まだ接続できないとのこと、大変申し訳ございません。お客様にご不便をおかけし、心苦しい限りです。\n\nこれまでのすべてのトラブルシューティングをお試しいただいたにも関わらず改善しない場合、一般的な解決策では対応できない、より詳細な問題が起きてい…",
+        "aiResponse": "度重なるご確認にも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様のご不便、お察しいたします。\n\nこれまでに基本的なトラブルシューティング、データローミングの確認、APN設定の確認まで、考えられるほとんどの対処法をお試しい…",
         "shouldRedirectToForm": false,
         "ragTopScore": 0.237
       },
@@ -288,15 +288,15 @@
         "turn": 8,
         "userMessage": "キャリア設定も更新しました",
         "detectedLanguage": "ja",
-        "aiResponse": "キャリア設定の更新も試していただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nこれまでのすべてのトラブルシューティングをお試しいただいても改善しない場合、お客様の端末やeSIMに固有の問題が発生している可能性がござ…",
+        "aiResponse": "キャリア設定の更新までお試しいただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様には何度もご確認いただき、心苦しい限りです。\n\nこれまでに、考えられるほとんどのトラブルシューティング（機内モードのオンオフ、再起動…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.205
+        "ragTopScore": 0.332
       },
       {
         "turn": 9,
         "userMessage": "繋がらないです",
         "detectedLanguage": "ja",
-        "aiResponse": "まだ接続できないとのこと、大変申し訳ございません。お客様にご不便とご心配をおかけし、心よりお詫び申し上げます。\n\nこれまでのすべてのトラブルシューティング、APN設定、キャリア設定の更新までお試しいただいたにも関わらず改善しない場合、お客様…",
+        "aiResponse": "度重なるご確認にも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様のご不便、お察しいたします。\n\nこれまでに、考えられるほとんどのトラブルシューティング（機内モードのオンオフ、再起動、データローミングオン、APN設定確認、…",
         "shouldRedirectToForm": true,
         "ragTopScore": 0.168
       },
@@ -304,20 +304,20 @@
         "turn": 10,
         "userMessage": "どうしたらいいですか",
         "detectedLanguage": "ja",
-        "aiResponse": "これまでのすべてのトラブルシューティングをお試しいただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様にご不便をおかけし、心よりお詫び申し上げます。\n\nこの状況では、一般的な解決策では対応できない、お客様固有の問題…",
+        "aiResponse": "度重なるご確認にも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様のご不便、お察しいたします。\n\nこれまでに、考えられるほとんどのトラブルシューティング（機内モードのオンオフ、再起動、データローミングオン、APN設定確認、…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.207
+        "ragTopScore": 0.253
       },
       {
         "turn": 11,
         "userMessage": "まだ解決しません",
         "detectedLanguage": "ja",
-        "aiResponse": "まだ解決しないとのこと、大変申し訳ございません。お客様にご迷惑をおかけし、心苦しい限りです。\n\nこれまでのすべてのトラブルシューティングをお試しいただいたにも関わらず、接続できない状態が続いているとのこと、一般的な解決策では対応できない、よ…",
+        "aiResponse": "度重なるご確認にも関わらず、まだ接続できないとのこと、大変申し訳ございません。お客様のご不便、お察しいたします。\n\nこれまでに、考えられるほとんどのトラブルシューティング（機内モードのオンオフ、再起動、データローミングオン、APN設定確認、…",
         "shouldRedirectToForm": true,
-        "ragTopScore": 0.216
+        "ragTopScore": 0.215
       }
     ],
-    "summary": "顧客はeSIMが接続できないという問題に直面しており、AIは機内モードのオンオフ、データローミングの確認、APN設定、キャリア設定の更新など、様々なトラブルシューティング手順を提案しました。しかし、これらの手順をすべて試しても問題が解決しなかったため、最終的にAIは顧客に、専門の担当者が詳細な情報を直接確認するため、ウェブサイトのチャットボタンから連絡するよう案内しました。",
+    "summary": "顧客のeSIMがインターネットに接続できない問題に対し、AIは機内モードのオンオフ、データローミング、APN設定、端末の再起動、キャリア設定の更新など、様々なトラブルシューティング手順を案内しました。しかし、これらの手順を試しても問題が解決しなかったため、最終的には専門の担当者による個別サポートを受けるよう、詳細情報と共にチャットでの問い合わせを促しています。",
     "errors": [],
     "formRedirectTriggered": true,
     "ragHitScores": []
@@ -331,15 +331,15 @@
         "turn": 1,
         "userMessage": "What is yah.mobile?",
         "detectedLanguage": "en",
-        "aiResponse": "yah.mobile is a Japan-only eSIM service designed for international travelers. It offers the industry's lowest price per …",
+        "aiResponse": "yah.mobile is a Japan-only eSIM service designed for international travelers. We offer the industry's lowest price per G…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.457
+        "ragTopScore": 0.466
       },
       {
         "turn": 2,
         "userMessage": "Does it work in Japan?",
         "detectedLanguage": "en",
-        "aiResponse": "Yes, yah.mobile is a Japan-only eSIM service, meaning it is specifically designed to be used in Japan.",
+        "aiResponse": "Yes, yah.mobile is a Japan-only eSIM service and works throughout Japan using the NTT DOCOMO, SoftBank, or KDDI networks…",
         "shouldRedirectToForm": false,
         "ragTopScore": 0.434
       },
@@ -347,12 +347,12 @@
         "turn": 3,
         "userMessage": "How long does the eSIM last?",
         "detectedLanguage": "en",
-        "aiResponse": "The yah.mobile eSIM plan lasts until either you run out of data or your plan expires, whichever comes first. You can che…",
+        "aiResponse": "The duration of your eSIM plan depends on the specific package you purchased. You can check the details of your plan, in…",
         "shouldRedirectToForm": false,
-        "ragTopScore": 0.439
+        "ragTopScore": 0.46
       }
     ],
-    "summary": "yah.mobileは訪日外国人向けの日本限定eSIMサービスです。データがなくなるかプランの有効期限が切れるまで利用でき、残りのデータ量や有効期限はアカウントページやアプリで確認できます。",
+    "summary": "yah.mobileは訪日外国人向けの日本限定eSIMサービスで、NTTドコモ、ソフトバンク、KDDIのネットワークを利用し、日本全国で利用可能です。eSIMの有効期間は購入したプランによって異なり、アカウントページまたはアプリで確認できます。",
     "errors": [],
     "formRedirectTriggered": false,
     "ragHitScores": []
