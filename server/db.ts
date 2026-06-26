@@ -9,6 +9,7 @@ import {
   ragDocuments,
   sessionReads,
   surveys,
+  testRunLogs,
   users,
   type ChatSession,
   type ImageAnalysis,
@@ -18,7 +19,9 @@ import {
   type InsertQuickReply,
   type InsertRagDocument,
   type InsertSurvey,
+  type InsertTestRunLog,
   type Message,
+  type TestRunLog,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -836,4 +839,43 @@ export async function getTeamScorecard(since?: number, until?: number): Promise<
     avgFirstResponseMs,
     totalScore: Math.round(score),
   };
+}
+
+// ─── Test Run Logs ────────────────────────────────────────────────────────────
+
+/** Save a test run result to the database. */
+export async function createTestRunLog(data: InsertTestRunLog): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+  const result = await db.insert(testRunLogs).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+/** Get the latest test run log for each testType. */
+export async function getLatestTestRunLogs(): Promise<TestRunLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  // Get latest log per testType using subquery
+  const rows = await db
+    .select()
+    .from(testRunLogs)
+    .orderBy(desc(testRunLogs.ranAt))
+    .limit(50);
+  // Deduplicate: keep only the latest per testType
+  const seen = new Set<string>();
+  const result: TestRunLog[] = [];
+  for (const row of rows) {
+    if (!seen.has(row.testType)) {
+      seen.add(row.testType);
+      result.push(row);
+    }
+  }
+  return result;
+}
+
+/** Get all test run logs (for history view). */
+export async function listTestRunLogs(limit = 20): Promise<TestRunLog[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(testRunLogs).orderBy(desc(testRunLogs.ranAt)).limit(limit);
 }

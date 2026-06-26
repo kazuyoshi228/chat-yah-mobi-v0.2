@@ -3,6 +3,7 @@ import {
   createOperatorUser,
   createQuickReply,
   createRagDocument,
+  createTestRunLog,
   deleteQuickReply,
   deleteRagDocument,
   getAllOperators,
@@ -10,6 +11,7 @@ import {
   getAnalysisData,
   getChatSession,
   getKpiStats,
+  getLatestTestRunLogs,
   getMessagesBySessionId,
   getOperatorChatCount,
   getSurveyBySessionId,
@@ -18,6 +20,7 @@ import {
   listQuickReplies,
   listRagDocuments,
   listSurveys,
+  listTestRunLogs,
   getImageAnalyticsSummary,
   getTeamScorecard,
   markSessionRead,
@@ -535,4 +538,88 @@ Do not include any other text.`;
     .query(async ({ input }) => {
       return getTeamScorecard(input.since, input.until);
     }),
+
+  // ── Testing: run scripts and record results ──────────────────────────────
+  /** Get the latest test run log per testType */
+  getLatestTestRunLogs: adminProcedure.query(async () => {
+    return getLatestTestRunLogs();
+  }),
+
+  /** Get recent test run history */
+  listTestRunLogs: adminProcedure
+    .input(z.object({ limit: z.number().min(1).max(100).default(20) }))
+    .query(async ({ input }) => {
+      return listTestRunLogs(input.limit);
+    }),
+
+  /** Run RAG embedding regeneration for all documents with missing embeddings */
+  runRegenerateEmbeddings: adminProcedure.mutation(async () => {
+    const { listActiveRagDocuments, updateRagDocument } = await import("../db");
+    const { getEmbedding } = await import("./ai");
+    const docs = await listActiveRagDocuments();
+    const missing = docs.filter((d) => !d.embedding);
+    let fixed = 0;
+    const errors: string[] = [];
+    for (const doc of missing) {
+      try {
+        const embedding = await getEmbedding(`${doc.title}\n${doc.content}`);
+        if (embedding.length > 0) {
+          await updateRagDocument(doc.id, { embedding });
+          fixed++;
+        }
+      } catch (e) {
+        errors.push(`doc#${doc.id}: ${String(e)}`);
+      }
+    }
+    const passed = fixed;
+    const total = missing.length;
+    const status = errors.length === 0 ? "pass" : "fail";
+    await createTestRunLog({
+      testType: "rag-embedding-check",
+      status,
+      passed,
+      failed: errors.length,
+      total,
+      details: errors.length > 0 ? errors.join("; ") : `All ${total} missing embeddings regenerated`,
+    });
+    return { fixed, total, errors };
+  }),
+
+  /** Run Vitest unit tests (mock-based, no LLM calls) */
+  runVitestMock: adminProcedure.mutation(async () => {
+    const { execSync } = await import("child_process");
+    const start = Date.now();
+    let status: "pass" | "fail" = "pass";
+    let passed = 0;
+    let failed = 0;
+    let details = "";
+    try {
+      const output = execSync("pnpm test --reporter=verbose 2>&1", {
+        cwd: process.cwd(),
+        timeout: 120000,
+        encoding: "utf8",
+      });
+      // Parse vitest output for pass/fail counts
+      const passMatch = output.match(/(\d+) passed/);
+      const failMatch = output.match(/(\d+) failed/);
+      passed = passMatch ? parseInt(passMatch[1]) : 0;
+      failed = failMatch ? parseInt(failMatch[1]) : 0;
+      if (failed > 0) status = "fail";
+      details = `Completed in ${Date.now() - start}ms`;
+    } catch (e: any) {
+      status = "fail";
+      details = String(e?.stdout ?? e?.message ?? e).slice(0, 500);
+      const failMatch = details.match(/(\d+) failed/);
+      failed = failMatch ? parseInt(failMatch[1]) : 1;
+    }
+    await createTestRunLog({
+      testType: "vitest-mock",
+      status,
+      passed,
+      failed,
+      total: passed + failed,
+      details,
+    });
+    return { status, passed, failed, details };
+  }),
 });

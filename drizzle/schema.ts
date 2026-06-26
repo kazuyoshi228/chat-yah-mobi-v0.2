@@ -158,3 +158,25 @@ export const sessionReads = mysqlTable("session_reads", {
 
 export type SessionRead = typeof sessionReads.$inferSelect;
 export type InsertSessionRead = typeof sessionReads.$inferInsert;
+
+/**
+ * Test run logs - records the result of each test execution from the Testing admin page.
+ * testType: "e2e" | "vitest" | "rag-embedding"
+ * passed: number of tests that passed
+ * failed: number of tests that failed
+ * total: total number of tests
+ * details: JSON array of { name, status } per test
+ */
+export const testRunLogs = mysqlTable("test_run_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  testType: varchar("testType", { length: 64 }).notNull(), // "e2e" | "vitest" | "rag-embedding"
+  status: varchar("status", { length: 16 }).notNull().default("pass"), // "pass" | "fail"
+  passed: int("passed").default(0).notNull(),
+  failed: int("failed").default(0).notNull(),
+  total: int("total").default(0).notNull(),
+  details: text("details"),
+  triggeredBy: int("triggeredBy").references(() => users.id, { onDelete: "set null" }),
+  ranAt: timestamp("ranAt").defaultNow().notNull(),
+});
+export type TestRunLog = typeof testRunLogs.$inferSelect;
+export type InsertTestRunLog = typeof testRunLogs.$inferInsert;
