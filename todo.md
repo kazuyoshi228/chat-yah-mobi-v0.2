@@ -389,14 +389,14 @@
 - [x] server/routers/ai.ts のシステムプロンプトを yah.mobile 専用に更新
 - [x] TypeScript: 0 エラー確認
 
-## Phase 41: RAG整理・エスカレーション通知メール実装
+## Phase 41: RAG整理・エスカレーション通知メール実装（初期計画）
 
-- [ ] スペイン語RAGドキュメント（id: 30005）をDBから削除
-- [ ] タイ語FAQドキュメントを作成・DB登録（embedding付き）
-- [ ] ベトナム語FAQドキュメントを作成・DB登録（embedding付き）
-- [ ] email.ts にエスカレーション通知メール関数を追加（送信先: kazuyoshi.yamada@bonfire.co.jp）
-- [ ] server/routers/chat.ts のエスカレーション処理でメール通知を呼び出す
-- [ ] TypeScript: 0 エラー確認・テスト通過
+- [x] スペイン語ラグドキュメント（id: 30005）をDBから削除
+- [x] タイ語ファイルRAGドキュメントを作成・DB登録
+- [x] ベトナム語ファイルRAGドキュメントを作成・DB登録
+- [x] email.ts にエスカレーション通知メール関数を追加（送信先: kazuyoshi.yamada@bonfire.co.jp）
+- [x] server/routers/chat.ts のエスカレーション処理でメール通知を呼び出す
+- [x] TypeScript: 0 エラー確認・テスト通過
 
 ## Phase 41: RAG整理・エスカレーション通知（完了）
 - [x] スペイン語RAGドキュメント（id: 30005）を削除

@@ -514,21 +514,7 @@ export default function WidgetChat() {
             </button>
           )}
 
-          {/* セットアップガイドダウンロード */}
-          <div className="mt-1 border-t border-gray-100 pt-3">
-            <a
-              href="/manus-storage/yah_mobile_user_guide_3aded696.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              download="yah.mobile_Setup_Guide.pdf"
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs text-gray-600 hover:text-gray-800 transition-all"
-            >
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Setup &amp; Support Guide (PDF)
-            </a>
-          </div>
+          {/* セットアップガイドダウンロード（現在非表示） */}
         </div>
       )}
 
