@@ -591,4 +591,22 @@
 - [x] RAGドキュメントにホスピタリティ指針を反映 (13件: HEARD法・感情レベル対応・デエスカレーション・先読みサービス・禁止表現・WOW体験・返金3Yes・リッツ3ステップ + 多言語5件)
 - [x] デシジョンツリーflowContextにホスピタリティ指針を組み込み (ai.ts system prompt)
 - [x] シミュレーションで効果検証: CONNECTION 0.939✅ | PRICING 0.936✅ | REFUND 0.925✅ | GENERAL 0.925✅ | 全体 0.933
+- [x] チェックポイント保存 (version: cd8538c6)
+
+## Phase 63: OONAS（おもてなし5原則）実装
+- [x] OONASのRAGドキュメントをDBに投入（Only/Option/Nature/Amazing/Share + 実践例 + 多言語版 EN/ZH/KO）9件
+- [x] docs/hospitality-guide.mdにOONASセクションを追記
+- [x] ai.tsのsystem promptにOONAS指針を追記（ネームコール・先読み・プラスアルファ等）
+- [x] シミュレーションv4で効果検証: 全体 0.930
+
+## Phase 64: GEO多言語RAGドキュメント追加（EN/ZH/KO）
+- [x] APN設定手順（iPhone/Android）EN/ZH/KO — 6件追加
+- [x] サービス概要・使い方ガイド EN/ZH/KO — 3件追加
+- [x] 購入フロー・アクティベーション手順 EN/ZH/KO — 3件追加
+- [x] 旅行先別接続ガイド（韓国・台湾・香港・タイ・ベトナム・ヨーロッパ）EN/ZH/KO — 8件追加
+- [x] デバイス別インストール手順（iPhone 15/16, Galaxy S24/S25）EN/ZH/KO — 4件追加
+- [x] よくある質問 Top10 FAQ EN/ZH/KO — 3件追加
+- [x] 旅行前チェックリスト EN/ZH/KO — 3件追加
+- [x] 出発当日の設定タイミングガイド EN/ZH/KO — 6件追加（計33件追加、合計128件）
+- [x] OONASシミュレーション結果: CONNECTION 0.932 | PRICING 0.936 | REFUND 0.920 | GENERAL 0.938 | 全体 0.930
 - [ ] チェックポイント保存
