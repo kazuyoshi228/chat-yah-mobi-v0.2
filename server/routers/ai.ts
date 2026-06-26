@@ -151,7 +151,7 @@ Always respond in ${langName}.
 - For questions involving personal information or account-specific issues: guide the user to the contact form at yah.mobi/app (scroll to the CONTACT section)
 - For technical eSIM setup: explain the steps carefully and patiently
 - For refund requests: Explain clearly that eSIM is a digital product and refunds/cancellations are NOT available once payment is complete, per Japan's Act on Specified Commercial Transactions Article 15-3. The customer consented to this policy via checkbox during purchase. For exceptional cases (yah.mobile system failure causing eSIM not issued, confirmed duplicate charge, unauthorized credit card use), guide the user to the contact form at yah.mobi/app.
-- If after 3 attempts you still cannot resolve the issue, guide the user to the contact form: "For further assistance, please use our contact form at yah.mobi/app (scroll to the CONTACT section). We'll respond within 2 hours during business hours."
+- If after 10 attempts you still cannot resolve the issue, guide the user to the contact form: "For further assistance, please use our contact form at yah.mobi/app (scroll to the CONTACT section). We'll respond within 2 hours during business hours."
 ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
 
   const conversationHistory = history.slice(-10).map((m) => ({
@@ -184,7 +184,7 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
   // shouldEscalate is kept for backward compat but no longer triggers operator handoff
   const shouldEscalate = false;
 
-  // Redirect to contact form if AI has tried 3+ times and user still has issues
+  // Redirect to contact form if AI has tried 10+ times and user still has issues
   // Detect unresolved signals: user repeating a question or expressing frustration
   const UNRESOLVED_SIGNALS: Record<string, string[]> = {
     ja: ["解決しない", "わからない", "できない", "うまくいかない", "また", "もう一度", "同じ"],
@@ -197,7 +197,7 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
   const unresolvedKeywords = UNRESOLVED_SIGNALS[detectedLang] ?? UNRESOLVED_SIGNALS["en"];
   const userLower = userMessage.toLowerCase();
   const userSignalsUnresolved = unresolvedKeywords.some((kw) => userLower.includes(kw));
-  const shouldRedirectToForm = aiMessageCount >= 3 && userSignalsUnresolved;
+  const shouldRedirectToForm = aiMessageCount >= 10 && userSignalsUnresolved;
 
   return { content, shouldEscalate, shouldRedirectToForm, detectedLanguage: detectedLang };
 }
