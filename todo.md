@@ -458,6 +458,15 @@
 - [x] Data Analysis画面のヘッダー直下に黒バンドのHERO KPIブロックを追加（特大文字・バーグラフ・目標差表示）
 
 ## Phase 49: CSレビュー重大問題3件の修正
-- [ ] ChatRoom.tsxの「オペレーターに繋ぐ」ボタンを削除・フォーム誘導バナーに置き換え（WidgetChatと同一体験に統一）
-- [ ] ai.tsのフォーム誘導条件をAND→ORに変更・日本語キーワード（繋がらない・表示されない等）を追加
-- [ ] Data Analysis画面のHERO KPIにアンケート回答率（Survey Response Rate）を追加
+- [x] ChatRoom.tsxの「オペレーターに繋ぐ」ボタンを削除・フォーム誘導バナーに置き換え（WidgetChatと同一体験に統一）
+- [x] ai.tsのフォーム誘導条件をAND→ORに変更・日本語キーワード（繋がらない・表示されない等）を追加
+- [x] Data Analysis画面のHERO KPIにアンケート回答率（Survey Response Rate）を追加
+
+## Phase 50: CSレビュー黄色優先事項の対応
+- [x] WidgetChat.tsxのヘッダー「AI + Operator」→「AI Support」に変更
+- [x] ChatRoom.tsxのヘッダー「AI + Operator」→「AI Support」に変更（元々「AI Support」だったため変更不要）
+- [x] ai.tsの会話履歴ウィンドウを10→15メッセージに拡張
+- [x] Phase 46: 多言語RAG（中国語・韓国語・タイ語・ベトナム語）に返金不可ポリシーを追加
+- [x] 日本語PDF再生成（購入フロー7ステップ・決済完了後返金不可・サポートチャット手順）
+- [x] 英語PDF再生成（同上）
+- [x] 新PDFをストレージにアップロード・UserManuals.tsxのURLを更新

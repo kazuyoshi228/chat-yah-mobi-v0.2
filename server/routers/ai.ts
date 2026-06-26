@@ -154,7 +154,7 @@ Always respond in ${langName}.
 - If after 10 attempts you still cannot resolve the issue, guide the user to the contact form: "For further assistance, please use our contact form at yah.mobi/app (scroll to the CONTACT section). We'll respond within 2 hours during business hours."
 ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
 
-  const conversationHistory = history.slice(-10).map((m) => ({
+  const conversationHistory = history.slice(-15).map((m) => ({
     role: (m.role === "visitor" ? "user" : m.role === "ai" ? "assistant" : "user") as "user" | "assistant",
     content: m.content,
   }));

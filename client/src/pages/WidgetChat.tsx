@@ -398,7 +398,7 @@ export default function WidgetChat() {
           <div>
             <p className="text-sm font-semibold text-white leading-tight">yah.mobile Support</p>
             <p className="text-xs text-white/60 leading-tight">
-              {stage === "chat" ? "AI + Operator" : "Chat Support"}
+              {stage === "chat" ? "AI Support" : "Chat Support"}
             </p>
           </div>
         </div>
