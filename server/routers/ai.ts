@@ -32,24 +32,29 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dot / (magA * magB);
 }
 
-// Get text embedding via LLM API
+// Get text embedding via OpenAI API (Forge API does not support /v1/embeddings)
 export async function getEmbedding(text: string): Promise<number[]> {
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error("OPENAI_API_KEY not set");
     const response = await fetch(
-      `${process.env.BUILT_IN_FORGE_API_URL}/v1/embeddings`,
+      "https://api.openai.com/v1/embeddings",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.BUILT_IN_FORGE_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: "text-embedding-3-small",
-          input: text,
+          input: text.substring(0, 8000), // Truncate to avoid token limit
         }),
       }
     );
-    if (!response.ok) throw new Error(`Embedding API error: ${response.status}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Embedding API error: ${response.status} ${errText}`);
+    }
     const data = (await response.json()) as any;
     return data.data[0].embedding as number[];
   } catch (e) {
