@@ -573,3 +573,13 @@
 - [x] シミュレーションv4スクリプト作成・実行
 - [x] 最終結果: CONNECTION 0.923✅ | PRICING 0.881 | REFUND 0.892 | GENERAL 0.950✅ | 全体平均 0.905
 - [x] チェックポイント保存
+
+## Phase 61: SIMロック調査・端末対応リスト・RAGドキュメント強化
+
+- [x] 6カ国（日本・米国・中国・韓国・タイ・ベトナム）のSIMロック歴史・規制・現状調査
+- [x] 全メーカー・端末のeSIM対応/未対応リスト作成
+- [x] 調査結果をマークダウンドキュメントにまとめる (docs/sim-lock-history-and-device-compatibility.md)
+- [x] Adminサイドバーに「歴史資料」ページを追加 (/admin/historical-docs)
+- [x] RAGドキュメントに反映しCONNECTION解決率を検証 (15件の端末対応・SIMロック情報を投入)
+- [x] シミュレーション結果: CONNECTION 0.933✅ | PRICING 0.891 | REFUND 0.931✅ | GENERAL 0.950✅ | 全体 0.922
+- [x] チェックポイント保存

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, Archive } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -49,6 +49,7 @@ const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "Data Analysis", href: "/admin/data-analysis", icon: BarChart2 },
   { title: "Testing", href: "/admin/testing", icon: FlaskConical },
   { title: "Flow Tree", href: "/admin/flow-tree", icon: GitBranch },
+  { title: "歴史資料", href: "/admin/historical-docs", icon: Archive },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
