@@ -23,6 +23,7 @@ import {
   listTestRunLogs,
   getImageAnalyticsSummary,
   getTeamScorecard,
+  getChatFlowNodes,
   getLatestSimulationResult,
   listSimulationResults,
   markSessionRead,
@@ -635,5 +636,11 @@ Do not include any other text.`;
   listSimulationResults: protectedProcedure.query(async ({ ctx }) => {
     if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
     return listSimulationResults(10);
+  }),
+
+  /** Get all active chat flow nodes (decision tree) */
+  getChatFlowNodes: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    return getChatFlowNodes();
   }),
 });

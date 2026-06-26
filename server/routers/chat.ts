@@ -12,6 +12,7 @@ import {
   getSurveyBySessionId,
   scheduleSessionDeletion,
   listQuickReplies,
+  getChatFlowNodes,
 } from "../db";
 import { publicProcedure, router } from "../_core/trpc";
 import { detectLanguageFromMessage, generateAIResponse, generateSummary } from "./ai";
@@ -448,4 +449,28 @@ export const chatRouter = router({
   listQuickReplies: publicProcedure.query(async () => {
     return listQuickReplies();
   }),
+
+  // Public decision tree flow nodes
+  getFlowNodes: publicProcedure.query(async () => {
+    return getChatFlowNodes();
+  }),
+
+  // Submit contact form (for form-redirect nodes)
+  submitContactForm: publicProcedure
+    .input(
+      z.object({
+        visitorId: z.string().min(1),
+        email: z.string().email(),
+        message: z.string().min(1),
+        language: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Notify owner about the form submission
+      await notifyOwner({
+        title: `サポートフォーム送信 [${input.language ?? "en"}]`,
+        content: `Email: ${input.email}\n\n${input.message}`,
+      });
+      return { success: true };
+    }),
 });

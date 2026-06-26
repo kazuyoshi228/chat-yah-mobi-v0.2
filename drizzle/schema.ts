@@ -5,6 +5,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  tinyint,
   varchar,
   float,
 } from "drizzle-orm/mysql-core";
@@ -198,3 +199,25 @@ export const simulationRunResults = mysqlTable("simulation_run_results", {
 });
 export type SimulationRunResult = typeof simulationRunResults.$inferSelect;
 export type InsertSimulationRunResult = typeof simulationRunResults.$inferInsert;
+
+/**
+ * Chat flow nodes - decision tree for structured chat flow.
+ * Each node is a step in the decision tree (question, answer, or redirect).
+ * label/content/options stored as JSON for multi-language support.
+ */
+export const chatFlowNodes = mysqlTable("chat_flow_nodes", {
+  id: varchar("id", { length: 64 }).primaryKey(), // e.g. "root", "connection", "connection_not_installed_iphone"
+  parentId: varchar("parentId", { length: 64 }),
+  type: varchar("type", { length: 32 }).notNull().default("question"), // "question" | "answer" | "redirect_form" | "redirect_ai"
+  label: text("label").notNull(), // JSON: {ja, en, ko, zh, th, vi}
+  content: text("content"), // JSON: {ja, en, ko, zh, th, vi} - shown for answer nodes
+  options: text("options"), // JSON: array of child node IDs
+  icon: varchar("icon", { length: 32 }), // emoji icon
+  formTrigger: tinyint("formTrigger").default(0), // 1 = triggers form redirect
+  aiTrigger: tinyint("aiTrigger").default(0), // 1 = falls back to AI chat
+  sortOrder: int("sortOrder").default(0),
+  isActive: tinyint("isActive").default(1),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ChatFlowNode = typeof chatFlowNodes.$inferSelect;
+export type InsertChatFlowNode = typeof chatFlowNodes.$inferInsert;

@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
   chatSessions,
+  chatFlowNodes,
   imageAnalyses,
   messages,
   quickReplies,
@@ -12,6 +13,7 @@ import {
   testRunLogs,
   simulationRunResults,
   users,
+  type ChatFlowNode,
   type ChatSession,
   type ImageAnalysis,
   type InsertChatSession,
@@ -916,4 +918,29 @@ export async function listSimulationResults(limit = 10): Promise<SimulationRunRe
     .from(simulationRunResults)
     .orderBy(desc(simulationRunResults.ranAt))
     .limit(limit);
+}
+
+// ─── Chat Flow Nodes (Decision Tree) ────────────────────────────────────────
+
+/** Get all active chat flow nodes (for building the decision tree client-side). */
+export async function getChatFlowNodes(): Promise<ChatFlowNode[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(chatFlowNodes)
+    .where(eq(chatFlowNodes.isActive, 1))
+    .orderBy(chatFlowNodes.sortOrder);
+}
+
+/** Get a single chat flow node by ID. */
+export async function getChatFlowNode(id: string): Promise<ChatFlowNode | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(chatFlowNodes)
+    .where(eq(chatFlowNodes.id, id))
+    .limit(1);
+  return rows[0] ?? null;
 }
