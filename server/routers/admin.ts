@@ -23,6 +23,8 @@ import {
   listTestRunLogs,
   getImageAnalyticsSummary,
   getTeamScorecard,
+  getLatestSimulationResult,
+  listSimulationResults,
   markSessionRead,
   scheduleSessionDeletion,
   updateChatSession,
@@ -621,5 +623,17 @@ Do not include any other text.`;
       details,
     });
     return { status, passed, failed, details };
+  }),
+
+  /** Get the latest simulation run result */
+  getSimulationResult: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    return getLatestSimulationResult();
+  }),
+
+  /** List recent simulation run results */
+  listSimulationResults: protectedProcedure.query(async ({ ctx }) => {
+    if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    return listSimulationResults(10);
   }),
 });

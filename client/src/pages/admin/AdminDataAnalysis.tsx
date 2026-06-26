@@ -101,6 +101,27 @@ function fmtMs(ms: number | null): string {
   return rem > 0 ? `${min}m ${rem}s` : `${min}m`;
 }
 
+// ── Simulation session type ────────────────────────────────────────────────
+type SimTurn = {
+  turn: number;
+  userMessage: string;
+  detectedLanguage: string;
+  aiResponse: string;
+  shouldRedirectToForm: boolean;
+  ragTopScore: number;
+};
+
+type SimSession = {
+  id: string;
+  name: string;
+  language: string;
+  turns: SimTurn[];
+  summary: string | null;
+  errors: { turn: number | string; error: string }[];
+  formRedirectTriggered: boolean;
+  ragHitScores: number[];
+};
+
 export default function AdminDataAnalysis() {
   const [period, setPeriod] = useState<Period>("all");
   const { data, isLoading } = trpc.admin.getAnalysis.useQuery({ period });
@@ -110,6 +131,14 @@ export default function AdminDataAnalysis() {
   const { data: scorecard, isLoading: scoreLoading } = trpc.admin.getTeamScorecard.useQuery(scoreRange);
 
   const { data: kpi, isLoading: kpiLoading } = trpc.admin.getKpi.useQuery({ period });
+  const { data: simResult, isLoading: simLoading } = trpc.admin.getSimulationResult.useQuery();
+
+  // Parse simulation session results
+  const simSessions: SimSession[] = useMemo(() => {
+    if (!simResult?.sessionResults) return [];
+    try { return JSON.parse(simResult.sessionResults) as SimSession[]; }
+    catch { return []; }
+  }, [simResult]);
 
   // ── HERO KPI: AI自己解決率 ──────────────────────────────────────────────────
   const aiResolvedRate = kpi?.aiResolvedRate ?? null;
@@ -615,6 +644,202 @@ export default function AdminDataAnalysis() {
             </CardContent>
           </Card>
         )}
+
+        {/* ── Bot Simulation Results ──────────────────────────────────────────────── */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">Bot Simulation Results</h2>
+            {simResult && (
+              <span className="text-xs text-muted-foreground">
+                Last run: {new Date(simResult.ranAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          {simLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+            </div>
+          ) : !simResult ? (
+            <Card className="border border-dashed border-gray-200 shadow-none">
+              <CardContent className="flex flex-col items-center justify-center py-10 text-center gap-2">
+                <p className="text-sm font-medium text-muted-foreground">No simulation data yet</p>
+                <p className="text-xs text-muted-foreground">Run <code className="bg-gray-100 px-1 rounded">node scripts/run_chat_simulation.mjs</code> to generate results.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* Summary KPI row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <StatCard
+                  label="Sessions"
+                  value={`${simResult.totalSessions - simResult.totalErrors} / ${simResult.totalSessions}`}
+                  sub="passed / total"
+                  accent={simResult.totalErrors === 0 ? "green" : "red"}
+                />
+                <StatCard
+                  label="Total Turns"
+                  value={simResult.totalTurns}
+                  sub="AI response turns"
+                />
+                <StatCard
+                  label="Avg RAG Score"
+                  value={simResult.avgRagScore !== null ? (simResult.avgRagScore * 100).toFixed(1) + "%" : "—"}
+                  sub="cosine similarity"
+                  accent={simResult.avgRagScore !== null && simResult.avgRagScore >= 0.3 ? "green" : "amber"}
+                />
+                <StatCard
+                  label="Form Redirects"
+                  value={`${simResult.formRedirects} / ${simResult.totalSessions}`}
+                  sub="sessions triggered"
+                  accent={simResult.formRedirects > 0 ? "blue" : undefined}
+                />
+              </div>
+
+              {/* Per-session RAG score bar chart */}
+              {simSessions.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <Card className="border border-gray-100 shadow-none">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">RAG Score per Session</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart
+                          data={simSessions.map(s => ({
+                            name: s.language.toUpperCase(),
+                            label: s.name.replace(/【[^】]+】/, "").trim(),
+                            avgRag: s.turns.length > 0
+                              ? Math.round((s.turns.reduce((acc, t) => acc + t.ragTopScore, 0) / s.turns.length) * 1000) / 1000
+                              : 0,
+                          }))}
+                          margin={{ top: 4, right: 8, left: -20, bottom: 4 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                          <YAxis tick={{ fontSize: 11 }} domain={[0, 1]} tickFormatter={v => (v * 100).toFixed(0) + "%"} />
+                          <Tooltip
+                            formatter={(v: number) => [(v * 100).toFixed(1) + "%", "Avg RAG Score"]}
+                            labelFormatter={(_, payload) => payload?.[0]?.payload?.label ?? ""}
+                          />
+                          <Bar dataKey="avgRag" fill="#111" radius={[3, 3, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  {/* Turn-by-turn RAG score line chart (first 3 sessions) */}
+                  <Card className="border border-gray-100 shadow-none">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">RAG Score by Turn (Top 3 Sessions)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {(() => {
+                        const top3 = simSessions
+                          .filter(s => s.turns.length > 0)
+                          .sort((a, b) =>
+                            b.turns.reduce((acc, t) => acc + t.ragTopScore, 0) / b.turns.length -
+                            a.turns.reduce((acc, t) => acc + t.ragTopScore, 0) / a.turns.length
+                          )
+                          .slice(0, 3);
+                        const maxTurns = Math.max(...top3.map(s => s.turns.length));
+                        const chartData = Array.from({ length: maxTurns }, (_, i) => {
+                          const row: Record<string, number | string> = { turn: `T${i + 1}` };
+                          top3.forEach(s => {
+                            row[s.language.toUpperCase()] = s.turns[i]?.ragTopScore ?? 0;
+                          });
+                          return row;
+                        });
+                        const LINE_COLORS = ["#111", "#6b7280", "#d1d5db"];
+                        return (
+                          <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 4 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                              <XAxis dataKey="turn" tick={{ fontSize: 11 }} />
+                              <YAxis tick={{ fontSize: 11 }} domain={[0, 1]} tickFormatter={v => (v * 100).toFixed(0) + "%"} />
+                              <Tooltip formatter={(v: number) => [(v * 100).toFixed(1) + "%", "RAG Score"]} />
+                              <Legend wrapperStyle={{ fontSize: 11 }} />
+                              {top3.map((s, i) => (
+                                <Line
+                                  key={s.id}
+                                  type="monotone"
+                                  dataKey={s.language.toUpperCase()}
+                                  stroke={LINE_COLORS[i]}
+                                  strokeWidth={2}
+                                  dot={{ r: 3 }}
+                                />
+                              ))}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Per-session detail table */}
+              {simSessions.length > 0 && (
+                <Card className="border border-gray-100 shadow-none">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">Session Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-gray-100">
+                            <th className="text-left px-4 py-2 font-medium text-muted-foreground">Session</th>
+                            <th className="text-left px-4 py-2 font-medium text-muted-foreground">Lang</th>
+                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Turns</th>
+                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Avg RAG</th>
+                            <th className="text-right px-4 py-2 font-medium text-muted-foreground">Max RAG</th>
+                            <th className="text-center px-4 py-2 font-medium text-muted-foreground">Form</th>
+                            <th className="text-center px-4 py-2 font-medium text-muted-foreground">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {simSessions.map(s => {
+                            const avgRag = s.turns.length > 0
+                              ? s.turns.reduce((acc, t) => acc + t.ragTopScore, 0) / s.turns.length
+                              : 0;
+                            const maxRag = s.turns.length > 0
+                              ? Math.max(...s.turns.map(t => t.ragTopScore))
+                              : 0;
+                            const pass = s.errors.length === 0;
+                            return (
+                              <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                <td className="px-4 py-2 font-medium">{s.name}</td>
+                                <td className="px-4 py-2">
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
+                                    {LANG_LABEL[s.language] ?? s.language}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 text-right">{s.turns.length}</td>
+                                <td className="px-4 py-2 text-right">{(avgRag * 100).toFixed(1)}%</td>
+                                <td className="px-4 py-2 text-right">{(maxRag * 100).toFixed(1)}%</td>
+                                <td className="px-4 py-2 text-center">
+                                  {s.formRedirectTriggered
+                                    ? <span className="text-red-500 font-bold">🔴</span>
+                                    : <span className="text-gray-300">—</span>}
+                                </td>
+                                <td className="px-4 py-2 text-center">
+                                  {pass
+                                    ? <span className="text-emerald-600 font-semibold">✓ PASS</span>
+                                    : <span className="text-red-500 font-semibold">✗ FAIL</span>}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   );

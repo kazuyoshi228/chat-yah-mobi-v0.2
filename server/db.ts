@@ -10,6 +10,7 @@ import {
   sessionReads,
   surveys,
   testRunLogs,
+  simulationRunResults,
   users,
   type ChatSession,
   type ImageAnalysis,
@@ -22,6 +23,8 @@ import {
   type InsertTestRunLog,
   type Message,
   type TestRunLog,
+  type SimulationRunResult,
+  type InsertSimulationRunResult,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -878,4 +881,39 @@ export async function listTestRunLogs(limit = 20): Promise<TestRunLog[]> {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(testRunLogs).orderBy(desc(testRunLogs.ranAt)).limit(limit);
+}
+
+// ─── Simulation Run Results ───────────────────────────────────────────────────
+
+/** Save a simulation run result to the DB. */
+export async function saveSimulationResult(
+  data: InsertSimulationRunResult
+): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(simulationRunResults).values(data);
+  return (result[0] as any).insertId as number;
+}
+
+/** Get the latest simulation run result. */
+export async function getLatestSimulationResult(): Promise<SimulationRunResult | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select()
+    .from(simulationRunResults)
+    .orderBy(desc(simulationRunResults.ranAt))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/** List simulation run results (most recent first). */
+export async function listSimulationResults(limit = 10): Promise<SimulationRunResult[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(simulationRunResults)
+    .orderBy(desc(simulationRunResults.ranAt))
+    .limit(limit);
 }

@@ -180,3 +180,21 @@ export const testRunLogs = mysqlTable("test_run_logs", {
 });
 export type TestRunLog = typeof testRunLogs.$inferSelect;
 export type InsertTestRunLog = typeof testRunLogs.$inferInsert;
+
+/**
+ * Simulation run results - stores the output of run_chat_simulation.mjs.
+ * Each row represents one full simulation run (10 sessions).
+ * sessionResults: JSON array of per-session results
+ */
+export const simulationRunResults = mysqlTable("simulation_run_results", {
+  id: int("id").autoincrement().primaryKey(),
+  totalSessions: int("totalSessions").notNull().default(0),
+  totalTurns: int("totalTurns").notNull().default(0),
+  totalErrors: int("totalErrors").notNull().default(0),
+  formRedirects: int("formRedirects").notNull().default(0),
+  avgRagScore: float("avgRagScore").default(0),
+  sessionResults: text("sessionResults"), // JSON array of per-session results
+  ranAt: timestamp("ranAt").defaultNow().notNull(),
+});
+export type SimulationRunResult = typeof simulationRunResults.$inferSelect;
+export type InsertSimulationRunResult = typeof simulationRunResults.$inferInsert;

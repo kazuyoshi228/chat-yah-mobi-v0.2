@@ -388,6 +388,27 @@ import { writeFileSync } from "fs";
 const outputPath = "/home/ubuntu/yah-chat-webdev/scripts/simulation_results.json";
 writeFileSync(outputPath, JSON.stringify(results, null, 2));
 console.log(`  Results saved to: ${outputPath}`);
+
+// Save results to DB
+try {
+  await pool.query(
+    `INSERT INTO simulation_run_results
+     (totalSessions, totalTurns, totalErrors, formRedirects, avgRagScore, sessionResults, ranAt)
+     VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+    [
+      results.length,
+      totalTurns,
+      totalErrors,
+      formRedirects,
+      ragScoreCount > 0 ? parseFloat((avgRagScore / ragScoreCount).toFixed(4)) : 0,
+      JSON.stringify(results),
+    ]
+  );
+  console.log("  ✅ Results saved to DB (simulation_run_results)");
+} catch (err) {
+  console.error("  ❌ Failed to save to DB:", err.message);
+}
+
 console.log();
 console.log("  ⚠️  Run cleanup when done:");
 console.log("  node scripts/cleanup_test_sessions.mjs");

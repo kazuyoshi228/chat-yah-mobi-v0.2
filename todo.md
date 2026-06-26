@@ -499,3 +499,12 @@
 - [x] 10セッション・31ターンのシミュレーション実行完了（エラー0件）
 - [x] 全セッション✅ PASS（フォーム誘導テストは正常に🔴 FORM発火確認）
 - [x] 平均RAGスコア: 0.324、最高スコア: 0.597（ベトナム語）
+
+## Phase 55: シミュレーション結果可視化（Data Analysis画面）
+- [x] simulation_run_results テーブルをDBに追加（シミュレーション実行履歴を永続化）
+- [x] server/db.ts: saveSimulationResult / getLatestSimulationResult / listSimulationResults ヘルパーを追加
+- [x] server/routers/admin.ts: getSimulationResult / listSimulationResults クエリを追加
+- [x] AdminDataAnalysis.tsx: シミュレーション結果セクションを追加（KPIカード4枚・RAGスコア棒グラフ・ターン別折れ線グラフ・セッション詳細テーブル）
+- [x] run_chat_simulation.mjs: 実行後にDBへ結果を保存するよう更新
+- [x] 前回のシミュレーション結果（simulation_results.json）をDBにインポート
+- [x] TypeScript: 0エラー確認・テスト 103/103 通過

@@ -71,6 +71,13 @@
       "when": 1782454010965,
       "tag": "0009_narrow_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1782456124238,
+      "tag": "0010_zippy_jocasta",
+      "breakpoints": true
     }
   ]
 }
