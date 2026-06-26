@@ -1,0 +1,2165 @@
+{
+  "summary": {
+    "categories": {
+      "connection": [
+        {
+          "id": "sim-001",
+          "name": "【JA】iPhone接続トラブル（ツリー経由）",
+          "language": "ja",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "eSIMをインストールしたのですが、インターネットに繋がりません",
+              "aiResponse": "yah.mobileをご利用いただきありがとうございます。eSIMのインストールは完了しているものの、インターネットに接続できないとのこと、ご不便をおかけしております。\n\niPhoneをご利用とのことですので、以下の手順で設定をご確認ください。\n\n1.  **設定 > モバイル通信** を開きます。…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.548
+            },
+            {
+              "turn": 2,
+              "userMessage": "設定を確認しましたが、まだ繋がりません",
+              "aiResponse": "ご確認ありがとうございます。まだインターネットに接続できないとのこと、承知いたしました。\n\n次に、以下の手順をお試しください。\n\n1.  **設定 > モバイル通信** を開きます。\n2.  **yah.mobile** をタップします。\n3.  **「データローミング」をオン** にしてください。…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.403
+            },
+            {
+              "turn": 3,
+              "userMessage": "データローミングもオンにしました。それでも繋がらないです",
+              "aiResponse": "データローミングをオンにしていただきありがとうございます。それでも接続できないとのこと、承知いたしました。\n\nそれでは、APN設定をご確認いただけますでしょうか。\n\n1.  **設定 > モバイル通信** を開きます。\n2.  **yah.mobile** をタップします。\n3.  **「モバイルデ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.401
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5481309048786687,
+            0.4026436916709186,
+            0.401270326958441
+          ]
+        },
+        {
+          "id": "sim-002",
+          "name": "【EN】iPhone not connecting (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "I installed the eSIM but I can't connect to the internet",
+              "aiResponse": "Thank you for contacting yah.mobile support. I understand you're having trouble connecting to the internet after installing your eSIM on your iPhone.\n…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.656
+            },
+            {
+              "turn": 2,
+              "userMessage": "I checked the settings, still not working",
+              "aiResponse": "Thank you for checking. Since the previous steps didn't resolve the issue, let's try a few more:\n\n1.  **Restart your device:** Power off your iPhone c…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.532
+            },
+            {
+              "turn": 3,
+              "userMessage": "Data roaming is on, airplane mode toggled, still nothing",
+              "aiResponse": "Thank you for confirming. Since data roaming and airplane mode toggling haven't resolved it, and assuming you've already restarted your device and che…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.557
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.6564933085305638,
+            0.5320132910447999,
+            0.5569615111185156
+          ]
+        },
+        {
+          "id": "sim-003",
+          "name": "【KO】iPhone 연결 안됨 (트리)",
+          "language": "ko",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "eSIM을 설치했는데 인터넷이 안 됩니다",
+              "aiResponse": "yah.mobile eSIM을 설치하셨는데 인터넷 연결이 되지 않아 불편하시겠네요. iPhone 연결 문제 해결을 위한 단계별 지침을 드리겠습니다.\n\n1.  **yah.mobile eSIM 활성화 확인:**\n    *   '설정' > '셀룰러'로 이동합니다.\n    *…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.611
+            },
+            {
+              "turn": 2,
+              "userMessage": "설정을 확인했는데 여전히 안 됩니다",
+              "aiResponse": "설정을 확인하셨는데도 여전히 연결이 되지 않으신다니 죄송합니다. 다음 단계를 시도해 보시겠어요?\n\n1.  **비행기 모드 켜기/끄기:**\n    *   '설정'에서 '비행기 모드'를 켜신 후 30초 정도 기다렸다가 다시 꺼주세요.\n\n2.  **이동통신사 설정 업데이트 …",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.402
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.6110113346095003,
+            0.4015448782670993
+          ]
+        },
+        {
+          "id": "sim-004",
+          "name": "【ZH】iPhone连接失败 (树)",
+          "language": "zh",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "我安装了eSIM但是无法连接网络",
+              "aiResponse": "您好！很抱歉您在安装eSIM后遇到连接问题。\n\n请您按照以下步骤检查您的iPhone设置：\n\n1.  请前往 **设置** > **蜂窝网络**，确认您的 **yah.mobile eSIM线路** 已开启。\n\n如果问题仍然存在，请告诉我，我将提供下一步的解决方案。",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.536
+            },
+            {
+              "turn": 2,
+              "userMessage": "我检查了设置，还是连不上",
+              "aiResponse": "好的，既然您已确认eSIM线路已开启，请尝试下一步：\n\n2.  请前往 **设置** > **蜂窝网络** > **yah.mobile**，然后开启 **数据漫游**。\n\n请您尝试此步骤，如果仍然无法连接，请告诉我。",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.473
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.536424113475894,
+            0.4731227071890862
+          ]
+        },
+        {
+          "id": "sim-005",
+          "name": "【TH】iPhone เชื่อมต่อไม่ได้ (ทรี)",
+          "language": "th",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "ติดตั้ง eSIM แล้วแต่เชื่อมต่ออินเทอร์เน็ตไม่ได้",
+              "aiResponse": "ขออภัยในความไม่สะดวกครับ เพื่อแก้ไขปัญหาการเชื่อมต่ออินเทอร์เน็ตบน iPhone ของคุณ โปรดลองทำตามขั้นตอนต่อไปนี้:\n\n1.  ไปที่ **การตั้งค่า (Settings)** > *…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.665
+            },
+            {
+              "turn": 2,
+              "userMessage": "ตรวจสอบการตั้งค่าแล้ว ยังไม่ได้อยู่ดี",
+              "aiResponse": "เข้าใจครับว่าคุณได้ตรวจสอบแล้วว่า eSIM ของ yah.mobile เปิดอยู่ แต่ยังไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้\n\nขั้นตอนถัดไปคือ:\n\n1.  ไปที่ **การตั้งค่า (Sett…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.383
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.6654499750206357,
+            0.3834602313761125
+          ]
+        },
+        {
+          "id": "sim-006",
+          "name": "【VI】iPhone không kết nối (cây)",
+          "language": "vi",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "Tôi đã cài đặt eSIM nhưng không kết nối được internet",
+              "aiResponse": "Chào bạn, rất tiếc khi bạn gặp sự cố kết nối internet. Vui lòng thực hiện các bước sau để khắc phục sự cố trên iPhone của bạn:\n\n1.  **Cài đặt** > **Di…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.712
+            },
+            {
+              "turn": 2,
+              "userMessage": "Tôi đã kiểm tra cài đặt, vẫn không được",
+              "aiResponse": "Cảm ơn bạn đã kiểm tra. Nếu bạn đã thực hiện các bước trên mà vẫn không kết nối được, hãy thử các bước tiếp theo sau đây:\n\n1.  Bật **Chế độ máy bay** …",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.518
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.7121316729679522,
+            0.5175986464834436
+          ]
+        },
+        {
+          "id": "sim-007",
+          "name": "【JA】Android接続トラブル（ツリー経由）",
+          "language": "ja",
+          "flowContext": {
+            "category": "connection",
+            "device": "Android",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "AndroidにeSIMをインストールしましたが、ネットに繋がりません",
+              "aiResponse": "yah.mobileをご利用いただきありがとうございます。AndroidデバイスでeSIMのインストール後にインターネットに接続できないとのこと、承知いたしました。\n\n以下の手順でトラブルシューティングをお試しください。\n\n1.  **yah.mobileを有効にする:**\n    *   「設定」…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.528
+            },
+            {
+              "turn": 2,
+              "userMessage": "APN設定もしましたが、まだダメです",
+              "aiResponse": "APN設定をお試しいただきありがとうございます。それでも接続できないとのこと、承知いたしました。\n\nそれでは、さらに以下の手順をお試しください。\n\n1.  **機内モードのオン/オフ:**\n    *   デバイスの「機内モード」をオンにします。\n    *   約10秒待ってから、機内モードをオフ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.49
+            },
+            {
+              "turn": 3,
+              "userMessage": "機内モードのオンオフもしました",
+              "aiResponse": "機内モードのオンオフをお試しいただきありがとうございます。\n\nそれでは、次にデバイスの再起動をお試しください。\n\n1.  **デバイスの再起動:**\n    *   スマートフォンの電源を一度完全にオフにします。\n    *   数秒待ってから、再度電源を入れてください。\n\n再起動後にインターネット…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.439
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5284473858486455,
+            0.48978189166845587,
+            0.43858676558853305
+          ]
+        },
+        {
+          "id": "sim-008",
+          "name": "【EN】Android not connecting (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "connection",
+            "device": "Android",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "My Android phone has the eSIM installed but no data connection",
+              "aiResponse": "Thank you for contacting yah.mobile support.\n\nPlease follow these steps to troubleshoot the data connection on your Android device:\n\n1.  Go to **Setti…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.718
+            },
+            {
+              "turn": 2,
+              "userMessage": "I set the APN to yah.mobile but still no luck",
+              "aiResponse": "Thank you for trying those steps. Since the APN is set correctly and you're still experiencing issues, let's try the next set of troubleshooting:\n\n1. …",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.545
+            },
+            {
+              "turn": 3,
+              "userMessage": "Tried airplane mode toggle and restart, nothing works",
+              "aiResponse": "I understand your frustration. Since the previous steps haven't resolved the issue, let's try the final troubleshooting steps for Android devices:\n\n1.…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.5
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.7179571550608528,
+            0.5452984564302554,
+            0.5001249889212898
+          ]
+        },
+        {
+          "id": "sim-009",
+          "name": "【JA】iPhoneインストールできない（ツリー経由）",
+          "language": "ja",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "pre_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "QRコードを読み取ったのですが、eSIMが追加されません",
+              "aiResponse": "QRコードを読み取ってもeSIMが追加されないとのこと、ご不便をおかけしております。\n\niPhoneでeSIMを追加するには、以下の手順をお試しください。\n\n1.  **安定したWi-Fi接続**があることを確認してください（モバイルデータではなく、Wi-Fiに接続している必要があります）。\n2. …",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.53
+            },
+            {
+              "turn": 2,
+              "userMessage": "iPhone 14 Proを使っています。SIMロックは解除済みです",
+              "aiResponse": "iPhone 14 Proをご利用で、SIMロック解除済みとのこと、承知いたしました。\n\nそれでは、以下の手順を再度ご確認ください。\n\n1.  **安定したWi-Fi接続**があることを確認してください。\n2.  「設定」>「モバイル通信」>「eSIMを追加」>「QRコードを使用」の順に進み、QRコ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.381
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5301781651783923,
+            0.3813633301078337
+          ]
+        },
+        {
+          "id": "sim-010",
+          "name": "【EN】iPhone can't install (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "pre_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "I scanned the QR code but the eSIM won't install",
+              "aiResponse": "I'm sorry to hear you're having trouble installing your eSIM. Please try the following steps:\n\n1.  **Confirm Device Compatibility:** Ensure your iPhon…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.68
+            },
+            {
+              "turn": 2,
+              "userMessage": "My phone says 'eSIM not supported' but it's an iPhone 13",
+              "aiResponse": "Thank you for clarifying. If your iPhone 13 is displaying \"eSIM not supported,\" it is likely that your device is carrier-locked. eSIM functionality re…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.546
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.6801426304926976,
+            0.5458089854889613
+          ]
+        },
+        {
+          "id": "sim-011",
+          "name": "【EN】Android can't install (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "connection",
+            "device": "Android",
+            "stage": "pre_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "I can't find the option to add eSIM on my Samsung Galaxy S22",
+              "aiResponse": "To add your yah.mobile eSIM on your Samsung Galaxy S22, please follow these steps:\n\n1.  Go to **Settings**.\n2.  Tap on **Network & Internet**.\n3.  Tap…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.484
+            },
+            {
+              "turn": 2,
+              "userMessage": "I went to Network settings but there's no eSIM option",
+              "aiResponse": "Thank you for checking. If you don't see an \"Add eSIM\" option under Settings > Network & Internet > SIMs, please ensure your Samsung Galaxy S22 is car…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.55
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.4844999960871429,
+            0.5500543359818182
+          ]
+        },
+        {
+          "id": "sim-026",
+          "name": "【JA】フォーム誘導テスト（10回以上）",
+          "language": "ja",
+          "flowContext": {
+            "category": "connection",
+            "device": "iPhone",
+            "stage": "post_install"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "eSIMが繋がりません",
+              "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\neSIMがインターネットに接続できないとのこと、ご不便をおかけしております。iPhoneでの接続トラブルシューティングについて、以下の手順をお試しください。\n\n1.  **yah.mobile eSIM回線がオンになっているか確認してくだ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.536
+            },
+            {
+              "turn": 2,
+              "userMessage": "まだ繋がりません",
+              "aiResponse": "ご案内した手順をお試しいただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nそれでは、引き続き以下の手順をお試しください。\n\n1.  **機内モードのオン/オフを切り替えてください。**\n    *   「設定」またはコントロールセンターから「機内モード」をオンにし、約10秒…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.451
+            },
+            {
+              "turn": 3,
+              "userMessage": "設定を確認しましたが繋がりません",
+              "aiResponse": "設定を確認していただいたにも関わらず、まだ接続できないとのこと、重ねてお詫び申し上げます。\n\nそれでは、最終手段として、以下のネットワーク設定のリセットをお試しください。\n\n*   **ネットワーク設定をリセットする**\n    *   「設定」>「一般」>「転送またはiPhoneをリセット」>「リ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.421
+            },
+            {
+              "turn": 4,
+              "userMessage": "データローミングもオンにしました",
+              "aiResponse": "データローミングもオンにしていただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nこれまでの手順をすべてお試しいただいても改善しない場合、以下の追加の確認と最終手段をお試しください。\n\n1.  **APN設定の再確認と正確な入力**\n    *   「設定」>「モバイル通信」…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.406
+            },
+            {
+              "turn": 5,
+              "userMessage": "それでも繋がりません",
+              "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.439
+            },
+            {
+              "turn": 6,
+              "userMessage": "APN設定もしました",
+              "aiResponse": "APN設定も完了されているとのこと、承知いたしました。それでも接続できない状況、大変申し訳ございません。\n\nこれまでの手順をすべてお試しいただいても改善しない場合、以下の追加の確認と最終手段をお試しください。\n\n1.  **APN設定の再確認と正確な入力**\n    *   「設定」>「モバイル通信…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.467
+            },
+            {
+              "turn": 7,
+              "userMessage": "まだダメです",
+              "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.458
+            },
+            {
+              "turn": 8,
+              "userMessage": "キャリア設定も更新しました",
+              "aiResponse": "キャリア設定も更新していただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nこれまでのすべての手順をお試しいただいても改善しない場合、以下の最終手段をお試しください。\n\n*   **ネットワーク設定をリセットする**\n    *   「設定」>「一般」>「転送またはiPhon…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.39
+            },
+            {
+              "turn": 9,
+              "userMessage": "繋がらないです",
+              "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.467
+            },
+            {
+              "turn": 10,
+              "userMessage": "どうしたらいいですか",
+              "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.424
+            },
+            {
+              "turn": 11,
+              "userMessage": "まだ解決しません",
+              "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ解決しないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォームよ…",
+              "shouldRedirectToForm": true,
+              "ragTopScore": 0.443
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": true,
+          "ragHitScores": [
+            0.5362030744714018,
+            0.4506615647347735,
+            0.42135550559397394,
+            0.4060812611674822,
+            0.4391636067337348,
+            0.4667083745341946,
+            0.4578922892410518,
+            0.39025352134112606,
+            0.4673589213209268,
+            0.42369883070039305,
+            0.442857244283357
+          ]
+        }
+      ],
+      "pricing": [
+        {
+          "id": "sim-012",
+          "name": "【JA】料金プラン問い合わせ（ツリー経由）",
+          "language": "ja",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "料金プランを教えてください",
+              "aiResponse": "yah.mobileの料金プランは以下の通りです。\n\n*   **Light:** 3GB / 7日間 ¥1,078（税込）\n*   **Standard:** 5GB / 15日間 ¥1,848（税込）\n*   **Value:** 10GB / 30日間 ¥3,278（税込）\n*   **Pre…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.376
+            },
+            {
+              "turn": 2,
+              "userMessage": "1週間の旅行でおすすめのプランはどれですか？",
+              "aiResponse": "1週間のご旅行でおすすめのプランは、お客様のデータ利用量によって異なります。\n\n*   **Light (3GB / 7日間 ¥1,078)**: 軽いインターネット利用（マップ、メッセージ、SNSの閲覧など）をされる方向けです。\n*   **Standard (5GB / 15日間 ¥1,848)…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.417
+            },
+            {
+              "turn": 3,
+              "userMessage": "追加データは購入できますか？",
+              "aiResponse": "はい、追加データはご購入いただけます。\n\n*   **1GBあたり¥550（税込）**です。\n*   マイページまたはyah.mobileアプリからいつでもご購入いただけます。\n*   購入後すぐに利用可能となり、有効期限は現在ご利用中のプランの残り期間と同じです。\n\nデータが足りなくなった場合は、…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.357
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.37557191330707373,
+            0.4174496376424183,
+            0.3571683662056857
+          ]
+        },
+        {
+          "id": "sim-013",
+          "name": "【EN】Pricing inquiry (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "What plans do you offer?",
+              "aiResponse": "We offer a variety of plans to suit your travel needs in Japan:\n\n*   **Light:** 3GB / 7 days for ¥1,078\n*   **Standard:** 5GB / 15 days for ¥1,848\n*  …",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.422
+            },
+            {
+              "turn": 2,
+              "userMessage": "I'm visiting Japan for 2 weeks, which plan do you recommend?",
+              "aiResponse": "For a 2-week trip to Japan, we recommend our **Standard Plan**: 5GB / 15 days for ¥1,848. This plan is designed to cover your data needs for that dura…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.642
+            },
+            {
+              "turn": 3,
+              "userMessage": "Can I add more data if I run out?",
+              "aiResponse": "Yes, you can definitely add more data if you run out. Additional data costs ¥550 per 1GB (tax included). You can purchase it anytime from My Page or t…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.519
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.4221419724926745,
+            0.6420931973535622,
+            0.5186964848973483
+          ]
+        },
+        {
+          "id": "sim-014",
+          "name": "【KO】요금 문의 (트리)",
+          "language": "ko",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "요금제는 어떻게 되나요?",
+              "aiResponse": "yah.mobile 요금제는 다음과 같습니다:\n\n*   **Light:** 3GB / 7일 - ¥1,078\n*   **Standard:** 5GB / 15일 - ¥1,848 (1~2주 여행에 최적)\n*   **Value:** 10GB / 30일 - ¥3,278\n*   …",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.294
+            },
+            {
+              "turn": 2,
+              "userMessage": "가장 저렴한 플랜을 알려주세요",
+              "aiResponse": "가장 저렴한 플랜은 **Light 3GB/7일** 요금제로, **¥1,078**입니다. 단기 여행이나 가벼운 데이터 사용에 적합합니다.",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.252
+            },
+            {
+              "turn": 3,
+              "userMessage": "데이터를 추가로 구매할 수 있나요?",
+              "aiResponse": "네, 데이터를 추가로 구매하실 수 있습니다.\n\n**1GB당 ¥550**이며, 마이페이지나 yah.mobile 앱에서 언제든지 구매하실 수 있고, 구매 즉시 사용 가능합니다. 추가 데이터의 유효 기간은 현재 사용 중인 플랜의 남은 기간과 동일합니다.",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.327
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.2936880593329384,
+            0.25194897673553474,
+            0.327090000722796
+          ]
+        },
+        {
+          "id": "sim-015",
+          "name": "【ZH】价格咨询 (树)",
+          "language": "zh",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "你们有什么套餐？",
+              "aiResponse": "您好！yah.mobile提供以下套餐：\n\n*   **Light:** 3GB / 7天 ¥1,078\n*   **Standard:** 5GB / 15天 ¥1,848\n*   **Value:** 10GB / 30天 ¥3,278\n*   **Premium:** 20GB / 30天 ¥…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.354
+            },
+            {
+              "turn": 2,
+              "userMessage": "我要去日本两周，推荐哪个套餐？",
+              "aiResponse": "您好！如果您要去日本两周，我们推荐 **Standard 套餐 (5GB / 15天 ¥1,848)**。\n\n这个套餐非常适合1-2周的旅行。",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.458
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.35415611773002276,
+            0.45756040166343903
+          ]
+        },
+        {
+          "id": "sim-016",
+          "name": "【TH】สอบถามราคา (ทรี)",
+          "language": "th",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "มีแพ็กเกจอะไรบ้าง",
+              "aiResponse": "yah.mobile มีแพ็กเกจ eSIM สำหรับการเดินทางในญี่ปุ่นดังนี้ค่ะ:\n\n*   **Light:** 3GB / 7 วัน ราคา ¥1,078\n*   **Standard:** 5GB / 15 วัน ราคา ¥1,848\n*   *…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.347
+            },
+            {
+              "turn": 2,
+              "userMessage": "ไปญี่ปุ่น 7 วัน แนะนำแพ็กเกจไหน",
+              "aiResponse": "สำหรับการเดินทางไปญี่ปุ่น 7 วัน แนะนำแพ็กเกจ **Light (3GB / 7 วัน)** ราคา ¥1,078 ค่ะ\n\nแต่ถ้าหากคุณใช้งานอินเทอร์เน็ตค่อนข้างเยอะ เช่น ดูวิดีโอ หรือใช้…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.441
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.3468948319925189,
+            0.4407712036097642
+          ]
+        },
+        {
+          "id": "sim-017",
+          "name": "【VI】Hỏi giá (cây)",
+          "language": "vi",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "Có những gói cước nào?",
+              "aiResponse": "Chào bạn, yah.mobile cung cấp các gói cước eSIM sau đây để bạn lựa chọn khi đến Nhật Bản:\n\n*   **Light:** 3GB / 7 ngày với giá ¥1,078\n*   **Standard:*…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.451
+            },
+            {
+              "turn": 2,
+              "userMessage": "Tôi đi Nhật 10 ngày, nên chọn gói nào?",
+              "aiResponse": "Với chuyến đi Nhật 10 ngày, tôi đề xuất bạn nên chọn gói **Standard: 5GB / 15 ngày** với giá ¥1,848. Gói này sẽ cung cấp đủ dữ liệu cho bạn trong suốt…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.374
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.45091120120507755,
+            0.37415482975600645
+          ]
+        },
+        {
+          "id": "sim-029",
+          "name": "【EN】Payment method question (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "What payment methods do you accept?",
+              "aiResponse": "We accept Visa, Mastercard, American Express, JCB, Apple Pay, and Google Pay.",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.421
+            },
+            {
+              "turn": 2,
+              "userMessage": "Can I pay with PayPal?",
+              "aiResponse": "No, we do not support PayPal. We accept Visa, Mastercard, American Express, JCB, Apple Pay, and Google Pay.",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.285
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.4208057059913124,
+            0.28526884358492755
+          ]
+        },
+        {
+          "id": "sim-030",
+          "name": "【JA】データ追加購入（ツリー経由）",
+          "language": "ja",
+          "flowContext": {
+            "category": "pricing"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "データ容量を使い切ってしまいました。追加できますか？",
+              "aiResponse": "データ容量の追加は可能です。\n\nマイページまたはyah.mobileアプリから、1GBあたり550円（税込）で追加データをいつでもご購入いただけます。購入後すぐに利用可能となり、有効期限は現在のプランの残り期間と同じです。\n\nお支払いには、Visa、Mastercard、American Expre…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.306
+            },
+            {
+              "turn": 2,
+              "userMessage": "追加データの料金を教えてください",
+              "aiResponse": "追加データは1GBあたり550円（税込）です。\n\nマイページまたはyah.mobileアプリからいつでもご購入いただけます。",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.322
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.30553116258259383,
+            0.3224900619500649
+          ]
+        }
+      ],
+      "refund": [
+        {
+          "id": "sim-018",
+          "name": "【JA】返金リクエスト（ツリー経由）",
+          "language": "ja",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "購入したeSIMが使えないので返金してほしいです",
+              "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\neSIMがご利用いただけないとのこと、ご不便をおかけし申し訳ございません。\n\nyah.mobileのeSIMはデジタル商品であるため、原則として決済完了後の返金は承っておりません（特定商取引法第15条の3に基づく）。\n\nただし、以下の例外…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.445
+            },
+            {
+              "turn": 2,
+              "userMessage": "でも一度も使えていないのに返金できないのはおかしいと思います",
+              "aiResponse": "ご連絡ありがとうございます。\n\n一度もご利用いただけていないとのこと、ご不便をおかけし大変申し訳ございません。\n\nyah.mobileのeSIMは、QRコードが発行された時点で、お客様専用に割り当てられるデジタル商品となっております。このため、誠に恐縮ながら、未使用の場合でも原則として返金対象外とさ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.372
+            },
+            {
+              "turn": 3,
+              "userMessage": "消費者センターに相談します",
+              "aiResponse": "ご連絡ありがとうございます。\n\n消費者センターへのご相談は、お客様の権利として可能です。\n\nもし、当社の返金ポリシーや対応にご納得いただけない点がございましたら、ご相談いただくことは全く問題ございません。\n\n重ねてのご案内となり恐縮ですが、もし「システム障害によりeSIMが発行されなかった」「二重課…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.37
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.44483699467784454,
+            0.37157723373938656,
+            0.3701049111510293
+          ]
+        },
+        {
+          "id": "sim-019",
+          "name": "【EN】Refund request (tree)",
+          "language": "en",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "I want to cancel my order and get a refund",
+              "aiResponse": "Thank you for contacting yah.mobile.\n\nAs per our policy, refunds are generally not available once payment for an eSIM is completed, as it is a digital…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.549
+            },
+            {
+              "turn": 2,
+              "userMessage": "But I haven't used it yet, can't you make an exception?",
+              "aiResponse": "We understand your concern. However, once the QR code is issued, the eSIM is exclusively assigned to you. Even if it hasn't been used, it is not eligi…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.477
+            },
+            {
+              "turn": 3,
+              "userMessage": "This is unacceptable, I'll dispute the charge with my bank",
+              "aiResponse": "We understand your frustration. If you believe your situation qualifies for one of the exceptions (system failure, duplicate charge, or unauthorized u…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.523
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5487463746729588,
+            0.4767154964976192,
+            0.5228133518567297
+          ]
+        },
+        {
+          "id": "sim-020",
+          "name": "【KO】환불 요청 (트리)",
+          "language": "ko",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "환불을 원합니다",
+              "aiResponse": "yah.mobile eSIM은 디지털 상품으로 결제 완료 후에는 원칙적으로 환불이 불가합니다. (일본 특정상거래법 제15조의 3에 의거)\n\nQR 코드가 발급되는 시점에 해당 eSIM은 고객님 전용으로 할당됩니다. 따라서 미사용이어도 환불 대상이 아닙니다.\n\n다만, 다음…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.355
+            },
+            {
+              "turn": 2,
+              "userMessage": "한 번도 사용하지 않았는데 환불이 안 된다니요?",
+              "aiResponse": "네, 고객님. yah.mobile eSIM은 디지털 상품의 특성상 QR 코드가 발급되는 즉시 고객님 전용으로 할당됩니다. 이는 상품이 배송되는 물리적인 제품과는 다른 특성을 가집니다.\n\n따라서 한 번도 사용하지 않으셨더라도 결제가 완료되고 eSIM이 발급된 후에는 원칙…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.325
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.3549763613102103,
+            0.3247467611042087
+          ]
+        },
+        {
+          "id": "sim-021",
+          "name": "【ZH】退款请求 (树)",
+          "language": "zh",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "我想退款",
+              "aiResponse": "您好！yah.mobile eSIM是一种数字商品，根据日本《特定商业交易法》第15-3条，付款完成后原则上不予退款。\n\n一旦QR码发出，该eSIM即专属分配给您，即使未使用也不可退款。\n\n以下是例外情况，如果符合，则可以申请退款：\n1.  系统故障导致eSIM未成功发放。\n2.  发生重复扣款。\n…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.457
+            },
+            {
+              "turn": 2,
+              "userMessage": "我还没用过，为什么不能退？",
+              "aiResponse": "您好！我们理解您的疑问。\n\nyah.mobile的eSIM是数字商品。一旦您完成支付，系统就会立即为您生成并分配一个专属的eSIM二维码，即使您还没有激活或使用它。这个过程类似于购买一张已充值的电话卡，一旦卡片发行，即使您没有打电话，也无法退回。\n\n因此，根据我们的退款政策，以及日本《特定商业交易法…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.386
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.4566454078767989,
+            0.38624736980380703
+          ]
+        },
+        {
+          "id": "sim-022",
+          "name": "【TH】ขอคืนเงิน (ทรี)",
+          "language": "th",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "ขอคืนเงินได้ไหม",
+              "aiResponse": "eSIM ของ yah.mobile เป็นผลิตภัณฑ์ดิจิทัลค่ะ โดยทั่วไปแล้วจะไม่สามารถคืนเงินได้หลังจากชำระเงินเรียบร้อยแล้วค่ะ (ตามกฎหมายว่าด้วยธุรกรรมทางการค้าที่ระบุ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.544
+            },
+            {
+              "turn": 2,
+              "userMessage": "ยังไม่ได้ใช้เลย ทำไมคืนเงินไม่ได้",
+              "aiResponse": "เข้าใจความรู้สึกของคุณเลยค่ะ\n\nแม้ว่าคุณจะยังไม่ได้ใช้งาน eSIM แต่เนื่องจาก eSIM เป็นผลิตภัณฑ์ดิจิทัล เมื่อ QR โค้ดถูกสร้างขึ้นแล้ว ระบบจะทำการกำหนด eS…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.548
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5435412242030795,
+            0.5483607948679248
+          ]
+        },
+        {
+          "id": "sim-023",
+          "name": "【VI】Yêu cầu hoàn tiền (cây)",
+          "language": "vi",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "Tôi muốn được hoàn tiền",
+              "aiResponse": "Chào bạn,\n\nyah.mobile eSIM là một sản phẩm kỹ thuật số. Theo chính sách của chúng tôi, chúng tôi không thể hoàn tiền sau khi thanh toán hoàn tất. Điều…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.598
+            },
+            {
+              "turn": 2,
+              "userMessage": "Tôi chưa sử dụng, tại sao không thể hoàn tiền?",
+              "aiResponse": "Chào bạn,\n\nChúng tôi hiểu sự thất vọng của bạn. Mặc dù bạn chưa sử dụng eSIM, nhưng do bản chất là sản phẩm kỹ thuật số, một khi mã QR đã được cấp, eS…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.566
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5980687115941153,
+            0.5656622247841238
+          ]
+        },
+        {
+          "id": "sim-027",
+          "name": "【EN】Duplicate charge exception",
+          "language": "en",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "I was charged twice for the same eSIM purchase",
+              "aiResponse": "Thank you for contacting yah.mobile support.\n\nA duplicate charge for the same eSIM purchase is an exception that qualifies for a refund.\n\nPlease check…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.572
+            },
+            {
+              "turn": 2,
+              "userMessage": "Yes I can see two identical charges on my credit card statement",
+              "aiResponse": "Thank you for confirming. Please proceed to fill out the contact form at **yah.mobi/app** with the details I mentioned previously:\n\n*   Your order num…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.536
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.5717941568888603,
+            0.5357502894453172
+          ]
+        },
+        {
+          "id": "sim-028",
+          "name": "【JA】eSIM未発行例外",
+          "language": "ja",
+          "flowContext": {
+            "category": "refund"
+          },
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "支払いは完了したのですが、QRコードが届きません",
+              "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\nQRコードが届かないとのこと、ご不便をおかけし申し訳ございません。\n\n以下の手順でご確認いただけますでしょうか。\n\n1.  **迷惑メールフォルダをご確認ください。** 稀に迷惑メールとして振り分けられる場合がございます。\n2.  **ご…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.355
+            },
+            {
+              "turn": 2,
+              "userMessage": "メールも迷惑メールフォルダも確認しましたが、どこにもありません",
+              "aiResponse": "ご確認いただきありがとうございます。メールも迷惑メールフォルダにもQRコードが見当たらないとのこと、承知いたしました。\n\nお支払い完了から30分以上経過している場合は、システム障害の可能性がございます。\n\nこの場合、返金対象となりますので、大変お手数ですが、yah.mobi/appのお問い合わせフォ…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.231
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.3554470708524072,
+            0.23117351384010332
+          ]
+        }
+      ],
+      "general": [
+        {
+          "id": "sim-024",
+          "name": "【EN】General inquiry (no tree)",
+          "language": "en",
+          "flowContext": null,
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "What is yah.mobile?",
+              "aiResponse": "yah.mobile is a Japan-only eSIM service designed for international travelers visiting Japan.\n\nKey features include:\n*   Industry-lowest price per GB\n*…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.741
+            },
+            {
+              "turn": 2,
+              "userMessage": "Does it work in Japan only?",
+              "aiResponse": "Yes, yah.mobile is a Japan-only eSIM service. It is designed for international travelers visiting Japan.",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.349
+            },
+            {
+              "turn": 3,
+              "userMessage": "How long does the eSIM last?",
+              "aiResponse": "The validity of the eSIM depends on the plan you choose. It ranges from 7 to 30 days.",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.657
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.7414762730291944,
+            0.3487472247892033,
+            0.6571400003996575
+          ]
+        },
+        {
+          "id": "sim-025",
+          "name": "【JA】一般問い合わせ（ツリーなし）",
+          "language": "ja",
+          "flowContext": null,
+          "turns": [
+            {
+              "turn": 1,
+              "userMessage": "yah.mobileとは何ですか？",
+              "aiResponse": "yah.mobileは、日本を訪れる海外旅行者向けの日本国内専用eSIMサービスです。\n\n主な特徴は以下の通りです。\n\n*   **業界最安水準の1GBあたりの料金**\n*   **6言語対応の24時間サポート**\n*   **購入後すぐに利用開始可能**\n*   **SIMカードの差し替え不要**…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.704
+            },
+            {
+              "turn": 2,
+              "userMessage": "対応している端末を教えてください",
+              "aiResponse": "yah.mobileのeSIMサービスに対応している端末は以下の通りです。\n\n*   **iPhone**: XS以降のモデル（iOS 14以上）\n*   **Android**: Pixel 3以降、Galaxy S20以降、その他eSIMに対応している端末\n\n**重要な点として、お使いの端末がS…",
+              "shouldRedirectToForm": false,
+              "ragTopScore": 0.222
+            }
+          ],
+          "errors": [],
+          "formRedirectTriggered": false,
+          "ragHitScores": [
+            0.7037997931061741,
+            0.22211148724070634
+          ]
+        }
+      ]
+    },
+    "overallAvg": 0.4675569620253163,
+    "totalSessions": 30,
+    "totalTurns": 79,
+    "totalErrors": 0,
+    "formRedirects": 1
+  },
+  "sessions": [
+    {
+      "id": "sim-001",
+      "name": "【JA】iPhone接続トラブル（ツリー経由）",
+      "language": "ja",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "eSIMをインストールしたのですが、インターネットに繋がりません",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。eSIMのインストールは完了しているものの、インターネットに接続できないとのこと、ご不便をおかけしております。\n\niPhoneをご利用とのことですので、以下の手順で設定をご確認ください。\n\n1.  **設定 > モバイル通信** を開きます。…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.548
+        },
+        {
+          "turn": 2,
+          "userMessage": "設定を確認しましたが、まだ繋がりません",
+          "aiResponse": "ご確認ありがとうございます。まだインターネットに接続できないとのこと、承知いたしました。\n\n次に、以下の手順をお試しください。\n\n1.  **設定 > モバイル通信** を開きます。\n2.  **yah.mobile** をタップします。\n3.  **「データローミング」をオン** にしてください。…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.403
+        },
+        {
+          "turn": 3,
+          "userMessage": "データローミングもオンにしました。それでも繋がらないです",
+          "aiResponse": "データローミングをオンにしていただきありがとうございます。それでも接続できないとのこと、承知いたしました。\n\nそれでは、APN設定をご確認いただけますでしょうか。\n\n1.  **設定 > モバイル通信** を開きます。\n2.  **yah.mobile** をタップします。\n3.  **「モバイルデ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.401
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5481309048786687,
+        0.4026436916709186,
+        0.401270326958441
+      ]
+    },
+    {
+      "id": "sim-002",
+      "name": "【EN】iPhone not connecting (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "I installed the eSIM but I can't connect to the internet",
+          "aiResponse": "Thank you for contacting yah.mobile support. I understand you're having trouble connecting to the internet after installing your eSIM on your iPhone.\n…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.656
+        },
+        {
+          "turn": 2,
+          "userMessage": "I checked the settings, still not working",
+          "aiResponse": "Thank you for checking. Since the previous steps didn't resolve the issue, let's try a few more:\n\n1.  **Restart your device:** Power off your iPhone c…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.532
+        },
+        {
+          "turn": 3,
+          "userMessage": "Data roaming is on, airplane mode toggled, still nothing",
+          "aiResponse": "Thank you for confirming. Since data roaming and airplane mode toggling haven't resolved it, and assuming you've already restarted your device and che…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.557
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.6564933085305638,
+        0.5320132910447999,
+        0.5569615111185156
+      ]
+    },
+    {
+      "id": "sim-003",
+      "name": "【KO】iPhone 연결 안됨 (트리)",
+      "language": "ko",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "eSIM을 설치했는데 인터넷이 안 됩니다",
+          "aiResponse": "yah.mobile eSIM을 설치하셨는데 인터넷 연결이 되지 않아 불편하시겠네요. iPhone 연결 문제 해결을 위한 단계별 지침을 드리겠습니다.\n\n1.  **yah.mobile eSIM 활성화 확인:**\n    *   '설정' > '셀룰러'로 이동합니다.\n    *…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.611
+        },
+        {
+          "turn": 2,
+          "userMessage": "설정을 확인했는데 여전히 안 됩니다",
+          "aiResponse": "설정을 확인하셨는데도 여전히 연결이 되지 않으신다니 죄송합니다. 다음 단계를 시도해 보시겠어요?\n\n1.  **비행기 모드 켜기/끄기:**\n    *   '설정'에서 '비행기 모드'를 켜신 후 30초 정도 기다렸다가 다시 꺼주세요.\n\n2.  **이동통신사 설정 업데이트 …",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.402
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.6110113346095003,
+        0.4015448782670993
+      ]
+    },
+    {
+      "id": "sim-004",
+      "name": "【ZH】iPhone连接失败 (树)",
+      "language": "zh",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "我安装了eSIM但是无法连接网络",
+          "aiResponse": "您好！很抱歉您在安装eSIM后遇到连接问题。\n\n请您按照以下步骤检查您的iPhone设置：\n\n1.  请前往 **设置** > **蜂窝网络**，确认您的 **yah.mobile eSIM线路** 已开启。\n\n如果问题仍然存在，请告诉我，我将提供下一步的解决方案。",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.536
+        },
+        {
+          "turn": 2,
+          "userMessage": "我检查了设置，还是连不上",
+          "aiResponse": "好的，既然您已确认eSIM线路已开启，请尝试下一步：\n\n2.  请前往 **设置** > **蜂窝网络** > **yah.mobile**，然后开启 **数据漫游**。\n\n请您尝试此步骤，如果仍然无法连接，请告诉我。",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.473
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.536424113475894,
+        0.4731227071890862
+      ]
+    },
+    {
+      "id": "sim-005",
+      "name": "【TH】iPhone เชื่อมต่อไม่ได้ (ทรี)",
+      "language": "th",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "ติดตั้ง eSIM แล้วแต่เชื่อมต่ออินเทอร์เน็ตไม่ได้",
+          "aiResponse": "ขออภัยในความไม่สะดวกครับ เพื่อแก้ไขปัญหาการเชื่อมต่ออินเทอร์เน็ตบน iPhone ของคุณ โปรดลองทำตามขั้นตอนต่อไปนี้:\n\n1.  ไปที่ **การตั้งค่า (Settings)** > *…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.665
+        },
+        {
+          "turn": 2,
+          "userMessage": "ตรวจสอบการตั้งค่าแล้ว ยังไม่ได้อยู่ดี",
+          "aiResponse": "เข้าใจครับว่าคุณได้ตรวจสอบแล้วว่า eSIM ของ yah.mobile เปิดอยู่ แต่ยังไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้\n\nขั้นตอนถัดไปคือ:\n\n1.  ไปที่ **การตั้งค่า (Sett…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.383
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.6654499750206357,
+        0.3834602313761125
+      ]
+    },
+    {
+      "id": "sim-006",
+      "name": "【VI】iPhone không kết nối (cây)",
+      "language": "vi",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "Tôi đã cài đặt eSIM nhưng không kết nối được internet",
+          "aiResponse": "Chào bạn, rất tiếc khi bạn gặp sự cố kết nối internet. Vui lòng thực hiện các bước sau để khắc phục sự cố trên iPhone của bạn:\n\n1.  **Cài đặt** > **Di…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.712
+        },
+        {
+          "turn": 2,
+          "userMessage": "Tôi đã kiểm tra cài đặt, vẫn không được",
+          "aiResponse": "Cảm ơn bạn đã kiểm tra. Nếu bạn đã thực hiện các bước trên mà vẫn không kết nối được, hãy thử các bước tiếp theo sau đây:\n\n1.  Bật **Chế độ máy bay** …",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.518
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.7121316729679522,
+        0.5175986464834436
+      ]
+    },
+    {
+      "id": "sim-007",
+      "name": "【JA】Android接続トラブル（ツリー経由）",
+      "language": "ja",
+      "flowContext": {
+        "category": "connection",
+        "device": "Android",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "AndroidにeSIMをインストールしましたが、ネットに繋がりません",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。AndroidデバイスでeSIMのインストール後にインターネットに接続できないとのこと、承知いたしました。\n\n以下の手順でトラブルシューティングをお試しください。\n\n1.  **yah.mobileを有効にする:**\n    *   「設定」…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.528
+        },
+        {
+          "turn": 2,
+          "userMessage": "APN設定もしましたが、まだダメです",
+          "aiResponse": "APN設定をお試しいただきありがとうございます。それでも接続できないとのこと、承知いたしました。\n\nそれでは、さらに以下の手順をお試しください。\n\n1.  **機内モードのオン/オフ:**\n    *   デバイスの「機内モード」をオンにします。\n    *   約10秒待ってから、機内モードをオフ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.49
+        },
+        {
+          "turn": 3,
+          "userMessage": "機内モードのオンオフもしました",
+          "aiResponse": "機内モードのオンオフをお試しいただきありがとうございます。\n\nそれでは、次にデバイスの再起動をお試しください。\n\n1.  **デバイスの再起動:**\n    *   スマートフォンの電源を一度完全にオフにします。\n    *   数秒待ってから、再度電源を入れてください。\n\n再起動後にインターネット…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.439
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5284473858486455,
+        0.48978189166845587,
+        0.43858676558853305
+      ]
+    },
+    {
+      "id": "sim-008",
+      "name": "【EN】Android not connecting (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "connection",
+        "device": "Android",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "My Android phone has the eSIM installed but no data connection",
+          "aiResponse": "Thank you for contacting yah.mobile support.\n\nPlease follow these steps to troubleshoot the data connection on your Android device:\n\n1.  Go to **Setti…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.718
+        },
+        {
+          "turn": 2,
+          "userMessage": "I set the APN to yah.mobile but still no luck",
+          "aiResponse": "Thank you for trying those steps. Since the APN is set correctly and you're still experiencing issues, let's try the next set of troubleshooting:\n\n1. …",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.545
+        },
+        {
+          "turn": 3,
+          "userMessage": "Tried airplane mode toggle and restart, nothing works",
+          "aiResponse": "I understand your frustration. Since the previous steps haven't resolved the issue, let's try the final troubleshooting steps for Android devices:\n\n1.…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.5
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.7179571550608528,
+        0.5452984564302554,
+        0.5001249889212898
+      ]
+    },
+    {
+      "id": "sim-009",
+      "name": "【JA】iPhoneインストールできない（ツリー経由）",
+      "language": "ja",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "pre_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "QRコードを読み取ったのですが、eSIMが追加されません",
+          "aiResponse": "QRコードを読み取ってもeSIMが追加されないとのこと、ご不便をおかけしております。\n\niPhoneでeSIMを追加するには、以下の手順をお試しください。\n\n1.  **安定したWi-Fi接続**があることを確認してください（モバイルデータではなく、Wi-Fiに接続している必要があります）。\n2. …",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.53
+        },
+        {
+          "turn": 2,
+          "userMessage": "iPhone 14 Proを使っています。SIMロックは解除済みです",
+          "aiResponse": "iPhone 14 Proをご利用で、SIMロック解除済みとのこと、承知いたしました。\n\nそれでは、以下の手順を再度ご確認ください。\n\n1.  **安定したWi-Fi接続**があることを確認してください。\n2.  「設定」>「モバイル通信」>「eSIMを追加」>「QRコードを使用」の順に進み、QRコ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.381
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5301781651783923,
+        0.3813633301078337
+      ]
+    },
+    {
+      "id": "sim-010",
+      "name": "【EN】iPhone can't install (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "pre_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "I scanned the QR code but the eSIM won't install",
+          "aiResponse": "I'm sorry to hear you're having trouble installing your eSIM. Please try the following steps:\n\n1.  **Confirm Device Compatibility:** Ensure your iPhon…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.68
+        },
+        {
+          "turn": 2,
+          "userMessage": "My phone says 'eSIM not supported' but it's an iPhone 13",
+          "aiResponse": "Thank you for clarifying. If your iPhone 13 is displaying \"eSIM not supported,\" it is likely that your device is carrier-locked. eSIM functionality re…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.546
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.6801426304926976,
+        0.5458089854889613
+      ]
+    },
+    {
+      "id": "sim-011",
+      "name": "【EN】Android can't install (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "connection",
+        "device": "Android",
+        "stage": "pre_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "I can't find the option to add eSIM on my Samsung Galaxy S22",
+          "aiResponse": "To add your yah.mobile eSIM on your Samsung Galaxy S22, please follow these steps:\n\n1.  Go to **Settings**.\n2.  Tap on **Network & Internet**.\n3.  Tap…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.484
+        },
+        {
+          "turn": 2,
+          "userMessage": "I went to Network settings but there's no eSIM option",
+          "aiResponse": "Thank you for checking. If you don't see an \"Add eSIM\" option under Settings > Network & Internet > SIMs, please ensure your Samsung Galaxy S22 is car…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.55
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.4844999960871429,
+        0.5500543359818182
+      ]
+    },
+    {
+      "id": "sim-012",
+      "name": "【JA】料金プラン問い合わせ（ツリー経由）",
+      "language": "ja",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "料金プランを教えてください",
+          "aiResponse": "yah.mobileの料金プランは以下の通りです。\n\n*   **Light:** 3GB / 7日間 ¥1,078（税込）\n*   **Standard:** 5GB / 15日間 ¥1,848（税込）\n*   **Value:** 10GB / 30日間 ¥3,278（税込）\n*   **Pre…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.376
+        },
+        {
+          "turn": 2,
+          "userMessage": "1週間の旅行でおすすめのプランはどれですか？",
+          "aiResponse": "1週間のご旅行でおすすめのプランは、お客様のデータ利用量によって異なります。\n\n*   **Light (3GB / 7日間 ¥1,078)**: 軽いインターネット利用（マップ、メッセージ、SNSの閲覧など）をされる方向けです。\n*   **Standard (5GB / 15日間 ¥1,848)…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.417
+        },
+        {
+          "turn": 3,
+          "userMessage": "追加データは購入できますか？",
+          "aiResponse": "はい、追加データはご購入いただけます。\n\n*   **1GBあたり¥550（税込）**です。\n*   マイページまたはyah.mobileアプリからいつでもご購入いただけます。\n*   購入後すぐに利用可能となり、有効期限は現在ご利用中のプランの残り期間と同じです。\n\nデータが足りなくなった場合は、…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.357
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.37557191330707373,
+        0.4174496376424183,
+        0.3571683662056857
+      ]
+    },
+    {
+      "id": "sim-013",
+      "name": "【EN】Pricing inquiry (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "What plans do you offer?",
+          "aiResponse": "We offer a variety of plans to suit your travel needs in Japan:\n\n*   **Light:** 3GB / 7 days for ¥1,078\n*   **Standard:** 5GB / 15 days for ¥1,848\n*  …",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.422
+        },
+        {
+          "turn": 2,
+          "userMessage": "I'm visiting Japan for 2 weeks, which plan do you recommend?",
+          "aiResponse": "For a 2-week trip to Japan, we recommend our **Standard Plan**: 5GB / 15 days for ¥1,848. This plan is designed to cover your data needs for that dura…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.642
+        },
+        {
+          "turn": 3,
+          "userMessage": "Can I add more data if I run out?",
+          "aiResponse": "Yes, you can definitely add more data if you run out. Additional data costs ¥550 per 1GB (tax included). You can purchase it anytime from My Page or t…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.519
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.4221419724926745,
+        0.6420931973535622,
+        0.5186964848973483
+      ]
+    },
+    {
+      "id": "sim-014",
+      "name": "【KO】요금 문의 (트리)",
+      "language": "ko",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "요금제는 어떻게 되나요?",
+          "aiResponse": "yah.mobile 요금제는 다음과 같습니다:\n\n*   **Light:** 3GB / 7일 - ¥1,078\n*   **Standard:** 5GB / 15일 - ¥1,848 (1~2주 여행에 최적)\n*   **Value:** 10GB / 30일 - ¥3,278\n*   …",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.294
+        },
+        {
+          "turn": 2,
+          "userMessage": "가장 저렴한 플랜을 알려주세요",
+          "aiResponse": "가장 저렴한 플랜은 **Light 3GB/7일** 요금제로, **¥1,078**입니다. 단기 여행이나 가벼운 데이터 사용에 적합합니다.",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.252
+        },
+        {
+          "turn": 3,
+          "userMessage": "데이터를 추가로 구매할 수 있나요?",
+          "aiResponse": "네, 데이터를 추가로 구매하실 수 있습니다.\n\n**1GB당 ¥550**이며, 마이페이지나 yah.mobile 앱에서 언제든지 구매하실 수 있고, 구매 즉시 사용 가능합니다. 추가 데이터의 유효 기간은 현재 사용 중인 플랜의 남은 기간과 동일합니다.",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.327
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.2936880593329384,
+        0.25194897673553474,
+        0.327090000722796
+      ]
+    },
+    {
+      "id": "sim-015",
+      "name": "【ZH】价格咨询 (树)",
+      "language": "zh",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "你们有什么套餐？",
+          "aiResponse": "您好！yah.mobile提供以下套餐：\n\n*   **Light:** 3GB / 7天 ¥1,078\n*   **Standard:** 5GB / 15天 ¥1,848\n*   **Value:** 10GB / 30天 ¥3,278\n*   **Premium:** 20GB / 30天 ¥…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.354
+        },
+        {
+          "turn": 2,
+          "userMessage": "我要去日本两周，推荐哪个套餐？",
+          "aiResponse": "您好！如果您要去日本两周，我们推荐 **Standard 套餐 (5GB / 15天 ¥1,848)**。\n\n这个套餐非常适合1-2周的旅行。",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.458
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.35415611773002276,
+        0.45756040166343903
+      ]
+    },
+    {
+      "id": "sim-016",
+      "name": "【TH】สอบถามราคา (ทรี)",
+      "language": "th",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "มีแพ็กเกจอะไรบ้าง",
+          "aiResponse": "yah.mobile มีแพ็กเกจ eSIM สำหรับการเดินทางในญี่ปุ่นดังนี้ค่ะ:\n\n*   **Light:** 3GB / 7 วัน ราคา ¥1,078\n*   **Standard:** 5GB / 15 วัน ราคา ¥1,848\n*   *…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.347
+        },
+        {
+          "turn": 2,
+          "userMessage": "ไปญี่ปุ่น 7 วัน แนะนำแพ็กเกจไหน",
+          "aiResponse": "สำหรับการเดินทางไปญี่ปุ่น 7 วัน แนะนำแพ็กเกจ **Light (3GB / 7 วัน)** ราคา ¥1,078 ค่ะ\n\nแต่ถ้าหากคุณใช้งานอินเทอร์เน็ตค่อนข้างเยอะ เช่น ดูวิดีโอ หรือใช้…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.441
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.3468948319925189,
+        0.4407712036097642
+      ]
+    },
+    {
+      "id": "sim-017",
+      "name": "【VI】Hỏi giá (cây)",
+      "language": "vi",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "Có những gói cước nào?",
+          "aiResponse": "Chào bạn, yah.mobile cung cấp các gói cước eSIM sau đây để bạn lựa chọn khi đến Nhật Bản:\n\n*   **Light:** 3GB / 7 ngày với giá ¥1,078\n*   **Standard:*…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.451
+        },
+        {
+          "turn": 2,
+          "userMessage": "Tôi đi Nhật 10 ngày, nên chọn gói nào?",
+          "aiResponse": "Với chuyến đi Nhật 10 ngày, tôi đề xuất bạn nên chọn gói **Standard: 5GB / 15 ngày** với giá ¥1,848. Gói này sẽ cung cấp đủ dữ liệu cho bạn trong suốt…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.374
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.45091120120507755,
+        0.37415482975600645
+      ]
+    },
+    {
+      "id": "sim-018",
+      "name": "【JA】返金リクエスト（ツリー経由）",
+      "language": "ja",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "購入したeSIMが使えないので返金してほしいです",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\neSIMがご利用いただけないとのこと、ご不便をおかけし申し訳ございません。\n\nyah.mobileのeSIMはデジタル商品であるため、原則として決済完了後の返金は承っておりません（特定商取引法第15条の3に基づく）。\n\nただし、以下の例外…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.445
+        },
+        {
+          "turn": 2,
+          "userMessage": "でも一度も使えていないのに返金できないのはおかしいと思います",
+          "aiResponse": "ご連絡ありがとうございます。\n\n一度もご利用いただけていないとのこと、ご不便をおかけし大変申し訳ございません。\n\nyah.mobileのeSIMは、QRコードが発行された時点で、お客様専用に割り当てられるデジタル商品となっております。このため、誠に恐縮ながら、未使用の場合でも原則として返金対象外とさ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.372
+        },
+        {
+          "turn": 3,
+          "userMessage": "消費者センターに相談します",
+          "aiResponse": "ご連絡ありがとうございます。\n\n消費者センターへのご相談は、お客様の権利として可能です。\n\nもし、当社の返金ポリシーや対応にご納得いただけない点がございましたら、ご相談いただくことは全く問題ございません。\n\n重ねてのご案内となり恐縮ですが、もし「システム障害によりeSIMが発行されなかった」「二重課…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.37
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.44483699467784454,
+        0.37157723373938656,
+        0.3701049111510293
+      ]
+    },
+    {
+      "id": "sim-019",
+      "name": "【EN】Refund request (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "I want to cancel my order and get a refund",
+          "aiResponse": "Thank you for contacting yah.mobile.\n\nAs per our policy, refunds are generally not available once payment for an eSIM is completed, as it is a digital…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.549
+        },
+        {
+          "turn": 2,
+          "userMessage": "But I haven't used it yet, can't you make an exception?",
+          "aiResponse": "We understand your concern. However, once the QR code is issued, the eSIM is exclusively assigned to you. Even if it hasn't been used, it is not eligi…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.477
+        },
+        {
+          "turn": 3,
+          "userMessage": "This is unacceptable, I'll dispute the charge with my bank",
+          "aiResponse": "We understand your frustration. If you believe your situation qualifies for one of the exceptions (system failure, duplicate charge, or unauthorized u…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.523
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5487463746729588,
+        0.4767154964976192,
+        0.5228133518567297
+      ]
+    },
+    {
+      "id": "sim-020",
+      "name": "【KO】환불 요청 (트리)",
+      "language": "ko",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "환불을 원합니다",
+          "aiResponse": "yah.mobile eSIM은 디지털 상품으로 결제 완료 후에는 원칙적으로 환불이 불가합니다. (일본 특정상거래법 제15조의 3에 의거)\n\nQR 코드가 발급되는 시점에 해당 eSIM은 고객님 전용으로 할당됩니다. 따라서 미사용이어도 환불 대상이 아닙니다.\n\n다만, 다음…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.355
+        },
+        {
+          "turn": 2,
+          "userMessage": "한 번도 사용하지 않았는데 환불이 안 된다니요?",
+          "aiResponse": "네, 고객님. yah.mobile eSIM은 디지털 상품의 특성상 QR 코드가 발급되는 즉시 고객님 전용으로 할당됩니다. 이는 상품이 배송되는 물리적인 제품과는 다른 특성을 가집니다.\n\n따라서 한 번도 사용하지 않으셨더라도 결제가 완료되고 eSIM이 발급된 후에는 원칙…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.325
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.3549763613102103,
+        0.3247467611042087
+      ]
+    },
+    {
+      "id": "sim-021",
+      "name": "【ZH】退款请求 (树)",
+      "language": "zh",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "我想退款",
+          "aiResponse": "您好！yah.mobile eSIM是一种数字商品，根据日本《特定商业交易法》第15-3条，付款完成后原则上不予退款。\n\n一旦QR码发出，该eSIM即专属分配给您，即使未使用也不可退款。\n\n以下是例外情况，如果符合，则可以申请退款：\n1.  系统故障导致eSIM未成功发放。\n2.  发生重复扣款。\n…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.457
+        },
+        {
+          "turn": 2,
+          "userMessage": "我还没用过，为什么不能退？",
+          "aiResponse": "您好！我们理解您的疑问。\n\nyah.mobile的eSIM是数字商品。一旦您完成支付，系统就会立即为您生成并分配一个专属的eSIM二维码，即使您还没有激活或使用它。这个过程类似于购买一张已充值的电话卡，一旦卡片发行，即使您没有打电话，也无法退回。\n\n因此，根据我们的退款政策，以及日本《特定商业交易法…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.386
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.4566454078767989,
+        0.38624736980380703
+      ]
+    },
+    {
+      "id": "sim-022",
+      "name": "【TH】ขอคืนเงิน (ทรี)",
+      "language": "th",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "ขอคืนเงินได้ไหม",
+          "aiResponse": "eSIM ของ yah.mobile เป็นผลิตภัณฑ์ดิจิทัลค่ะ โดยทั่วไปแล้วจะไม่สามารถคืนเงินได้หลังจากชำระเงินเรียบร้อยแล้วค่ะ (ตามกฎหมายว่าด้วยธุรกรรมทางการค้าที่ระบุ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.544
+        },
+        {
+          "turn": 2,
+          "userMessage": "ยังไม่ได้ใช้เลย ทำไมคืนเงินไม่ได้",
+          "aiResponse": "เข้าใจความรู้สึกของคุณเลยค่ะ\n\nแม้ว่าคุณจะยังไม่ได้ใช้งาน eSIM แต่เนื่องจาก eSIM เป็นผลิตภัณฑ์ดิจิทัล เมื่อ QR โค้ดถูกสร้างขึ้นแล้ว ระบบจะทำการกำหนด eS…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.548
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5435412242030795,
+        0.5483607948679248
+      ]
+    },
+    {
+      "id": "sim-023",
+      "name": "【VI】Yêu cầu hoàn tiền (cây)",
+      "language": "vi",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "Tôi muốn được hoàn tiền",
+          "aiResponse": "Chào bạn,\n\nyah.mobile eSIM là một sản phẩm kỹ thuật số. Theo chính sách của chúng tôi, chúng tôi không thể hoàn tiền sau khi thanh toán hoàn tất. Điều…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.598
+        },
+        {
+          "turn": 2,
+          "userMessage": "Tôi chưa sử dụng, tại sao không thể hoàn tiền?",
+          "aiResponse": "Chào bạn,\n\nChúng tôi hiểu sự thất vọng của bạn. Mặc dù bạn chưa sử dụng eSIM, nhưng do bản chất là sản phẩm kỹ thuật số, một khi mã QR đã được cấp, eS…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.566
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5980687115941153,
+        0.5656622247841238
+      ]
+    },
+    {
+      "id": "sim-024",
+      "name": "【EN】General inquiry (no tree)",
+      "language": "en",
+      "flowContext": null,
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "What is yah.mobile?",
+          "aiResponse": "yah.mobile is a Japan-only eSIM service designed for international travelers visiting Japan.\n\nKey features include:\n*   Industry-lowest price per GB\n*…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.741
+        },
+        {
+          "turn": 2,
+          "userMessage": "Does it work in Japan only?",
+          "aiResponse": "Yes, yah.mobile is a Japan-only eSIM service. It is designed for international travelers visiting Japan.",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.349
+        },
+        {
+          "turn": 3,
+          "userMessage": "How long does the eSIM last?",
+          "aiResponse": "The validity of the eSIM depends on the plan you choose. It ranges from 7 to 30 days.",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.657
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.7414762730291944,
+        0.3487472247892033,
+        0.6571400003996575
+      ]
+    },
+    {
+      "id": "sim-025",
+      "name": "【JA】一般問い合わせ（ツリーなし）",
+      "language": "ja",
+      "flowContext": null,
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "yah.mobileとは何ですか？",
+          "aiResponse": "yah.mobileは、日本を訪れる海外旅行者向けの日本国内専用eSIMサービスです。\n\n主な特徴は以下の通りです。\n\n*   **業界最安水準の1GBあたりの料金**\n*   **6言語対応の24時間サポート**\n*   **購入後すぐに利用開始可能**\n*   **SIMカードの差し替え不要**…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.704
+        },
+        {
+          "turn": 2,
+          "userMessage": "対応している端末を教えてください",
+          "aiResponse": "yah.mobileのeSIMサービスに対応している端末は以下の通りです。\n\n*   **iPhone**: XS以降のモデル（iOS 14以上）\n*   **Android**: Pixel 3以降、Galaxy S20以降、その他eSIMに対応している端末\n\n**重要な点として、お使いの端末がS…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.222
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.7037997931061741,
+        0.22211148724070634
+      ]
+    },
+    {
+      "id": "sim-026",
+      "name": "【JA】フォーム誘導テスト（10回以上）",
+      "language": "ja",
+      "flowContext": {
+        "category": "connection",
+        "device": "iPhone",
+        "stage": "post_install"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "eSIMが繋がりません",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\neSIMがインターネットに接続できないとのこと、ご不便をおかけしております。iPhoneでの接続トラブルシューティングについて、以下の手順をお試しください。\n\n1.  **yah.mobile eSIM回線がオンになっているか確認してくだ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.536
+        },
+        {
+          "turn": 2,
+          "userMessage": "まだ繋がりません",
+          "aiResponse": "ご案内した手順をお試しいただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nそれでは、引き続き以下の手順をお試しください。\n\n1.  **機内モードのオン/オフを切り替えてください。**\n    *   「設定」またはコントロールセンターから「機内モード」をオンにし、約10秒…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.451
+        },
+        {
+          "turn": 3,
+          "userMessage": "設定を確認しましたが繋がりません",
+          "aiResponse": "設定を確認していただいたにも関わらず、まだ接続できないとのこと、重ねてお詫び申し上げます。\n\nそれでは、最終手段として、以下のネットワーク設定のリセットをお試しください。\n\n*   **ネットワーク設定をリセットする**\n    *   「設定」>「一般」>「転送またはiPhoneをリセット」>「リ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.421
+        },
+        {
+          "turn": 4,
+          "userMessage": "データローミングもオンにしました",
+          "aiResponse": "データローミングもオンにしていただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nこれまでの手順をすべてお試しいただいても改善しない場合、以下の追加の確認と最終手段をお試しください。\n\n1.  **APN設定の再確認と正確な入力**\n    *   「設定」>「モバイル通信」…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.406
+        },
+        {
+          "turn": 5,
+          "userMessage": "それでも繋がりません",
+          "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.439
+        },
+        {
+          "turn": 6,
+          "userMessage": "APN設定もしました",
+          "aiResponse": "APN設定も完了されているとのこと、承知いたしました。それでも接続できない状況、大変申し訳ございません。\n\nこれまでの手順をすべてお試しいただいても改善しない場合、以下の追加の確認と最終手段をお試しください。\n\n1.  **APN設定の再確認と正確な入力**\n    *   「設定」>「モバイル通信…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.467
+        },
+        {
+          "turn": 7,
+          "userMessage": "まだダメです",
+          "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.458
+        },
+        {
+          "turn": 8,
+          "userMessage": "キャリア設定も更新しました",
+          "aiResponse": "キャリア設定も更新していただいたにも関わらず、まだ接続できないとのこと、大変申し訳ございません。\n\nこれまでのすべての手順をお試しいただいても改善しない場合、以下の最終手段をお試しください。\n\n*   **ネットワーク設定をリセットする**\n    *   「設定」>「一般」>「転送またはiPhon…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.39
+        },
+        {
+          "turn": 9,
+          "userMessage": "繋がらないです",
+          "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.467
+        },
+        {
+          "turn": 10,
+          "userMessage": "どうしたらいいですか",
+          "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ接続できないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォーム…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.424
+        },
+        {
+          "turn": 11,
+          "userMessage": "まだ解決しません",
+          "aiResponse": "大変申し訳ございません。これまでのすべての手順をお試しいただいたにも関わらず、まだ解決しないとのこと、心よりお詫び申し上げます。\n\nお客様の状況を鑑み、これ以上こちらでの手順のご案内が難しくなっております。\n\nつきましては、大変お手数ですが、**yah.mobi/app** のお問い合わせフォームよ…",
+          "shouldRedirectToForm": true,
+          "ragTopScore": 0.443
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": true,
+      "ragHitScores": [
+        0.5362030744714018,
+        0.4506615647347735,
+        0.42135550559397394,
+        0.4060812611674822,
+        0.4391636067337348,
+        0.4667083745341946,
+        0.4578922892410518,
+        0.39025352134112606,
+        0.4673589213209268,
+        0.42369883070039305,
+        0.442857244283357
+      ]
+    },
+    {
+      "id": "sim-027",
+      "name": "【EN】Duplicate charge exception",
+      "language": "en",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "I was charged twice for the same eSIM purchase",
+          "aiResponse": "Thank you for contacting yah.mobile support.\n\nA duplicate charge for the same eSIM purchase is an exception that qualifies for a refund.\n\nPlease check…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.572
+        },
+        {
+          "turn": 2,
+          "userMessage": "Yes I can see two identical charges on my credit card statement",
+          "aiResponse": "Thank you for confirming. Please proceed to fill out the contact form at **yah.mobi/app** with the details I mentioned previously:\n\n*   Your order num…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.536
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.5717941568888603,
+        0.5357502894453172
+      ]
+    },
+    {
+      "id": "sim-028",
+      "name": "【JA】eSIM未発行例外",
+      "language": "ja",
+      "flowContext": {
+        "category": "refund"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "支払いは完了したのですが、QRコードが届きません",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\nQRコードが届かないとのこと、ご不便をおかけし申し訳ございません。\n\n以下の手順でご確認いただけますでしょうか。\n\n1.  **迷惑メールフォルダをご確認ください。** 稀に迷惑メールとして振り分けられる場合がございます。\n2.  **ご…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.355
+        },
+        {
+          "turn": 2,
+          "userMessage": "メールも迷惑メールフォルダも確認しましたが、どこにもありません",
+          "aiResponse": "ご確認いただきありがとうございます。メールも迷惑メールフォルダにもQRコードが見当たらないとのこと、承知いたしました。\n\nお支払い完了から30分以上経過している場合は、システム障害の可能性がございます。\n\nこの場合、返金対象となりますので、大変お手数ですが、yah.mobi/appのお問い合わせフォ…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.231
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.3554470708524072,
+        0.23117351384010332
+      ]
+    },
+    {
+      "id": "sim-029",
+      "name": "【EN】Payment method question (tree)",
+      "language": "en",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "What payment methods do you accept?",
+          "aiResponse": "We accept Visa, Mastercard, American Express, JCB, Apple Pay, and Google Pay.",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.421
+        },
+        {
+          "turn": 2,
+          "userMessage": "Can I pay with PayPal?",
+          "aiResponse": "No, we do not support PayPal. We accept Visa, Mastercard, American Express, JCB, Apple Pay, and Google Pay.",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.285
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.4208057059913124,
+        0.28526884358492755
+      ]
+    },
+    {
+      "id": "sim-030",
+      "name": "【JA】データ追加購入（ツリー経由）",
+      "language": "ja",
+      "flowContext": {
+        "category": "pricing"
+      },
+      "turns": [
+        {
+          "turn": 1,
+          "userMessage": "データ容量を使い切ってしまいました。追加できますか？",
+          "aiResponse": "データ容量の追加は可能です。\n\nマイページまたはyah.mobileアプリから、1GBあたり550円（税込）で追加データをいつでもご購入いただけます。購入後すぐに利用可能となり、有効期限は現在のプランの残り期間と同じです。\n\nお支払いには、Visa、Mastercard、American Expre…",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.306
+        },
+        {
+          "turn": 2,
+          "userMessage": "追加データの料金を教えてください",
+          "aiResponse": "追加データは1GBあたり550円（税込）です。\n\nマイページまたはyah.mobileアプリからいつでもご購入いただけます。",
+          "shouldRedirectToForm": false,
+          "ragTopScore": 0.322
+        }
+      ],
+      "errors": [],
+      "formRedirectTriggered": false,
+      "ragHitScores": [
+        0.30553116258259383,
+        0.3224900619500649
+      ]
+    }
+  ]
+}

@@ -33,6 +33,12 @@ export const chatRouter = router({
         initialMessage: z.string().min(1),
         language: z.enum(["ja", "en", "zh", "ko", "th", "vi"]).default("ja"),
         isGoogleLogin: z.boolean().optional().default(false),
+        flowContext: z.object({
+          category: z.string().optional(),
+          device: z.string().optional(),
+          stage: z.string().optional(),
+          issue: z.string().optional(),
+        }).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -75,12 +81,13 @@ export const chatRouter = router({
         translation: initialTranslation,
       });
 
-      // Generate AI response
+      // Generate AI response (with flow context if user came through decision tree)
       const { content: aiContent, shouldEscalate } = await generateAIResponse(
         sessionId,
         input.initialMessage,
         [],
-        input.language
+        input.language,
+        input.flowContext
       );
 
       // Translate AI response to Japanese for operator display (skip if already Japanese)
@@ -195,6 +202,12 @@ export const chatRouter = router({
         visitorId: z.string(),
         content: z.string(),
         fileUrl: z.string().optional(),
+        flowContext: z.object({
+          category: z.string().optional(),
+          device: z.string().optional(),
+          stage: z.string().optional(),
+          issue: z.string().optional(),
+        }).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -259,12 +272,13 @@ export const chatRouter = router({
       }
       const effectiveLang = detectedLang;
 
-      // Generate AI response (language detection already done above)
+      // Generate AI response (language detection already done above, with flow context if available)
       const { content: aiContent, shouldEscalate, shouldRedirectToForm } = await generateAIResponse(
         input.sessionId,
         input.content,
         history.map((m) => ({ role: m.role, content: m.content })),
-        effectiveLang
+        effectiveLang,
+        input.flowContext
       );
 
       // Translate AI response to Japanese for operator display (skip if already Japanese)
