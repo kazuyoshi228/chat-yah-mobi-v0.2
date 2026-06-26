@@ -426,3 +426,13 @@
 - [x] 日本語版PDFをモバイル画像で再生成・ウェブストレージにアップロード（/manus-storage/yah_mobile_user_guide_ja_51713a85.pdf）
 - [x] 英語版PDFをモバイル画像で再生成・ウェブストレージにアップロード（/manus-storage/yah_mobile_user_guide_v2_cc60ea75.pdf）
 - [x] UserManuals.tsx の PDF URL を新しいものに更新
+
+## Phase 45: 返金ポリシーを「QRコード発行後は返金不可」に変更
+- [x] 添付ポリシードキュメントを確認し内容を把握
+- [x] 日本語マークダウン原稿（yah_mobile_user_guide_ja.md）の第10章を返金不可ポリシーに書き換え
+- [x] RAGドキュメント（英語 id:30002）の返金ポリシーセクションを更新
+- [x] RAGドキュメント（日本語 id:60001）に返金ポリシーセクションを追加
+- [x] 日本語PDF生成スクリプト（generate_pdf_ja.py）の第10章を返金不可ポリシーに書き換え
+- [x] 英語PDF生成スクリプト（generate_pdf_v2.py）の返金関連記述を返金不可に更新
+- [x] 日英PDFを再生成しストレージにアップロード（ja: 63b65698, en: 3a1019fd）
+- [x] UserManuals.tsxのPDF URLを新バージョンに更新
