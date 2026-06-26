@@ -2,7 +2,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Bot, Brain, Globe, MessageSquare, ShieldAlert, Target } from "lucide-react";
+import { Bot, Brain, Globe, MessageSquare, ShieldAlert, Target, TrendingUp, Zap, Wifi } from "lucide-react";
 
 const SYSTEM_PROMPT = `You are a helpful customer support assistant for yah.mobile, a Japan-only eSIM service for international travelers.
 
@@ -83,6 +83,79 @@ const sections = [
   },
 ];
 
+// 現在のシミュレーション結果（Phase 63-64）
+const currentScores = [
+  { category: "CONNECTION（接続トラブル）", score: 0.932, sessionRate: 90.9, sessions: "10/11", color: "text-emerald-600" },
+  { category: "PRICING（料金・プラン）", score: 0.936, sessionRate: 87.5, sessions: "7/8", color: "text-emerald-600" },
+  { category: "REFUND（返金）", score: 0.920, sessionRate: 55.6, sessions: "5/9", color: "text-amber-600" },
+  { category: "GENERAL（一般問い合わせ）", score: 0.938, sessionRate: 100.0, sessions: "2/2", color: "text-emerald-600" },
+];
+
+// 返金自動対応実装後の予測
+const refundImprovements = [
+  { case: "二重課金", current: 0.975, projected: 0.995, delta: "+0.020" },
+  { case: "QRコード未発行", current: 0.950, projected: 0.985, delta: "+0.035" },
+  { case: "端末非対応が判明", current: 0.880, projected: 0.950, delta: "+0.070" },
+  { case: "一度も接続できなかった（技術的不具合）", current: 0.750, projected: 0.930, delta: "+0.180" },
+];
+
+// CONNECTION改善施策
+const connectionImprovements = [
+  {
+    title: "多ターン粘り強さの強化",
+    description: "3ターン以上経過しても解決しない場合、「エスカレーション前の最終チェックリスト」を自動提示。早期エスカレーションを防ぐ。",
+    impact: "+0.030〜0.050",
+    targetScore: "0.960〜0.980",
+    priority: "高",
+  },
+  {
+    title: "端末別APN設定RAGの強化",
+    description: "iPhone 15/16・Galaxy S24/S25以外の機種（Pixel・Xiaomi・OPPO等）の詳細APN設定手順をRAGに追加。",
+    impact: "+0.015〜0.025",
+    targetScore: "0.945〜0.955",
+    priority: "高",
+  },
+  {
+    title: "接続確認ステップの標準化",
+    description: "「データローミングON → APN設定 → 機内モードON/OFF → 再起動」の4ステップを毎回漏れなく案内するフロー強化。",
+    impact: "+0.010〜0.020",
+    targetScore: "0.940〜0.950",
+    priority: "中",
+  },
+  {
+    title: "現地キャリア別トラブルシューティング",
+    description: "韓国・台湾・タイ等の現地キャリアとの干渉パターンをRAGに追加。「NTTドコモSIMとの併用時の注意点」等。",
+    impact: "+0.010〜0.020",
+    targetScore: "0.940〜0.950",
+    priority: "中",
+  },
+  {
+    title: "接続不能時の自動返金フロー連携",
+    description: "全手順を試みても解決しない場合、「技術的不具合として返金対応に移行」するフローをデシジョンツリーに組み込む。",
+    impact: "+0.020〜0.040",
+    targetScore: "0.950〜0.970",
+    priority: "高",
+  },
+];
+
+function ScoreBadge({ score, isPercent = false }: { score: number; isPercent?: boolean }) {
+  const val = isPercent ? score : score * 100;
+  const color = val >= 90 ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+    : val >= 80 ? "bg-amber-500/15 text-amber-600 border-amber-500/30"
+    : "bg-red-500/15 text-red-600 border-red-500/30";
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${color}`}>
+      {isPercent ? score.toFixed(1) + "%" : score.toFixed(3)}
+    </span>
+  );
+}
+
+const priorityColor: Record<string, string> = {
+  "高": "bg-red-100 text-red-700 border-red-200",
+  "中": "bg-amber-100 text-amber-700 border-amber-200",
+  "低": "bg-gray-100 text-gray-600 border-gray-200",
+};
+
 export default function AIChatbot() {
   return (
     <DashboardLayout title="AI Chatbot">
@@ -162,6 +235,153 @@ export default function AIChatbot() {
             </Card>
           ))}
         </div>
+
+        <Separator />
+
+        {/* ===== 解決率改善レポート ===== */}
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-indigo-600" />
+          <h2 className="text-xl font-bold text-gray-900">解決率改善レポート</h2>
+          <Badge variant="outline" className="text-xs">Phase 63-64 シミュレーション結果</Badge>
+        </div>
+
+        {/* 現在のスコア */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">現在のカテゴリ別スコア（30セッション・61ターン）</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 pr-4 font-medium text-muted-foreground">カテゴリ</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">品質スコア</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">セッション解決率</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">解決数</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentScores.map((row) => (
+                    <tr key={row.category} className="border-b last:border-0">
+                      <td className="py-2.5 pr-4 font-medium text-sm">{row.category}</td>
+                      <td className="py-2.5 px-3 text-center">
+                        <ScoreBadge score={row.score} />
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <ScoreBadge score={row.sessionRate} isPercent />
+                      </td>
+                      <td className="py-2.5 px-3 text-center text-xs text-muted-foreground">{row.sessions}</td>
+                    </tr>
+                  ))}
+                  <tr className="bg-muted/30">
+                    <td className="py-2.5 pr-4 font-bold text-sm">全体平均</td>
+                    <td className="py-2.5 px-3 text-center"><ScoreBadge score={0.930} /></td>
+                    <td className="py-2.5 px-3 text-center"><ScoreBadge score={80.0} isPercent /></td>
+                    <td className="py-2.5 px-3 text-center text-xs text-muted-foreground">24/30</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* REFUND改善 */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-amber-500" />
+            <h3 className="text-base font-semibold">返金（REFUND）— 自動返金対応実装後の予測</h3>
+            <Badge variant="outline" className="text-amber-600 border-amber-400/40 bg-amber-50 text-xs">
+              最優先課題 55.6% → 92%
+            </Badge>
+          </div>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2 pr-4 font-medium text-muted-foreground">対象ケース</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">現在</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">実装後</th>
+                    <th className="text-center py-2 px-3 font-medium text-muted-foreground">改善幅</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {refundImprovements.map((row) => (
+                    <tr key={row.case} className="border-b last:border-0">
+                      <td className="py-2.5 pr-4 text-sm">{row.case}</td>
+                      <td className="py-2.5 px-3 text-center"><ScoreBadge score={row.current} /></td>
+                      <td className="py-2.5 px-3 text-center"><ScoreBadge score={row.projected} /></td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="text-emerald-600 font-semibold text-xs">{row.delta}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-xs text-muted-foreground mt-3">
+                詳細は <a href="/admin/refund" className="text-indigo-600 underline underline-offset-2">Refund ページ</a> を参照
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* CONNECTION改善 */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Wifi className="w-4 h-4 text-blue-500" />
+            <h3 className="text-base font-semibold">接続トラブル（CONNECTION）— 解決率向上施策</h3>
+            <Badge variant="outline" className="text-blue-600 border-blue-400/40 bg-blue-50 text-xs">
+              現在 90.9% → 目標 97%+
+            </Badge>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            主な失敗原因：3ターン目以降の早期エスカレーション（「もう少し粘れば解決できた」ケース）
+          </p>
+          <div className="grid gap-3">
+            {connectionImprovements.map((item, i) => (
+              <Card key={i} className="border-l-4 border-l-blue-400">
+                <CardContent className="pt-3 pb-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-sm">{item.title}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${priorityColor[item.priority]}`}>
+                          優先度: {item.priority}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{item.description}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0 text-xs">
+                      <span className="text-muted-foreground">改善幅</span>
+                      <span className="text-emerald-600 font-bold">{item.impact}</span>
+                      <span className="text-muted-foreground mt-1">目標スコア</span>
+                      <span className="font-semibold">{item.targetScore}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* 全施策実装後の予測 */}
+          <Card className="mt-3 bg-blue-50 border-blue-200">
+            <CardContent className="pt-3 pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">全施策実装後の予測スコア</p>
+                  <p className="text-xs text-blue-700 mt-0.5">CONNECTION: 0.932 → 0.970〜0.985 | セッション解決率: 90.9% → 97%+</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-blue-700">全体平均スコア</p>
+                  <p className="text-lg font-bold text-blue-900">0.960〜0.975</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Separator />
 
         {/* System Prompt */}
         <Card className="border border-gray-200">
