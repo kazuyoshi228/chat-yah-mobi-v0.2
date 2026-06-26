@@ -21,6 +21,11 @@ const FORGE_API_KEY = process.env.BUILT_IN_FORGE_API_KEY;
 if (!DATABASE_URL) { console.error("DATABASE_URL not set"); process.exit(1); }
 if (!OPENAI_API_KEY) { console.error("OPENAI_API_KEY not set"); process.exit(1); }
 
+// ── Model config ─────────────────────────────────────────────────────────────
+const AI_MODEL = process.env.SIM_MODEL || "gpt-4o";
+const RESULTS_FILE = `scripts/simulation_results_${AI_MODEL.replace(/[^a-z0-9]/gi, '_')}.json`;
+console.log(`🤖 Using model: ${AI_MODEL}`);
+
 // ── DB setup ──────────────────────────────────────────────────────────────────
 const pool = createPool(DATABASE_URL);
 
@@ -343,7 +348,7 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
     { role: "user", content: userMessage },
   ];
 
-  const content = await invokeLLM(msgs);
+  const content = await invokeLLM(msgs, AI_MODEL);
   return { content, ragTopScore: topScore };
 }
 
@@ -700,7 +705,7 @@ console.log(`  Overall Avg Quality: ${overallAvg.toFixed(3)}`);
 console.log();
 
 // Save results
-const outputPath = "/home/ubuntu/yah-chat-webdev/scripts/simulation_results_v4.json";
+const outputPath = `/home/ubuntu/yah-chat-webdev/${RESULTS_FILE}`;
 writeFileSync(outputPath, JSON.stringify({
   version: "v4-llm-judge",
   summary: {
