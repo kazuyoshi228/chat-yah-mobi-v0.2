@@ -405,3 +405,11 @@
 - [x] email.ts に sendAIEscalationNotificationEmail() 関数を追加（送信先: kazuyoshi.yamada@bonfire.co.jp）
 - [x] chat.ts の sendMessage でエスカレーション時にオーナーへメール通知を追加
 - [x] TypeScript: 0 エラー確認
+
+## Phase 42: yah.mobile 取扱説明書 PDF 制作・RAG登録・ダウンロード機能（完了）
+- [x] yah.mobi/app サイト内容を読み取り・情報整理
+- [x] 取扱説明書の構成・原稿マークダウン作成（12章構成、全15ページ）
+- [x] パナソニック品質のPDF生成（ダーク表紙・ブルーアクセント・表・注意ボックス付き）
+- [x] PDFをウェブストレージにアップロード（/manus-storage/yah_mobile_user_guide_3aded696.pdf）
+- [x] WidgetChat.tsx のスタートフォーム下部にPDFダウンロードボタンを追加
+- [x] TypeScript: 0 エラー確認
