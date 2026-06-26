@@ -572,4 +572,4 @@
 - [x] 評価方法をcosine similarity → LLM-as-Judge（応答品質0-1）に切り替え
 - [x] シミュレーションv4スクリプト作成・実行
 - [x] 最終結果: CONNECTION 0.923✅ | PRICING 0.881 | REFUND 0.892 | GENERAL 0.950✅ | 全体平均 0.905
-- [ ] チェックポイント保存
+- [x] チェックポイント保存

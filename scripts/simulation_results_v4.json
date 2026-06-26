@@ -3,31 +3,31 @@
   "summary": {
     "categories": {
       "connection": {
-        "avg": 0.9230434782608691,
-        "min": 0.85,
+        "avg": 0.9,
+        "min": 0.55,
         "max": 0.95,
         "count": 23
       },
       "pricing": {
-        "avg": 0.88125,
-        "min": 0.55,
-        "max": 1,
+        "avg": 0.9049999999999998,
+        "min": 0.85,
+        "max": 0.98,
         "count": 16
       },
       "refund": {
-        "avg": 0.8916666666666667,
-        "min": 0.55,
+        "avg": 0.9416666666666667,
+        "min": 0.85,
         "max": 0.95,
         "count": 18
       },
       "general": {
-        "avg": 0.95,
-        "min": 0.95,
+        "avg": 0.9374999999999999,
+        "min": 0.9,
         "max": 0.95,
         "count": 4
       }
     },
-    "overallAvg": 0.9045901639344266,
+    "overallAvg": 0.9160655737704927,
     "totalSessions": 30,
     "totalTurns": 61,
     "totalErrors": 0
@@ -47,33 +47,33 @@
         {
           "turn": 1,
           "userMessage": "eSIMをインストールしたのですが、インターネットに繋がりません",
-          "aiResponse": "yah.mobile eSIMのインストール後にインターネットに接続できないとのこと、ご不便をおかけしております。\n\niPhoneをご利用とのことですので、以下の手順をお試しください。\n\n1.  **yah.mobile eSIMが有効になっているか確認します。**\n    *   「設定」>「モバイル通信」に進み、yah.mobileのeSIM回線が「オン」になっていることを確認してください。\n…",
+          "aiResponse": "yah.mobile eSIMをご利用いただきありがとうございます。インターネットに接続できないとのこと、ご不便をおかけいたします。\n\niPhoneをご利用とのことですので、以下の手順をお試しください。\n\n1.  **設定** > **モバイル通信** を開きます。\n2.  yah.mobileのeSIM回線が「オン」になっていることを確認してください。\n3.  yah.mobileの回線をタップ…",
           "ragTopScore": 0.548,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response provides clear, actionable steps with correct iPhone menu paths. It progresses logically and maintains a professional tone. It avoids unnecessary escalation by providing comprehensive initial troubleshooting."
+          "judgeReason": "The AI response provides specific, actionable steps with correct iPhone menu paths. It progresses logically, assuming the user has just installed the eSIM and is facing immediate connection issues. The language is professional Japanese. It avoids unnecessary escalation by providing comprehensive initial troubleshooting. The only minor point is that it doesn't explicitly state to restart the device, which is a common troubleshooting step, but the provided steps are very thorough for initial setup."
         },
         {
           "turn": 2,
           "userMessage": "設定を確認しましたが、まだ繋がりません",
-          "aiResponse": "設定をご確認いただきありがとうございます。まだ接続できないとのこと、承知いたしました。\n\n前の手順を試しても改善しない場合、以下の追加の手順をお試しください。\n\n1.  **APN設定を再確認します。**\n    *   「設定」>「モバイル通信」>「yah.mobile」>「モバイルデータ通信ネットワーク」に進み、「APN」欄に「`yah.mobile`」と**正確に**入力されているか、再度ご…",
+          "aiResponse": "承知いたしました。設定をご確認いただきありがとうございます。まだ接続できないとのことですので、さらにいくつかの手順をお試しいただけますでしょうか。\n\n1.  **機内モードのオン/オフ**:\n    *   **設定**を開き、「**機内モード**」をオンにします。\n    *   30秒ほど待ってから、「**機内モード**」をオフに戻してください。\n\n2.  **キャリア設定のアップデート確認*…",
           "ragTopScore": 0.403,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths. It progresses logically by offering new troubleshooting steps after the user indicated the initial checks failed. The language is professional and Japanese. It appropriately avoids immediate escalation by offering further self-service options."
+          "judgeReason": "The response provides specific, actionable steps, including correct menu paths for iPhone, and progresses logically. It maintains a professional tone and avoids unnecessary escalation. The only minor point is that '設定を確認しましたが、まだ繋がりません' implies the user has already checked settings, but the AI doesn't explicitly ask what settings were checked to avoid redundancy. However, the suggested steps (airplane mode, carrier settings, restart) are fundamental and often resolve such issues even if basic settings were already reviewed."
         },
         {
           "turn": 3,
           "userMessage": "データローミングもオンにしました。それでも繋がらないです",
-          "aiResponse": "データローミングをオンにしていただいたにもかかわらず、まだ接続できないとのこと、大変申し訳ございません。\n\nそれでは、最終手段としてネットワーク設定のリセットをお試しいただけますでしょうか。\n\n**【ネットワーク設定のリセット手順】**\n1.  「設定」>「一般」>「転送またはiPhoneをリセット」>「リセット」をタップします。\n2.  「ネットワーク設定をリセット」を選択します。\n\n**ご注意…",
+          "aiResponse": "データローミングもオンにしていただいたのに、まだ接続できないとのこと、ご不便をおかけし申し訳ございません。\n\nそれでは、以下の追加手順をお試しいただけますでしょうか。\n\n1.  **APN設定の再確認**:\n    *   **設定** > **モバイル通信** > **yah.mobile** > **モバイルデータ通信ネットワーク** を開きます。\n    *   「APN」の欄に「`yah.…",
           "ragTopScore": 0.401,
-          "qualityScore": 0.9,
-          "judgeReason": "The response provides specific, actionable steps for network reset, including the correct menu path for iPhone. It progresses logically as a 'last resort' after data roaming was already tried. The language is professional Japanese. It avoids immediate escalation but provides an escalation path if the final step fails."
+          "qualityScore": 0.95,
+          "judgeReason": "The response provides specific, actionable steps, including correct menu paths for iPhone. It logically progresses from checking APN to temporarily disabling other SIMs, and finally to network reset, avoiding repetition. The language is professional Japanese. It offers escalation as a last resort after comprehensive troubleshooting."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
         0.95,
-        0.9
+        0.95
       ]
     },
     {
@@ -90,32 +90,32 @@
         {
           "turn": 1,
           "userMessage": "I installed the eSIM but I can't connect to the internet",
-          "aiResponse": "I'm sorry to hear you're having trouble connecting to the internet after installing your yah.mobile eSIM. Let's get this resolved for you.\n\nPlease follow these steps on your iPhone:\n\n1.  Go to **Setti…",
+          "aiResponse": "I'm sorry to hear you're having trouble connecting. Let's get your yah.mobile eSIM working on your iPhone.\n\nPlease follow these steps:\n\n1.  Go to **Settings** > **Cellular** and ensure your yah.mobile…",
           "ragTopScore": 0.656,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths, progresses logically, and maintains a professional tone. It avoids unnecessary escalation by offering further assistance if the initial steps fail."
+          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths. It progresses logically from basic checks to more advanced settings like APN. The tone is professional and it avoids unnecessary escalation. The only minor improvement could be to explicitly state *where* to find 'Cellular Data Network' (it's within the eSIM settings, which is implied but not explicitly stated as a separate menu item)."
         },
         {
           "turn": 2,
           "userMessage": "I checked the settings, still not working",
-          "aiResponse": "Thank you for checking the settings. Since it's still not working, let's try a couple more steps:\n\n1.  Go to **Settings** > **General** > **About**. Check if there's a pop-up for a **Carrier Settings …",
+          "aiResponse": "I understand the previous steps didn't resolve the issue. Let's try some further troubleshooting:\n\n1.  Go to **Settings** > **General** > **About** and check if there's a pop-up for a **Carrier Settin…",
           "ragTopScore": 0.532,
-          "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps for an iPhone, including correct menu paths. It progresses logically by suggesting new steps after the user indicated prior attempts were unsuccessful. The tone is professional and it avoids unnecessary escalation. The only minor point is that 'General' is not always the direct path for carrier settings updates, but it's a common and reasonable first place to look."
+          "qualityScore": 0.9,
+          "judgeReason": "The response provides specific, actionable steps, including a correct menu path for iPhone. It progresses logically by offering new troubleshooting steps after the user indicated previous attempts failed. The language and tone are professional. It avoids unnecessary escalation."
         },
         {
           "turn": 3,
           "userMessage": "Data roaming is on, airplane mode toggled, still nothing",
-          "aiResponse": "Okay, I understand you've already tried those steps. Let's try these next:\n\n1.  **Re-check APN**: Go to **Settings** > **Cellular** > tap on your yah.mobile eSIM > **Cellular Data Network**. Please en…",
+          "aiResponse": "Thank you for confirming. Since those steps didn't work, let's try these next:\n\n1.  **Re-check APN**: Go to **Settings** > **Cellular** > **yah.mobile** > **Cellular Data Network**. Please ensure the …",
           "ragTopScore": 0.557,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps, including correct menu paths for iPhone. It progresses logically by acknowledging previous steps and offering new ones. The language is professional and avoids unnecessary escalation. The only minor improvement could be to explicitly state *why* disabling other eSIM/SIM lines might help (e.g., to avoid conflicts or ensure the correct profile is active)."
+          "judgeReason": "The response provides specific, actionable steps, correctly identifies iPhone menu paths, and progresses logically from the user's previous attempts. It maintains a professional tone and avoids premature escalation, offering a 'last resort' step before suggesting further contact."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.95,
+        0.9,
         0.95
       ]
     },
@@ -133,18 +133,18 @@
         {
           "turn": 1,
           "userMessage": "eSIM을 설치했는데 인터넷이 안 됩니다",
-          "aiResponse": "yah.mobile eSIM을 설치하셨는데 인터넷 연결에 문제가 있으시군요. 불편을 드려 죄송합니다.\n\niPhone 사용자를 위한 문제 해결 단계를 안내해 드리겠습니다.\n\n1.  **설정** > **셀룰러**로 이동하여 yah.mobile eSIM 회선이 **켜져 있는지** 확인해 주세요.\n2.  **설정** > **셀룰러** > **yah.mobile**…",
+          "aiResponse": "yah.mobile eSIM 설치 후 인터넷 연결 문제로 불편을 드려 죄송합니다. iPhone 사용자이시니, 다음 단계를 따라 문제를 해결해 보시겠어요?\n\n1.  **설정 확인**: '설정' > '셀룰러'로 이동하여 yah.mobile eSIM 회선이 '켬'으로 되어 있는지 확인해 주세요.\n2.  **데이터 로밍 활성화**: '설정' > '셀룰러' > 'y…",
           "ragTopScore": 0.611,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps with correct menu paths for iPhone users, progresses logically, and maintains a professional tone in the correct language. It avoids unnecessary escalation. The only minor improvement could be to explicitly state *how* to set yah.mobile as the default line, although it's generally intuitive."
+          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths. It progresses logically and maintains a professional tone in Korean. It avoids unnecessary escalation by offering clear troubleshooting steps."
         },
         {
           "turn": 2,
           "userMessage": "설정을 확인했는데 여전히 안 됩니다",
-          "aiResponse": "설정을 확인하셨는데도 여전히 연결이 되지 않아 답답하시겠어요. 다음 단계를 시도해 보시겠어요?\n\n1.  **비행기 모드 켜기/끄기**: 휴대폰의 **비행기 모드**를 켰다가 약 10초 후 다시 꺼주세요.\n2.  **이동통신사 설정 업데이트 확인**: **설정** > **일반** > **정보**로 이동하여 이동통신사 설정 업데이트 팝업이 뜨는지 확인해 주세요…",
-          "ragTopScore": 0.401,
+          "aiResponse": "이전 단계를 확인하셨는데도 여전히 연결이 안 되신다니 불편하시겠어요. 다음 단계를 추가로 시도해 보시겠어요?\n\n1.  **비행기 모드 재설정**: '설정'에서 '비행기 모드'를 켠 다음 약 10초 후에 다시 꺼주세요.\n2.  **이동통신사 설정 업데이트 확인**: '설정' > '일반' > '정보'로 이동하여 이동통신사 설정 업데이트 팝업이 뜨는지 확인해 주…",
+          "ragTopScore": 0.402,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps, mentions correct iPhone menu paths, and progresses logically without repeating steps (assuming '설정을 확인했는데' implies general settings check, not these specific ones). The language is correct and professional, and it avoids unnecessary escalation."
+          "judgeReason": "The response provides specific, actionable steps, correctly identifies iPhone menu paths, progresses logically by offering new solutions, maintains a professional tone in the correct language, and avoids unnecessary escalation. The user's previous message '설정을 확인했는데 여전히 안 됩니다' implies they've already checked settings, and the AI appropriately offers new troubleshooting steps without repeating. The only minor point is that '기기 재시작' (device restart) is a very common first step, but given the user's vague '설정을 확인했는데' it's reasonable to include it here as a more general troubleshooting step after specific setting checks."
         }
       ],
       "errors": [],
@@ -167,24 +167,24 @@
         {
           "turn": 1,
           "userMessage": "我安装了eSIM但是无法连接网络",
-          "aiResponse": "您好！很抱歉您在使用yah.mobile eSIM时遇到连接问题。\n\n由于您使用的是iPhone设备，请您按照以下步骤进行故障排除：\n\n1.  请检查您的yah.mobile eSIM线路是否已开启：\n    *   前往“设置”>“蜂窝网络”。\n    *   确认yah.mobile eSIM线路旁边的开关已打开。\n\n如果问题仍然存在，请告诉我，我将提供下一步的指导。",
+          "aiResponse": "您好！很抱歉您在连接网络时遇到问题。\n\n请您按照以下步骤进行排查：\n\n1.  请前往 **设置 > 蜂窝网络**，确认您的yah.mobile eSIM线路已开启。\n\n如果问题仍然存在，请告诉我，我将提供下一步的排查步骤。",
           "ragTopScore": 0.536,
           "qualityScore": 0.85,
-          "judgeReason": "The response provides specific, actionable steps with correct menu paths for iPhone, is logical, and in the correct language and tone. It avoids unnecessary escalation by offering further guidance if the initial step doesn't resolve the issue. However, it only provides one troubleshooting step, which slightly limits its comprehensiveness for a 'post-install, no network' issue."
+          "judgeReason": "The response provides a specific, actionable step with the correct menu path for iPhone. It progresses logically by starting with the most common issue. The language and tone are professional. It avoids unnecessary escalation by offering further steps if needed. The only minor improvement could be to explicitly ask if the user has already checked this setting, though given it's the first step, it's less critical."
         },
         {
           "turn": 2,
           "userMessage": "我检查了设置，还是连不上",
-          "aiResponse": "好的，请您继续尝试以下步骤：\n\n1.  **开启数据漫游：**\n    *   前往“设置”>“蜂窝网络”> 选择您的yah.mobile eSIM。\n    *   确保“数据漫游”已开启。\n\n2.  **设置APN：**\n    *   在同一个yah.mobile eSIM设置页面中，找到“蜂窝数据网络”。\n    *   在“APN”字段中，准确输入 `yah.mobile`。\n\n3.  …",
+          "aiResponse": "好的，既然您已确认yah.mobile eSIM线路已开启，请继续以下步骤：\n\n2.  请前往 **设置 > 蜂窝网络 > yah.mobile**，开启 **数据漫游**。\n\n完成此步骤后，请尝试连接网络。如果仍然无法连接，请告诉我。",
           "ragTopScore": 0.473,
-          "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths. It logically progresses from the previous turn (implied 'checked settings' didn't cover these advanced steps). The language is professional and avoids unnecessary escalation. The only minor improvement could be explicitly stating *why* these steps are important (e.g., 'Data roaming is crucial for eSIMs when traveling')."
+          "qualityScore": 0.9,
+          "judgeReason": "The response provides a specific, actionable step with the correct menu path for an iPhone. It progresses logically from the implied previous step (checking eSIM line is on) and maintains a professional tone in the correct language. It avoids unnecessary escalation by offering a next step if the current one fails."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.85,
-        0.95
+        0.9
       ]
     },
     {
@@ -201,18 +201,18 @@
         {
           "turn": 1,
           "userMessage": "ติดตั้ง eSIM แล้วแต่เชื่อมต่ออินเทอร์เน็ตไม่ได้",
-          "aiResponse": "สวัสดีค่ะ ขออภัยในความไม่สะดวกนะคะ\n\nสำหรับ iPhone ที่ติดตั้ง eSIM แล้วแต่เชื่อมต่ออินเทอร์เน็ตไม่ได้ รบกวนลองทำตามขั้นตอนต่อไปนี้ค่ะ:\n\n1.  ไปที่ **การตั้งค่า (Settings)** > **เซลลูลาร์ (Cellular)** > …",
+          "aiResponse": "สวัสดีค่ะ ขออภัยในความไม่สะดวกนะคะ\n\nสำหรับ iPhone ที่ติดตั้ง eSIM แล้วแต่ยังเชื่อมต่ออินเทอร์เน็ตไม่ได้ รบกวนลองทำตามขั้นตอนต่อไปนี้ค่ะ:\n\n1.  ไปที่ **การตั้งค่า (Settings)** > **เซลลูลาร์ (Cellular)**…",
           "ragTopScore": 0.665,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths in a professional tone. It progresses logically and avoids unnecessary escalation. The only minor improvement could be to explicitly state *where* to set yah.mobile as the primary line for cellular data, though it's implied."
+          "judgeReason": "The response provides specific, actionable steps with correct iPhone menu paths and a logical flow. The language is professional and avoids unnecessary escalation. It correctly identifies the APN setting as a common issue for post-install connection problems."
         },
         {
           "turn": 2,
           "userMessage": "ตรวจสอบการตั้งค่าแล้ว ยังไม่ได้อยู่ดี",
-          "aiResponse": "เข้าใจค่ะว่ายังเชื่อมต่อไม่ได้หลังจากตรวจสอบการตั้งค่าเบื้องต้นแล้ว\n\nรบกวนลองทำตามขั้นตอนเพิ่มเติมดังนี้ค่ะ:\n\n1.  **สลับโหมดเครื่องบิน:** เปิด **โหมดเครื่องบิน (Airplane Mode)** ทิ้งไว้ประมาณ 30 วินาท…",
+          "aiResponse": "เข้าใจค่ะว่าคุณได้ตรวจสอบการตั้งค่าเบื้องต้นแล้ว แต่ยังไม่สามารถเชื่อมต่อได้\n\nลองทำตามขั้นตอนเพิ่มเติมเหล่านี้ดูนะคะ:\n\n1.  **สลับโหมดเครื่องบิน:** เปิด **โหมดเครื่องบิน (Airplane Mode)** ค้างไว้ประมาณ…",
           "ragTopScore": 0.383,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps, mentions correct menu paths for iPhone, progresses logically from the user's previous statement, and maintains a professional tone in Thai. It avoids unnecessary escalation by offering further troubleshooting before suggesting human intervention."
+          "judgeReason": "The AI response provides specific, actionable steps, correctly identifies menu paths for iPhone, and progresses logically from the user's previous 'checked settings' comment. The language is professional Thai, and it avoids immediate escalation. The only minor point is that 'ตรวจสอบการตั้งค่าแล้ว' is a bit vague, so the AI assumes basic checks were done and offers more advanced troubleshooting, which is a reasonable progression."
         }
       ],
       "errors": [],
@@ -235,24 +235,24 @@
         {
           "turn": 1,
           "userMessage": "Tôi đã cài đặt eSIM nhưng không kết nối được internet",
-          "aiResponse": "Chào bạn, rất tiếc vì sự bất tiện này. Để khắc phục sự cố kết nối internet trên iPhone của bạn, vui lòng thực hiện các bước sau:\n\n1.  **Kiểm tra đường dây eSIM:** Vào **Cài đặt** > **Di động** và đảm …",
+          "aiResponse": "Chào bạn, rất tiếc khi bạn gặp sự cố kết nối. Hãy thử các bước sau để khắc phục trên iPhone của bạn:\n\n1.  **Kiểm tra trạng thái eSIM:** Vào **Cài đặt** > **Di động** và đảm bảo đường dây eSIM yah.mobi…",
           "ragTopScore": 0.712,
           "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable steps with correct menu paths for iPhone, progresses logically, and maintains a professional tone. It avoids unnecessary escalation by offering further assistance if the steps don't resolve the issue. The only minor point is 'Kiểm tra đường dây eSIM' could be more explicit about checking for the eSIM profile's presence and activation status, but 'đảm bảo đường dây eSIM yah.mobile của bạn đã được BẬT' covers it sufficiently."
+          "judgeReason": "The response provides specific, actionable steps with correct menu paths for iPhone, progresses logically, and maintains a professional tone. It avoids unnecessary escalation by offering further assistance if the initial steps fail."
         },
         {
           "turn": 2,
           "userMessage": "Tôi đã kiểm tra cài đặt, vẫn không được",
-          "aiResponse": "Tôi hiểu rồi. Nếu bạn đã thực hiện các bước trên mà vẫn không có kết nối, hãy thử các bước tiếp theo sau đây:\n\n1.  **Kiểm tra cập nhật cài đặt nhà mạng:** Vào **Cài đặt** > **Cài đặt chung** > **Giới …",
+          "aiResponse": "Tôi hiểu rằng bạn đã kiểm tra các cài đặt ban đầu. Hãy thử bước tiếp theo này:\n\n1.  **Bật/Tắt Chế độ máy bay:** Bật **Chế độ máy bay** trong khoảng 30 giây, sau đó tắt đi.\n2.  **Khởi động lại thiết bị…",
           "ragTopScore": 0.518,
-          "qualityScore": 0.85,
-          "judgeReason": "The response provides specific, actionable steps, including correct menu paths for iPhone. It progresses logically from the user's 'still not working' statement by suggesting new troubleshooting steps. The language is correct and professional. It avoids unnecessary escalation. However, 'Kiểm tra cập nhật cài đặt nhà mạng' might not always show a prompt, so a slight nuance could be added, but it's still a valid step."
+          "qualityScore": 0.9,
+          "judgeReason": "The response provides specific, actionable steps (airplane mode, restart) that are logical next steps after the user indicated they 'checked settings'. It maintains a professional tone and avoids unnecessary escalation. It doesn't mention specific menu paths for iPhone, but these are general troubleshooting steps applicable across devices and are often accessed via quick settings rather than deep menu paths. The user's previous turn was very vague, so the AI is making a reasonable assumption of what 'checked settings' might entail."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.85
+        0.9
       ]
     },
     {
@@ -269,24 +269,24 @@
         {
           "turn": 1,
           "userMessage": "AndroidにeSIMをインストールしましたが、ネットに繋がりません",
-          "aiResponse": "yah.mobileをご利用いただきありがとうございます。AndroidデバイスにeSIMをインストールされたとのこと、承知いたしました。インターネットに接続できないとのことですので、以下の手順をお試しください。\n\n1.  **yah.mobileのeSIMを有効にする:**\n    *   `設定` > `ネットワークとインターネット` > `SIM` へ進み、`yah.mobile` が有効に…",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。eSIMのインストール後にインターネットに接続できないとのこと、ご不便をおかけいたします。\n\nAndroid端末での接続トラブルシューティングとして、以下の手順をお試しください。\n\n1.  **yah.mobileのeSIMを有効にする:**\n    *   「設定」アプリを開きます。\n    *   「ネットワークとインターネット」または…",
           "ragTopScore": 0.528,
-          "qualityScore": 0.85,
-          "judgeReason": "The response provides specific, actionable steps with correct menu paths for Android. It progresses logically and maintains a professional tone. It avoids unnecessary escalation by offering initial troubleshooting steps. The only minor drawback is that it doesn't offer a next step if these don't work, but for a turn 1 response, it's very good."
+          "qualityScore": 0.95,
+          "judgeReason": "The response provides specific, actionable troubleshooting steps with correct menu paths for Android. It progresses logically and maintains a professional tone in Japanese. It avoids unnecessary escalation by offering further steps if the initial ones fail. The only minor improvement could be to explicitly mention 'APNタイプ' or '認証タイプ' if they are commonly needed for yah.mobile, but the current steps are generally sufficient."
         },
         {
           "turn": 2,
           "userMessage": "APN設定もしましたが、まだダメです",
-          "aiResponse": "APN設定もご確認いただきありがとうございます。まだ接続できないとのこと、承知いたしました。\n\nそれでは、以下の手順をお試しください。\n\n1.  **yah.mobileをモバイルデータのデフォルトに設定:**\n    *   `設定` > `ネットワークとインターネット` > `SIM` へ進み、`yah.mobile` をモバイルデータのデフォルトSIMとして設定してください。\n\n2.  **…",
+          "aiResponse": "APN設定後もまだ接続できないとのこと、承知いたしました。引き続き、以下の手順をお試しください。\n\n1.  **機内モードのオン/オフ:**\n    *   スマートフォンの通知パネルから「機内モード」をオンにします。\n    *   約10秒待ってから、再度「機内モード」をオフにします。\n\n2.  **デバイスの再起動:**\n    *   スマートフォンを完全にシャットダウンし、数秒待ってから…",
           "ragTopScore": 0.49,
-          "qualityScore": 0.9,
-          "judgeReason": "The response provides clear, actionable steps, correctly identifies Android menu paths, and progresses logically from the user's previous action. The language is professional and avoids unnecessary escalation. It loses a small amount for not explicitly stating *why* yah.mobile should be the default, but it's implied by the context."
+          "qualityScore": 0.85,
+          "judgeReason": "The AI provides specific, actionable steps (airplane mode, restart) and maintains a professional tone. It avoids unnecessary escalation. However, it doesn't mention specific menu paths for Android, which slightly reduces the score for that criterion. It progresses logically by offering new steps after APN settings were already tried."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.85,
-        0.9
+        0.95,
+        0.85
       ]
     },
     {
@@ -303,24 +303,24 @@
         {
           "turn": 1,
           "userMessage": "My Android phone has the eSIM installed but no data connection",
-          "aiResponse": "Thank you for contacting yah.mobile support.\n\nPlease follow these steps to troubleshoot the data connection on your Android device:\n\n1.  Go to **Settings** > **Network & Internet** > **SIMs** and ensu…",
+          "aiResponse": "I'm sorry to hear you're having trouble connecting. Let's get your yah.mobile eSIM working on your Android device.\n\nPlease try the following steps:\n\n1.  Go to **Settings** > **Network & Internet** > *…",
           "ragTopScore": 0.718,
           "qualityScore": 0.95,
-          "judgeReason": "The AI provides specific, actionable steps with correct Android menu paths. It progresses logically and maintains a professional tone. It avoids unnecessary escalation by providing comprehensive troubleshooting first."
+          "judgeReason": "The response provides clear, actionable steps with correct Android menu paths. It progresses logically and maintains a professional tone. It avoids unnecessary escalation by asking the user to report back if issues persist."
         },
         {
           "turn": 2,
           "userMessage": "I set the APN to yah.mobile but still no luck",
-          "aiResponse": "Thank you for trying those steps. Since the APN is set and you're still experiencing issues, let's try these next:\n\n1.  **Restart your device.** Power off your phone completely, wait about 10 seconds,…",
+          "aiResponse": "Thank you for confirming you've set the APN.\n\nLet's try these next steps:\n\n1.  Toggle **Airplane Mode ON** for a few seconds, then toggle it **OFF**.\n2.  **Restart your device**.\n\nPlease let me know i…",
           "ragTopScore": 0.545,
-          "qualityScore": 0.88,
-          "judgeReason": "The response provides clear, actionable steps, progresses logically from the previous turn, and maintains a professional tone. It correctly identifies a common Android menu path for resetting network settings. The escalation is appropriate as a last resort."
+          "qualityScore": 0.85,
+          "judgeReason": "The response provides specific, actionable steps (toggle Airplane Mode, restart device) that are logical next steps after APN configuration. It maintains a professional tone and avoids unnecessary escalation. However, it doesn't mention specific menu paths as the steps are more general device actions, which slightly impacts the score."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.88
+        0.85
       ]
     },
     {
@@ -337,24 +337,24 @@
         {
           "turn": 1,
           "userMessage": "QRコードを読み取ったのですが、eSIMが追加されません",
-          "aiResponse": "yah.mobileをご利用いただきありがとうございます。QRコードを読み取ったにもかかわらずeSIMが追加されないとのこと、ご不便をおかけいたします。\n\niPhoneでのeSIM追加にはいくつかの確認点がございます。以下の手順をお試しいただけますでしょうか。\n\n1.  **デバイスの互換性確認:** お使いのiPhoneがiPhone XS以降のモデルで、iOS 14以上がインストールされている…",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\nQRコードを読み取ってもeSIMが追加されないとのこと、ご不便をおかけいたします。\n\niPhoneでのeSIM追加に関するトラブルシューティングとして、以下のステップをお試しいただけますでしょうか。\n\n1.  **デバイスの確認**: お使いのiPhoneがiPhone XS以降のモデルで、iOS 14以上がインストールされていることを…",
           "ragTopScore": 0.53,
-          "qualityScore": 0.95,
-          "judgeReason": "The response provides specific, actionable troubleshooting steps, correctly identifies menu paths for iPhone, and progresses logically. It maintains a professional tone and avoids unnecessary escalation. It is slightly penalized for not explicitly stating that the user might have already tried scanning the QR code, although it does suggest '再度QRコードをスキャンしてください' (scan the QR code again)."
+          "qualityScore": 0.9,
+          "judgeReason": "The AI provides specific, actionable steps with correct menu paths for iPhone. It progresses logically and maintains a professional tone. It doesn't unnecessarily escalate but offers further support if needed."
         },
         {
           "turn": 2,
           "userMessage": "iPhone 14 Proを使っています。SIMロックは解除済みです",
-          "aiResponse": "iPhone 14 ProでSIMロック解除済みとのこと、承知いたしました。デバイスの互換性については問題ございません。\n\nQRコードを読み取ってもeSIMが追加されない場合、以下の点をご確認いただけますでしょうか。\n\n1.  **安定したWi-Fi接続:** 再度、安定したWi-Fiに接続されていることをご確認ください。モバイルデータ通信ではなく、Wi-Fi環境下での操作が必要です。\n2.  *…",
+          "aiResponse": "iPhone 14 Proをご利用で、SIMロックも解除済みとのこと、承知いたしました。\n安定したWi-Fi接続はご確認いただけましたでしょうか？\n\nもしWi-Fi接続が安定しているにもかかわらずQRコードでの追加ができない場合、以下の手順で手動入力を試してみてください。\n\n1.  「設定」アプリを開きます。\n2.  「モバイル通信」をタップします。\n3.  「eSIMを追加」をタップします。\n4…",
           "ragTopScore": 0.381,
-          "qualityScore": 0.95,
-          "judgeReason": "The AI response provides clear, actionable steps, correctly identifies menu paths for iPhone, and progresses logically. It maintains a professional tone and avoids premature escalation. The only minor improvement could be to explicitly state *why* Wi-Fi is needed for eSIM activation, but it's not a critical flaw."
+          "qualityScore": 0.85,
+          "judgeReason": "The response provides specific, actionable steps for manual eSIM setup, including correct menu paths for iPhone. It progresses logically by suggesting manual entry after QR code failure, and the tone is professional Japanese. However, it prematurely suggests escalation without exploring other common troubleshooting steps for connection issues, slightly impacting the 'avoid unnecessary escalation' score."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.95,
-        0.95
+        0.9,
+        0.85
       ]
     },
     {
@@ -371,24 +371,24 @@
         {
           "turn": 1,
           "userMessage": "I scanned the QR code but the eSIM won't install",
-          "aiResponse": "I understand you're having trouble installing your eSIM after scanning the QR code. Let's get this resolved for you.\n\nPlease try the following steps:\n1.  **Ensure a stable Wi-Fi connection:** eSIM ins…",
+          "aiResponse": "I understand you're having trouble installing your eSIM after scanning the QR code. Let's get this resolved for you.\n\nFirst, please ensure you have a stable Wi-Fi connection, as this is required for e…",
           "ragTopScore": 0.68,
-          "qualityScore": 0.9,
-          "judgeReason": "The response provides clear, actionable steps, correctly identifies menu paths for iPhone, and progresses logically. It maintains a professional tone and avoids unnecessary escalation. The only minor improvement could be to explicitly state where to find the 'Enter Details Manually' option within the 'Add eSIM' flow, though it is implied."
+          "qualityScore": 0.85,
+          "judgeReason": "The response provides actionable steps, correctly identifies the device as iPhone, and progresses logically. It maintains a professional tone and avoids unnecessary escalation. However, it lacks specific menu paths for iPhone, which would improve its score."
         },
         {
           "turn": 2,
           "userMessage": "My phone says 'eSIM not supported' but it's an iPhone 13",
-          "aiResponse": "Thank you for clarifying. Even with an iPhone 13, an \"eSIM not supported\" message typically indicates that your device is carrier-locked.\n\nTo confirm this, please check if your iPhone is carrier-unloc…",
+          "aiResponse": "Thank you for confirming your device is an iPhone 13.\n\nThe 'eSIM not supported' message on an iPhone 13 almost always indicates that the device is still carrier-locked. yah.mobile eSIMs require your d…",
           "ragTopScore": 0.546,
-          "qualityScore": 0.9,
-          "judgeReason": "The response correctly identifies a common reason for the error on an iPhone 13, provides specific menu paths, and guides the user to self-diagnose the carrier lock status without unnecessary escalation. It maintains a professional tone and progresses logically from the previous turn's information."
+          "qualityScore": 0.55,
+          "judgeReason": "The response correctly identifies a common reason for the error and provides a clear next step (contacting the previous carrier). However, it lacks specific troubleshooting steps that the user can perform directly on their device, and doesn't offer alternative solutions if the carrier unlock isn't the issue or is delayed. It also doesn't mention menu paths, which would be relevant if there were on-device steps."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.9,
-        0.9
+        0.85,
+        0.55
       ]
     },
     {
@@ -405,10 +405,10 @@
         {
           "turn": 1,
           "userMessage": "I can't find the option to add eSIM on my Samsung Galaxy S22",
-          "aiResponse": "Thank you for reaching out. To add an eSIM on your Samsung Galaxy S22, please follow these steps:\n\n1.  Open **Settings**.\n2.  Tap on **Network & Internet** (or **Connections** depending on your Androi…",
+          "aiResponse": "To add an eSIM on your Samsung Galaxy S22, please follow these steps:\n\n1.  Go to **Settings**.\n2.  Tap on **Network & Internet** (or **Connections** depending on your Android version).\n3.  Tap on **SI…",
           "ragTopScore": 0.484,
           "qualityScore": 0.9,
-          "judgeReason": "The response provides specific, actionable steps with correct menu paths for Android. It progresses logically and maintains a professional tone. It avoids unnecessary escalation by suggesting a common reason for the issue (carrier-locked device) before implying further support might be needed."
+          "judgeReason": "The response provides specific, actionable steps with correct menu paths for Android, progresses logically, and maintains a professional tone. It avoids unnecessary escalation and correctly identifies a potential reason for the option being missing (carrier lock)."
         }
       ],
       "errors": [],
@@ -428,23 +428,23 @@
         {
           "turn": 1,
           "userMessage": "料金プランを教えてください",
-          "aiResponse": "yah.mobileの料金プランについてですね。日本でのご旅行に最適なeSIMサービスをご用意しております。\n\n現在ご提供しているプランは以下の通りです（すべて税込み価格です）。\n\n*   **Light:** 3GB / 7日間 ¥1,078\n    *   短期のご旅行（3〜5日）や、データ利用が少ない方におすすめです。\n*   **Standard:** 5GB / 15日間 ¥1,848\n…",
+          "aiResponse": "yah.mobileの料金プランについてですね。日本ご旅行者様向けのeSIMサービスで、業界最安値水準の価格でデータ通信をご利用いただけます。\n\n現在のプランは以下の通りです（すべて税込み価格です）。\n\n*   **Light:** 3GB / 7日間 **¥1,078**\n    *   短期旅行（3～5日程度）や軽いインターネット利用におすすめです。\n*   **Standard:** 5GB…",
           "ragTopScore": 0.376,
-          "qualityScore": 0.95,
-          "judgeReason": "The AI response provides accurate and detailed plan information, including prices, data, and durations. It offers relevant recommendations for each plan based on usage scenarios. Payment methods are correctly listed. The language is Japanese and professional, and the response is concise and easy to understand. The only minor point is that the user did not specify their needs, so the recommendations are generic but still helpful."
+          "qualityScore": 0.98,
+          "judgeReason": "The AI response provides accurate and detailed plan information, including prices, data, and durations. It offers a relevant recommendation (Standard plan) and correctly lists payment methods. The language is Japanese, professional, concise, and easy to understand. The only minor point is that the user did not specify any needs, so the recommendation is general but still helpful."
         },
         {
           "turn": 2,
           "userMessage": "1週間の旅行でおすすめのプランはありますか？",
-          "aiResponse": "1週間のご旅行でおすすめのプランですね。\n\nデータのご利用状況にもよりますが、以下のプランがおすすめです。\n\n*   **Light:** 3GB / 7日間 ¥1,078\n    *   地図検索やSNSの閲覧など、データ利用が比較的少ない方に適しています。\n*   **Standard:** 5GB / 15日間 ¥1,848\n    *   動画視聴や頻繁なSNS更新など、ある程度のデータ利…",
+          "aiResponse": "1週間のご旅行でおすすめのプランは、お客様のインターネット利用状況によって異なります。\n\n**【おすすめプラン】**\n\n1.  **Light:** 3GB / 7日間 **¥1,078**\n    *   主に地図アプリの利用、SNSの閲覧、簡単な調べ物など、**データ通信をあまり多く使わない方**におすすめです。\n\n2.  **Standard:** 5GB / 15日間 **¥1,848**…",
           "ragTopScore": 0.416,
           "qualityScore": 0.95,
-          "judgeReason": "The AI accurately provides plan details relevant to a 1-week trip, offers a relevant recommendation based on potential data usage, is in the correct language and professional tone, and is concise. Payment methods were not mentioned, which is a minor deduction."
+          "judgeReason": "The AI response accurately provides plan details, offers a relevant recommendation based on a common travel scenario, maintains a professional tone in the correct language, and is concise and easy to understand. Payment methods were not explicitly requested or relevant to the core inquiry of 'recommended plan for a 1-week trip', so the lack of this information does not detract significantly from the score."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.95,
+        0.98,
         0.95
       ]
     },
@@ -460,24 +460,24 @@
         {
           "turn": 1,
           "userMessage": "What plans do you have?",
-          "aiResponse": "We offer several plans designed for international travelers visiting Japan:\n\n*   **Light:** 3GB for 7 days at ¥1,078\n*   **Standard:** 5GB for 15 days at ¥1,848\n*   **Value:** 10GB for 30 days at ¥3,2…",
+          "aiResponse": "We offer several plans designed for international travelers visiting Japan:\n\n*   **Light:** 3GB for 7 days at ¥1,078\n*   **Standard:** 5GB for 15 days at ¥1,848 (Recommended for 1-2 week trips)\n*   **…",
           "ragTopScore": 0.438,
           "qualityScore": 0.85,
-          "judgeReason": "The response accurately lists plan details and prices, is concise, and uses a professional tone. However, it does not provide a recommendation as the user did not state specific needs, nor does it mention payment methods, which were not asked for but are part of the scoring criteria for a comprehensive pricing inquiry response."
+          "judgeReason": "The response provides accurate plan details, is concise, easy to understand, and professional. However, it doesn't offer a relevant recommendation based on the user's needs as the user did not specify any. It also does not mention payment methods."
         },
         {
           "turn": 2,
           "userMessage": "I'm going to Japan for 2 weeks, which plan do you recommend?",
-          "aiResponse": "For a 2-week trip to Japan, I recommend our **Standard Plan**:\n\n*   **5GB for 15 days at ¥1,848**\n\nThis plan is generally sufficient for moderate usage during a 1-2 week stay. If you plan on heavy str…",
+          "aiResponse": "For a 2-week trip to Japan, I recommend our **Standard Plan**:\n\n*   **Standard:** 5GB for 15 days at ¥1,848 (tax included)\n\nThis plan is generally sufficient for moderate usage during a 1-2 week stay.…",
           "ragTopScore": 0.658,
-          "qualityScore": 0.95,
-          "judgeReason": "The AI accurately recommends a plan for a 2-week trip to Japan, providing correct details and an alternative for heavier usage. The tone is professional and concise. Payment methods were not mentioned, but the user did not ask for them directly."
+          "qualityScore": 0.9,
+          "judgeReason": "The AI accurately recommends a plan suitable for a 2-week trip to Japan, including correct details and a professional tone. It also offers an alternative for higher data usage, making it very helpful. Payment methods are not mentioned, which is a minor omission given the user's specific request for a recommendation, not a purchase."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.85,
-        0.95
+        0.9
       ]
     },
     {
@@ -492,24 +492,24 @@
         {
           "turn": 1,
           "userMessage": "요금제를 알려주세요",
-          "aiResponse": "yah.mobile 요금제는 다음과 같습니다 (모두 세금 포함, 일본 내 데이터 전용):\n\n*   **Light**: 3GB / 7일 / **¥1,078** (단기 여행, 가벼운 사용에 적합)\n*   **Standard**: 5GB / 15일 / **¥1,848** (1~2주 여행에 최적)\n*   **Value**: 10GB / 30일 / **¥3,278*…",
+          "aiResponse": "yah.mobile의 요금제는 다음과 같습니다 (모두 세금 포함, 일본 내 데이터 전용):\n\n*   **Light:** 3GB / 7일 - ¥1,078 (단기 여행, 가벼운 사용)\n*   **Standard:** 5GB / 15일 - ¥1,848 (1~2주 여행에 최적)\n*   **Value:** 10GB / 30일 - ¥3,278 (2~4주 여행, 일반적…",
           "ragTopScore": 0.328,
-          "qualityScore": 0.85,
-          "judgeReason": "The response provides accurate plan details, is in the correct language and professional tone, and is concise. However, it does not give a relevant recommendation as the user did not specify needs, and payment methods are not mentioned. The prompt '어떤 요금제가 필요하신지 알려주시면 더 자세히 추천해 드릴 수 있습니다.' correctly addresses the lack of user needs for a recommendation."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI accurately lists all plan details, including prices, data, and duration. It also correctly notes taxes are included and it's for Japan data. While it doesn't give a recommendation without further input, it prompts the user for more information to do so. The language is correct, professional, concise, and easy to understand. Payment methods are not mentioned, but the user did not ask for them."
         },
         {
           "turn": 2,
           "userMessage": "2주간 여행인데 어떤 플랜이 좋을까요?",
-          "aiResponse": "2주간 일본 여행이시라면 **Standard (5GB / 15일 / ¥1,848)** 플랜을 추천해 드립니다. 1~2주 여행에 가장 적합한 플랜입니다.",
+          "aiResponse": "2주간 일본 여행이시라면 **Standard 플랜(5GB / 15일, ¥1,848)**이 가장 적합합니다. 1~2주 여행에 최적화된 플랜으로, 대부분의 여행객에게 충분한 데이터를 제공합니다.\n\n혹시 데이터를 많이 사용하실 계획이라면 **Value 플랜(10GB / 30일, ¥3,278)**도 고려해 보실 수 있습니다.",
           "ragTopScore": 0.344,
-          "qualityScore": 0.85,
-          "judgeReason": "The AI accurately recommends a plan suitable for a 2-week trip, providing correct details (duration, price, data). It's concise and professional. However, it doesn't mention payment methods, which is a minor omission for a pricing inquiry, and it assumes the user is traveling to Japan without that information being explicitly stated in the user's message."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI accurately recommends a plan for a 2-week trip, providing correct details for the suggested plan and an alternative. It's concise, easy to understand, and in the correct language and professional tone. Payment methods were not mentioned, but the prompt did not provide context for payment methods, so it's not a deduction."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.85,
-        0.85
+        0.95,
+        0.95
       ]
     },
     {
@@ -524,24 +524,24 @@
         {
           "turn": 1,
           "userMessage": "请告诉我你们的套餐价格",
-          "aiResponse": "您好！yah.mobile提供以下套餐价格（所有价格均含税）：\n\n*   **Light:** 3GB / 7天，价格为 ¥1,078。适合短期旅行和轻度使用。\n*   **Standard:** 5GB / 15天，价格为 ¥1,848。适合1-2周的旅行。\n*   **Value:** 10GB / 30天，价格为 ¥3,278。适合观看视频的常规使用。\n*   **Premium:** 20…",
+          "aiResponse": "您好！yah.mobile提供以下套餐价格（均含税）：\n\n*   **Light:** 3GB / 7天，¥1,078\n*   **Standard:** 5GB / 15天，¥1,848\n*   **Value:** 10GB / 30天，¥3,278\n*   **Premium:** 20GB / 30天，¥5,478\n*   **Ultra:** 50GB / 30天，¥11,000\n*  …",
           "ragTopScore": 0.306,
-          "qualityScore": 0.95,
-          "judgeReason": "The AI response accurately provides all plan details, including prices, data amounts, and durations. It also offers relevant recommendations for each plan based on usage. The language is correct (Chinese) and the tone is professional. It is concise and easy to understand. The only minor missing element is payment methods, which was not explicitly asked for but is a common part of pricing inquiries."
+          "qualityScore": 0.85,
+          "judgeReason": "The AI provided accurate plan details, was in the correct language and professional tone, and was concise. It also attempted to gather more information for a relevant recommendation, although it didn't give a direct recommendation in this turn. Payment methods were not mentioned."
         },
         {
           "turn": 2,
           "userMessage": "我去日本一周，推荐哪个套餐？",
-          "aiResponse": "您好！对于一周的日本旅行，我们推荐以下套餐：\n\n*   **Light (3GB / 7天 / ¥1,078):** 如果您是轻度用户，主要用于导航、社交媒体和少量信息查询。\n*   **Standard (5GB / 15天 / ¥1,848):** 如果您是中度用户，需要更多流量用于视频、图片分享或偶尔工作。\n\nStandard套餐通常是1-2周旅行的最佳选择。",
+          "aiResponse": "您好！如果您去日本一周，我们推荐以下套餐：\n\n*   **Light (3GB/7天, ¥1,078):** 适合轻度使用，例如查看地图、社交媒体和少量信息查询。\n*   **Standard (5GB/15天, ¥1,848):** 这是我们推荐的最佳选择，提供更充足的流量，即使您需要看一些视频或进行更多在线活动，也无需担心流量不足。\n\n根据您的使用习惯，您可以选择Light或Standard套…",
           "ragTopScore": 0.458,
-          "qualityScore": 0.95,
-          "judgeReason": "The AI accurately recommends plans suitable for a 1-week trip to Japan, providing correct details for each. It offers a relevant recommendation based on user needs and maintains a professional, concise tone. Payment methods were not mentioned, which is a minor omission given the prompt's focus on plan recommendation."
+          "qualityScore": 0.9,
+          "judgeReason": "The AI accurately provides plan details with correct prices, data amounts, and durations. It gives a relevant recommendation based on the user's stated need (one week in Japan) and offers a choice with a clear justification. The language is correct, and the tone is professional and helpful. It is concise and easy to understand. The only missing element is payment methods, which was not explicitly asked for but is a common part of pricing inquiries."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.95,
-        0.95
+        0.85,
+        0.9
       ]
     },
     {
@@ -556,24 +556,24 @@
         {
           "turn": 1,
           "userMessage": "แพ็กเกจมีอะไรบ้าง ราคาเท่าไหร่",
-          "aiResponse": "สวัสดีค่ะ yah.mobile มีแพ็กเกจ eSIM สำหรับการเดินทางไปญี่ปุ่นดังนี้ค่ะ:\n\n*   **Light:** 3GB / 7 วัน ราคา ¥1,078\n*   **Standard:** 5GB / 15 วัน ราคา ¥1,848\n*   **Value:** 10GB / 30 วัน ราคา ¥3,278\n*   …",
+          "aiResponse": "สวัสดีค่ะ yah.mobile มีแพ็กเกจ eSIM สำหรับเดินทางไปญี่ปุ่นดังนี้ค่ะ:\n\n*   **Light:** 3GB / 7 วัน ราคา ¥1,078\n*   **Standard:** 5GB / 15 วัน ราคา ¥1,848\n*   **Value:** 10GB / 30 วัน ราคา ¥3,278\n*   **P…",
           "ragTopScore": 0.409,
-          "qualityScore": 0.85,
-          "judgeReason": "The AI response accurately lists plan details, prices, and durations in the correct language and professional tone. It is concise and easy to understand. However, it does not provide a recommendation based on user needs (as none were specified) and does not mention payment methods, which were not requested but are part of the scoring criteria for a pricing/plan inquiry. The mention of additional data purchase is a good extra detail."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI response accurately lists all plan details including prices, data, and durations. It is in the correct language (Thai) and maintains a professional tone. The information is concise and easy to understand. While it doesn't offer a specific recommendation as the user didn't provide needs, it comprehensively answers the pricing inquiry. Payment methods were not mentioned, which is a minor omission for a pricing inquiry."
         },
         {
           "turn": 2,
           "userMessage": "ไปญี่ปุ่น 1 สัปดาห์ แนะนำแพ็กเกจไหน",
-          "aiResponse": "สำหรับการเดินทางไปญี่ปุ่น 1 สัปดาห์ yah.mobile ขอแนะนำแพ็กเกจดังนี้ค่ะ:\n\n*   **Light:** 3GB / 7 วัน ราคา ¥1,078 เหมาะสำหรับการใช้งานเบาๆ\n*   **Standard:** 5GB / 15 วัน ราคา ¥1,848 เหมาะสำหรับการใช้งาน…",
+          "aiResponse": "สำหรับการเดินทางไปญี่ปุ่น 1 สัปดาห์ yah.mobile ขอแนะนำแพ็กเกจ Light หรือ Standard ค่ะ\n\n*   **Light:** 3GB / 7 วัน ราคา ¥1,078 เหมาะสำหรับการใช้งานเบาๆ\n*   **Standard:** 5GB / 15 วัน ราคา ¥1,848 เหมาะส…",
           "ragTopScore": 0.534,
-          "qualityScore": 0.85,
-          "judgeReason": "The AI provided accurate plan details, relevant recommendations, and maintained a professional tone in the correct language. However, it did not mention payment methods, which is a part of the criteria."
+          "qualityScore": 0.9,
+          "judgeReason": "The AI accurately identifies relevant packages for a 1-week trip to Japan, providing correct details (data, duration, price in Yen) and a relevant recommendation. The language is correct, professional, concise, and easy to understand. The only missing element is payment methods, which was not explicitly asked for but is a common part of pricing inquiries."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.85,
-        0.85
+        0.95,
+        0.9
       ]
     },
     {
@@ -588,18 +588,18 @@
         {
           "turn": 1,
           "userMessage": "Cho tôi xem bảng giá các gói",
-          "aiResponse": "Chào bạn, dưới đây là bảng giá chi tiết các gói cước của yah.mobile:\n\n*   **Light:** 3GB / 7 ngày - **¥1,078**\n*   **Standard:** 5GB / 15 ngày - **¥1,848**\n*   **Value:** 10GB / 30 ngày - **¥3,278**\n*…",
+          "aiResponse": "Chào bạn, đây là bảng giá các gói cước của yah.mobile (đã bao gồm thuế):\n\n*   **Light:** 3GB / 7 ngày — ¥1,078\n*   **Standard:** 5GB / 15 ngày — ¥1,848\n*   **Value:** 10GB / 30 ngày — ¥3,278\n*   **Pre…",
           "ragTopScore": 0.361,
           "qualityScore": 0.85,
-          "judgeReason": "The AI provided accurate plan details, correct prices, data amounts, and durations. It used the correct language and a professional tone. It was concise and easy to understand. However, it did not provide a recommendation as the user did not specify needs, and it did not mention payment methods."
+          "judgeReason": "The AI provided accurate plan details in the correct language and professional tone. It is concise and easy to understand. However, it did not provide a relevant recommendation based on user needs (as none were specified) and did not mention payment methods."
         },
         {
           "turn": 2,
           "userMessage": "Tôi đi Nhật 2 tuần, nên chọn gói nào?",
-          "aiResponse": "Với chuyến đi Nhật 2 tuần, tôi đề xuất bạn nên chọn gói **Standard** của yah.mobile. Gói này cung cấp **5GB dữ liệu trong 15 ngày** với giá **¥1,848**, rất phù hợp cho nhu cầu sử dụng vừa phải trong k…",
+          "aiResponse": "Với chuyến đi Nhật 2 tuần, gói **Standard (5GB / 15 ngày)** với giá ¥1,848 là lựa chọn tốt nhất và phù hợp nhất cho nhu cầu sử dụng vừa phải của bạn.\n\nNếu bạn có nhu cầu sử dụng dữ liệu nhiều hơn, ví …",
           "ragTopScore": 0.426,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response accurately identifies the user's need (2-week trip to Japan) and recommends a suitable plan ('Standard' with 5GB/15 days for ¥1,848), which aligns perfectly with the duration. It also offers an alternative ('Value' with 10GB/30 days) for higher data usage, showing good understanding of potential user needs. The language is correct (Vietnamese), professional, concise, and easy to understand. Payment methods were not explicitly asked for or mentioned, which is acceptable given the prompt was about plan selection, not payment details. If payment methods were crucial for a perfect score, it would be slightly lower, but for plan recommendation, it's excellent."
+          "judgeReason": "The AI response accurately recommends a plan based on the user's 2-week trip to Japan, providing correct details for the suggested plan and an alternative. It is concise, easy to understand, and in the correct language and professional tone. Payment methods were not mentioned, but the prompt did not provide context for them to be mentioned."
         }
       ],
       "errors": [],
@@ -620,18 +620,18 @@
         {
           "turn": 1,
           "userMessage": "返金してほしいのですが",
-          "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\n大変恐縮ですが、yah.mobileのeSIMはデジタル商品であるため、決済完了後の返金は原則としてお受けしておりません。これは日本の特定商取引法第15条の3に基づくものです。\n\nQRコードが発行された時点で、そのeSIMはお客様専用に割り当てられますため、未使用の場合でも返金対象外となりますことをご了承ください。\n\nただし、以下のいず…",
+          "aiResponse": "yah.mobileのeSIMはデジタル商品のため、決済完了後の返金は原則としてお受けできません。これは、特定商取引法第15条の3に基づいております。ご購入時にこのポリシーに同意いただいております。\n\nただし、以下の3つのケースに限り、例外として返金が認められる場合がございます。\n\n1.  **システム障害によりeSIMが発行されなかった場合**\n2.  **二重課金が発生した場合**\n3.  *…",
           "ragTopScore": 0.39,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy with legal basis (特定商取引法第15条の3), correctly identifies exceptions, and provides appropriate next steps for both exceptional and non-exceptional cases. It maintains an empathetic yet firm tone and is in the correct language. The only minor improvement could be slightly more direct phrasing for the 'no refund' part, but it's very good overall."
+          "judgeReason": "The AI response clearly states the no-refund policy for digital goods, citing the legal basis (特定商取引法第15条の3) and mentioning customer agreement at purchase. It correctly identifies three specific exceptions and asks the user to check if their case falls into one, directing them to an inquiry form if so. The tone is empathetic yet firm, and the language is correct (Japanese). The only minor point is that it doesn't explicitly state 'no refund' if it's not an exception, but it's strongly implied."
         },
         {
           "turn": 2,
           "userMessage": "まだ使っていないのに返金できないのはおかしいです",
-          "aiResponse": "ご不便をおかけし、申し訳ございません。まだご利用されていないにも関わらず返金できないことにご納得いただけないお気持ち、お察しいたします。\n\n重ねてのご案内となり恐縮ですが、yah.mobileのeSIMはデジタル商品であり、お客様がご購入手続きを完了され、QRコードが発行された時点で、そのeSIMはお客様専用に割り当てられ、サービス提供が開始されたとみなされます。このため、一度発行されたeSIMは…",
+          "aiResponse": "ご不便をおかけし申し訳ございません。\n\nyah.mobileのeSIMはデジタル商品であり、QRコードがお客様に送信された時点で、商品のお引き渡しが完了したとみなされます。これは、お客様専用にeSIMが割り当てられた状態となり、特定商取引法第15条の3に基づき、原則として返金は承ることができません。ご購入時にこの点についてご同意をいただいております。\n\n未使用であっても、デジタル商品の特性上、返金…",
           "ragTopScore": 0.456,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (利用規約 and 特定商取引法第15条の3), correctly identifies exceptions, and provides appropriate next steps. It is empathetic ('ご不便をおかけし、申し訳ございません。ご納得いただけないお気持ち、お察しいたします') but firm in its policy explanation. The language is correct Japanese. The only minor point is that it refers to '先ほどご案内した以下の例外' but doesn't explicitly state 'form for exceptions' as a next step, although it does ask the user to check if they fall under the exceptions."
+          "judgeReason": "The response clearly states the no-refund policy with legal basis (特定商取引法第15条の3), explains why it's a digital good, and mentions agreement at purchase. It's empathetic ('ご不便をおかけし申し訳ございません') but firm in denying the refund. The language is correct. The only minor missing part is a clear 'next step' for potential exceptions, though the context implies there are none for this specific case. However, it could explicitly state 'no exceptions apply in this case' or 'if you believe there's an exceptional circumstance, please contact us via X' for a perfect score."
         }
       ],
       "errors": [],
@@ -652,18 +652,18 @@
         {
           "turn": 1,
           "userMessage": "I want a refund please",
-          "aiResponse": "I understand you're looking for a refund. I know it can be frustrating when you need to cancel a purchase.\n\nPlease be aware that as a digital product, yah.mobile eSIMs are generally not eligible for r…",
+          "aiResponse": "I understand you're requesting a refund.\n\nPlease be aware that yah.mobile eSIM is a digital product, and our policy, based on Japan's Act on Specified Commercial Transactions Article 15-3, states that…",
           "ragTopScore": 0.618,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy with legal basis, correctly identifies exceptions, provides appropriate next steps, and maintains an empathetic yet firm tone. The language is correct. The only minor point is that the legal basis could be slightly more explicit about *why* digital products are exempt under that specific article, but it's still very good."
+          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis, identifies potential exceptions, and sets up for appropriate next steps. It is empathetic ('I understand you're requesting a refund') but firm in its policy explanation. The language is correct. It would be perfect if it explicitly stated what to do if an exception applies (e.g., 'If your situation falls under one of these exceptions, please fill out our refund request form here: [link]')."
         },
         {
           "turn": 2,
           "userMessage": "I haven't even used it yet, why can't I get a refund?",
-          "aiResponse": "I understand your frustration that you haven't used the eSIM yet.\n\nThe reason we cannot offer a refund, even if unused, is because the yah.mobile eSIM is a digital product. Once the QR code is issued …",
+          "aiResponse": "I understand your concern about not having used the eSIM.\n\nOur policy, based on Japan's Act on Specified Commercial Transactions Article 15-3, is that refunds are not available once payment for a digi…",
           "ragTopScore": 0.515,
           "qualityScore": 0.95,
-          "judgeReason": "The AI clearly states the no-refund policy with legal basis (Japan's Act on Specified Commercial Transactions, Article 15-3) and references the terms of service. It correctly identifies specific exceptions (system failure, duplicate charge, unauthorized use) and provides appropriate next steps by asking the user to clarify if they fall into an exception. The tone is empathetic ('I understand your frustration') but firm in upholding the policy. The language is correct (English). The only minor point is that it doesn't explicitly state what the 'next steps' would be if an exception *is* met, but it implies the user should inform them."
+          "judgeReason": "The response clearly states the no-refund policy with legal basis, identifies the case as a non-exception by explaining the service delivery, and is empathetic yet firm. It is in the correct language. The only minor improvement could be to explicitly state 'no refund is possible in this case' as a next step, although it's strongly implied."
         }
       ],
       "errors": [],
@@ -684,24 +684,24 @@
         {
           "turn": 1,
           "userMessage": "환불을 원합니다",
-          "aiResponse": "yah.mobile eSIM은 디지털 상품이므로, 결제가 완료되면 원칙적으로 환불이 불가합니다. 이는 일본 특정 상거래법 제15조의 3에 따른 정책입니다.\n\n하지만 다음과 같은 예외적인 경우에는 환불이 가능합니다.\n\n1.  **시스템 장애로 인해 eSIM이 발급되지 않은 경우** (QR 코드를 받지 못하신 경우)\n2.  **동일한 금액이 두 번 청구된 이중…",
+          "aiResponse": "yah.mobile eSIM은 디지털 상품이므로 결제가 완료되면 환불이 불가합니다. 이는 일본 특정상거래법 제15조의3에 명시된 정책이며, 고객님께서 구매 시 동의하신 부분입니다.\n\n다만, 다음 세 가지 예외적인 경우에는 환불이 가능할 수 있습니다:\n\n1.  **시스템 장애로 eSIM이 발급되지 않은 경우** (QR 코드를 받지 못하신 경우)\n2.  **동…",
           "ragTopScore": 0.355,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy for digital goods with a legal basis (Japanese specific commerce law Article 15-3). It correctly identifies three specific exceptions and asks the user if their case falls into one of them. For exceptions, it provides a clear next step (contact via yah.mobi/app form). For non-exceptions, the implication is that no further action is possible. The tone is empathetic by acknowledging the request and offering exceptions, but firm in stating the policy. The language is correct (Korean)."
+          "judgeReason": "The response clearly states the no-refund policy with a legal basis, identifies exceptions, and asks the user to check if they qualify. It is empathetic but firm and in the correct language. The only minor improvement could be a slightly more direct 'next step' for non-exceptions (e.g., 'If none of these apply, unfortunately, a refund is not possible')."
         },
         {
           "turn": 2,
           "userMessage": "아직 사용하지 않았는데 왜 환불이 안 되나요?",
-          "aiResponse": "고객님의 답답한 마음은 충분히 이해합니다.\n\nyah.mobile eSIM은 디지털 상품의 특성상 QR 코드가 발급되는 시점에 고객님 전용으로 할당됩니다. 이는 물리적인 상품과는 달리, 이미 고객님께 서비스가 제공될 준비가 완료된 상태를 의미합니다.\n\n따라서, 비록 아직 사용을 시작하지 않으셨더라도, 결제 완료 및 QR 코드 발급 시점에 서비스 제공이 이루어…",
+          "aiResponse": "고객님의 답답한 마음은 충분히 이해합니다.\n\nyah.mobile eSIM은 디지털 상품의 특성상 QR 코드가 발급되는 시점에 고객님께 상품 인도가 완료된 것으로 간주합니다. 이는 고객님 전용으로 eSIM이 할당되었음을 의미하며, 일본 특정상거래법 제15조의3에 따라 결제 완료 후에는 환불이 불가합니다. 사용 여부와 관계없이 이 정책이 적용됩니다.\n\n이 정책…",
           "ragTopScore": 0.303,
-          "qualityScore": 0.9,
-          "judgeReason": "The AI clearly states the no-refund policy based on the digital nature of the product and QR code issuance (legal basis). It correctly identifies potential exceptions (double payment, system error) and asks the user to check for them. The tone is empathetic ('답답한 마음은 충분히 이해합니다') but firm in explaining the policy. The language is correct Korean. The only minor improvement could be to explicitly state 'no-refund policy' more directly, but the explanation serves the same purpose."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japanese Specified Commercial Transactions Law Article 15-3), identifies exceptions, and explains why the current case isn't an exception. It's empathetic yet firm and in the correct language. The only minor point is that it doesn't explicitly state 'next steps' for non-exceptions beyond '환불은 어렵습니다', though the explanation serves this purpose."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.9
+        0.95
       ]
     },
     {
@@ -716,18 +716,18 @@
         {
           "turn": 1,
           "userMessage": "我想退款",
-          "aiResponse": "您好！\n\n很抱歉您遇到了问题。\n\nyah.mobile eSIM是一种数字商品。根据日本《特定商业交易法》第15条之3规定，一旦付款完成，我们不提供退款服务。当QR码发出后，该eSIM即专属分配给您。即使您未使用，也无法退款。\n\n但是，有以下三种例外情况可以申请退款：\n1. **系统故障**：eSIM已支付但未成功发放（您从未收到QR码）。\n2. **重复扣款**：同一笔订单被收取了两次费用。\n3…",
+          "aiResponse": "您好！\n\n关于退款事宜，yah.mobile eSIM 是一种数字商品。根据日本《特定商业交易法》第15条之3的规定，一旦付款完成，我们无法提供退款。您在结账时已勾选同意此政策。\n\n尽管如此，在以下三种特殊情况下，退款是可能的：\n1.  **系统故障**：如果由于yah.mobile的系统问题，您的eSIM（QR码）在付款后未能成功发放。\n2.  **重复扣款**：如果您因同一笔订单被重复收取了两…",
           "ragTopScore": 0.457,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis, correctly identifies exceptions, provides appropriate next steps, is empathetic yet firm, and is in the correct language. The only minor improvement could be to explicitly state the legal basis for digital goods being non-refundable more directly in the initial policy statement, although it is implied."
+          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japanese 'Act on Specified Commercial Transactions' Article 15-3) and mentions the user's agreement during checkout. It correctly identifies three specific exceptions and asks the user if their case falls under any of them. It provides clear next steps for exceptions (contact form). The tone is empathetic ('您好！') but firm in stating the policy. The language is correct (Chinese). The only minor improvement could be a slightly more direct 'no' for non-exceptions, but the current phrasing implicitly conveys it while offering a path for exceptions."
         },
         {
           "turn": 2,
           "userMessage": "我还没用过，为什么不能退？",
-          "aiResponse": "您好！\n\n感谢您的理解。\n\n我们理解您可能觉得既然没有使用就应该可以退款。但是，yah.mobile eSIM是一种数字商品，一旦QR码（即eSIM）生成并发送给您，它就已经专属分配给您。这就像购买了一张预付费的电话卡，即使您没有插卡使用，这张卡也已经为您预留并激活了服务。\n\n因此，根据我们的政策和日本《特定商业交易法》的规定，即使您尚未开始使用eSIM，也无法进行退款。\n\n请您再次确认，您的情况…",
+          "aiResponse": "您好！\n\n我们理解您可能因为尚未激活使用而希望退款。然而，根据 yah.mobile 的退款政策，以及日本《特定商业交易法》第15条之3的规定，eSIM 是一种数字商品，一旦付款完成，即视为交付完成，因此无法退款。\n\n当您完成购买并收到QR码时，该eSIM就已经专属分配给您。即使您尚未安装或激活使用，从法律上讲，商品交付已经完成。\n\n请问您的情况是否属于以下三种例外情况之一：\n1.  **系统故障…",
           "ragTopScore": 0.386,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japanese '特定商業取引法'), explains the reasoning, and identifies exceptions. It is empathetic but firm, and in the correct language. The explanation of why it's a digital good is very helpful. The only minor improvement could be to explicitly state 'no refund' more directly at the beginning, although it's clear by the end."
+          "judgeReason": "The response clearly states the no-refund policy with legal basis, correctly identifies potential exceptions, and provides appropriate next steps. It is empathetic but firm and in the correct language. The only minor improvement could be to explicitly state that if the user *doesn't* fall into an exception, no further action can be taken for a refund, although this is implied."
         }
       ],
       "errors": [],
@@ -748,24 +748,24 @@
         {
           "turn": 1,
           "userMessage": "ขอคืนเงินได้ไหม",
-          "aiResponse": "สวัสดีค่ะ\n\nyah.mobile เข้าใจว่าคุณอาจต้องการขอคืนเงิน อย่างไรก็ตาม eSIM ของ yah.mobile เป็นผลิตภัณฑ์ดิจิทัลค่ะ ตามกฎหมายของญี่ปุ่น (Japan's Act on Specified Commercial Transactions Article 15-3) เมื่อ…",
+          "aiResponse": "สวัสดีค่ะ yah.mobile ยินดีให้บริการค่ะ\n\nตามนโยบายของเรา eSIM เป็นผลิตภัณฑ์ดิจิทัล ดังนั้นจึงไม่สามารถขอคืนเงินได้หลังจากชำระเงินเสร็จสมบูรณ์แล้วค่ะ นโยบายนี้อ้างอิงตามกฎหมายการค้าเฉพาะของญี่ปุ่น มาตรา…",
           "ragTopScore": 0.544,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis, identifies exceptions, and provides appropriate next steps. It is empathetic ('เข้าใจว่าคุณอาจต้องการ') but firm in its policy. The language is correct (Thai). The only minor improvement could be to explicitly mention that the legal basis applies to the company's operations, as it's a Japan-based law."
+          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japanese trade law, Article 15-3) and confirms user consent. It correctly identifies potential exceptions and provides a clear next step (form submission) for those cases. The tone is empathetic but firm, and the language is correct (Thai). The only minor improvement could be to explicitly state that if none of the exceptions apply, a refund is not possible, but this is implied."
         },
         {
           "turn": 2,
           "userMessage": "ยังไม่ได้ใช้เลย ทำไมคืนเงินไม่ได้",
-          "aiResponse": "สวัสดีค่ะ\n\nyah.mobile เข้าใจถึงความรู้สึกของคุณค่ะ แม้ว่าคุณจะยังไม่ได้ใช้งาน eSIM แต่เนื่องจาก eSIM เป็นผลิตภัณฑ์ดิจิทัล เมื่อการชำระเงินเสร็จสมบูรณ์และ QR โค้ดได้ถูกสร้างขึ้นและส่งให้คุณแล้ว ถือว่าผ…",
+          "aiResponse": "สวัสดีค่ะ yah.mobile ยินดีให้บริการค่ะ\n\nเข้าใจเลยค่ะว่าท่านอาจจะรู้สึกไม่สบายใจที่ยังไม่ได้ใช้งาน แต่ไม่สามารถคืนเงินได้ อย่างไรก็ตาม ตามนโยบายของเรา eSIM ถือเป็นผลิตภัณฑ์ดิจิทัลค่ะ เมื่อ QR โค้ดได้ถู…",
           "ragTopScore": 0.557,
-          "qualityScore": 0.9,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japan's Act on Specified Commercial Transactions Article 15-3) and explains why it applies to digital products like eSIMs. It is empathetic ('เข้าใจถึงความรู้สึกของคุณค่ะ') but firm in its policy. It correctly identifies that this is not an exception and offers troubleshooting instead of a refund. The language is correct (Thai). The only minor point is that it doesn't explicitly mention a form for exceptions, but since this case isn't an exception, it's not strictly necessary."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japanese specific trade law Article 15-3) and explains why the policy applies. It correctly identifies that this case is not an exception. It is empathetic ('เข้าใจเลยค่ะว่าท่านอาจจะรู้สึกไม่สบายใจ') but firm in its explanation. The language is correct (Thai). The only minor point is that while it explains why there's no refund, it doesn't offer any alternative 'next steps' as there are none for this non-exception case, which is appropriate but slightly less explicit than providing a form for exceptions."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.9
+        0.95
       ]
     },
     {
@@ -780,18 +780,18 @@
         {
           "turn": 1,
           "userMessage": "Tôi muốn được hoàn tiền",
-          "aiResponse": "Chào bạn,\n\nChúng tôi hiểu rằng bạn muốn được hoàn tiền. Tuy nhiên, yah.mobile eSIM là một sản phẩm kỹ thuật số. Theo Chính sách hoàn tiền của chúng tôi, dựa trên Điều 15-3 của Đạo luật Giao dịch Thươn…",
+          "aiResponse": "Chào bạn,\n\nChúng tôi hiểu rằng bạn muốn được hoàn tiền. Tuy nhiên, theo chính sách của yah.mobile, eSIM là một sản phẩm kỹ thuật số và không được hoàn tiền sau khi thanh toán hoàn tất. Chính sách này …",
           "ragTopScore": 0.598,
           "qualityScore": 0.95,
-          "judgeReason": "The AI clearly states the no-refund policy with legal basis, identifies exceptions, and provides appropriate next steps. It is empathetic ('Chúng tôi hiểu rằng bạn muốn được hoàn tiền') but firm in its policy explanation. The language is correct. The only minor point is that the user's specific case is not explicitly identified as an exception or non-exception, but rather asks the user to self-identify, which is a reasonable approach given the lack of context in the user's initial message."
+          "judgeReason": "The AI clearly states the no-refund policy with legal basis, identifies potential exceptions, and provides appropriate next steps. It is empathetic but firm and in the correct language. The only minor improvement could be to explicitly state that the current case does not fall under an exception, rather than asking the user, but the current approach is still very good."
         },
         {
           "turn": 2,
           "userMessage": "Tôi chưa sử dụng, tại sao không thể hoàn tiền?",
-          "aiResponse": "Chào bạn,\n\nChúng tôi hiểu rằng bạn chưa sử dụng eSIM. Tuy nhiên, như đã giải thích trước đó, yah.mobile eSIM là một sản phẩm kỹ thuật số. Khi bạn hoàn tất thanh toán, mã QR eSIM sẽ được tạo và cấp riê…",
+          "aiResponse": "Chúng tôi hiểu sự thất vọng của bạn khi chưa sử dụng mà không thể hoàn tiền. Tuy nhiên, yah.mobile là một sản phẩm kỹ thuật số. Ngay sau khi thanh toán hoàn tất và mã QR được cấp phát, eSIM đã được gá…",
           "ragTopScore": 0.566,
           "qualityScore": 0.9,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japanese Act on Specified Commercial Transactions, Article 15-3). It correctly identifies that this is not an exception and explains why. While it doesn't offer a form for exceptions (as there are none in this case), it provides alternative solutions (troubleshooting, buying more data) which are appropriate next steps. The tone is empathetic ('Chúng tôi hiểu rằng bạn chưa sử dụng eSIM') but firm about the policy. The language is correct Vietnamese. The only minor point is that it doesn't explicitly state 'no exceptions' but rather explains why the policy applies, which is effectively the same."
+          "judgeReason": "The response clearly states the no-refund policy with a legal basis (Japanese Act on Specified Commercial Transactions, Article 15-3) and the user's agreement during purchase. It is empathetic ('Chúng tôi hiểu sự thất vọng của bạn') but firm in its explanation. It correctly identifies that this is not an exception based on the 'unused' status. The language is correct (Vietnamese). However, it lacks specific 'next steps' for non-exceptions beyond offering troubleshooting for usage/installation issues, which isn't directly related to the refund request itself. It doesn't explicitly close the refund request or re-iterate the finality of the no-refund decision in a concluding statement."
         }
       ],
       "errors": [],
@@ -810,10 +810,10 @@
         {
           "turn": 1,
           "userMessage": "What is yah.mobile?",
-          "aiResponse": "yah.mobile is a Japan-only eSIM service designed for international travelers visiting Japan. We offer industry-lowest prices per GB, 24/7 support in 6 languages, and instant activation without needing…",
+          "aiResponse": "yah.mobile is a Japan-only eSIM service designed for international travelers visiting Japan. We offer industry-lowest prices per GB, 24/7 support in 6 languages, and instant activation after purchase.",
           "ragTopScore": 0.741,
           "qualityScore": 0.95,
-          "judgeReason": "The response accurately describes yah.mobile as a Japan-only eSIM for international travelers, highlights key benefits (low prices, 24/7 multi-language support, instant activation), and is concise, professional, and in the correct language. It provides a complete answer to the user's inquiry."
+          "judgeReason": "The response accurately describes yah.mobile, is helpful and complete, uses professional English, and is concise. It covers the core aspects of the service effectively."
         },
         {
           "turn": 2,
@@ -821,7 +821,7 @@
           "aiResponse": "Yes, yah.mobile is a Japan-only eSIM service. It is designed for international travelers visiting Japan.",
           "ragTopScore": 0.349,
           "qualityScore": 0.95,
-          "judgeReason": "The response accurately answers the user's question, is concise, and maintains a professional tone. It also adds helpful context about the service's target audience."
+          "judgeReason": "The response is accurate, directly answers the question, and is concise and professional. It also adds helpful context about the target audience (international travelers)."
         }
       ],
       "errors": [],
@@ -840,24 +840,24 @@
         {
           "turn": 1,
           "userMessage": "yah.mobileとは何ですか？",
-          "aiResponse": "yah.mobileは、日本を訪れる海外旅行者向けの日本国内専用eSIMサービスです。\n\n主な特徴は以下の通りです。\n*   **業界最安水準の料金**: 1GBあたりの料金が業界最安水準です。\n*   **24時間サポート**: 日本語を含む6言語で24時間サポートを提供しています。\n*   **簡単利用**: SIMカードの差し替えが不要で、購入後すぐに利用開始できます。\n\n対応端末はiPho…",
+          "aiResponse": "yah.mobileは、日本を訪れる海外旅行者向けの日本国内専用eSIMサービスです。\n\n主な特徴は以下の通りです。\n*   **業界最安水準の料金**：1GBあたりの料金が業界で最も低い水準です。\n*   **多言語対応の24時間サポート**：日本語、英語、中国語、韓国語、タイ語、ベトナム語の6言語で、24時間サポートを提供しています。\n*   **簡単な利用開始**：購入後すぐに利用を開始でき…",
           "ragTopScore": 0.704,
           "qualityScore": 0.95,
-          "judgeReason": "The response accurately and comprehensively describes yah.mobile, highlighting key features and requirements. It is in correct Japanese, professional, and concise. The only minor improvement could be slightly more detail on the 'various data capacities' but it's not a significant flaw for a general inquiry."
+          "judgeReason": "The response accurately describes yah.mobile as an eSIM service for travelers to Japan, highlighting key features like low cost, multilingual support, and ease of use. It also includes important details about device compatibility and plan options. The language is correct, professional, and concise, providing a complete answer to the user's inquiry."
         },
         {
           "turn": 2,
           "userMessage": "対応している端末を教えてください",
-          "aiResponse": "yah.mobileに対応している端末は以下の通りです。\n\n*   **iPhone**: XS以降のモデル（iOS 14以上）\n*   **Android**: Pixel 3以降、Galaxy S20以降、その他eSIMに対応している端末\n\n**重要**: ご利用の端末はSIMロックが解除されている必要があります。",
+          "aiResponse": "yah.mobileが対応している端末は以下の通りです。\n\n*   **iPhone**: XS以降のモデル（iOS 14以上）\n*   **Android**: Pixel 3以降、Galaxy S20以降、その他eSIMに対応している端末\n\n**重要**: すべての端末において、SIMロックが解除されている必要があります。",
           "ragTopScore": 0.222,
-          "qualityScore": 0.95,
-          "judgeReason": "The response accurately lists compatible devices for yah.mobile, is helpful and complete by including the iOS version and SIM unlock requirement, is in correct Japanese with a professional tone, and is concise."
+          "qualityScore": 0.9,
+          "judgeReason": "The response accurately lists supported devices for yah.mobile, is helpful and complete by including the SIM unlock requirement, is in the correct language and professional tone, and is concise. It provides clear, actionable information."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.95
+        0.9
       ]
     },
     {
@@ -872,24 +872,24 @@
         {
           "turn": 1,
           "userMessage": "I was charged twice for the same eSIM purchase",
-          "aiResponse": "I understand your concern about being charged twice.\n\nIf you have been charged twice for the same eSIM purchase, this qualifies as an exception to our no-refund policy.\n\nPlease contact us through the …",
+          "aiResponse": "I understand your frustration with being charged twice.\n\nOur policy states that eSIM purchases are generally non-refundable once payment is complete, as per Japan's Act on Specified Commercial Transac…",
           "ragTopScore": 0.572,
           "qualityScore": 0.95,
-          "judgeReason": "The AI response successfully identifies the duplicate charge as an exception to the no-refund policy and provides clear next steps for resolution. It is empathetic ('I understand your concern') and firm in its process. The language is correct. The only minor point is that it doesn't explicitly state the *general* no-refund policy with a legal basis, but rather implies it by stating this is an 'exception'. However, for an exception case, this is highly effective."
+          "judgeReason": "The AI response clearly states the no-refund policy with legal basis, correctly identifies the duplicate charge as an exception, provides appropriate next steps for the exception, and maintains an empathetic yet firm tone. It is also in the correct language. The only minor improvement could be a slightly more direct link to the form if possible, but 'yah.mobi/app' is likely the intended access point."
         },
         {
           "turn": 2,
           "userMessage": "Yes I can see two identical charges on my credit card",
-          "aiResponse": "Thank you for confirming that you see two identical charges on your credit card statement.\n\nTo proceed with the refund for the duplicate charge, please visit our contact form at **yah.mobi/app**.\n\nIn …",
+          "aiResponse": "Thank you for confirming that you see two identical charges on your credit card statement.\n\nAs mentioned, while our general policy is that eSIM purchases are non-refundable once payment is complete (b…",
           "ragTopScore": 0.54,
-          "qualityScore": 0.55,
-          "judgeReason": "The AI correctly identified the duplicate charge as an exception and provided clear next steps. However, it completely missed the no-refund policy and its legal basis, which is a significant part of the scoring criteria. While empathetic, it wasn't firm about the general policy. The language is correct."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI response successfully addresses all criteria. It clearly states the no-refund policy with legal basis, correctly identifies the duplicate charge as an exception, and provides clear next steps. The tone is empathetic yet firm, and it's in the correct language. The only minor improvement could be to explicitly state *why* duplicate charges are an exception, but it's implied."
         }
       ],
       "errors": [],
       "qualityScores": [
         0.95,
-        0.55
+        0.95
       ]
     },
     {
@@ -904,23 +904,23 @@
         {
           "turn": 1,
           "userMessage": "支払いは完了したのですが、QRコードが届きません",
-          "aiResponse": "ご連絡ありがとうございます。QRコードが届かないとのこと、ご不便をおかけし申し訳ございません。\n\nyah.mobileのeSIMはデジタル商品のため、原則として決済完了後の返金は承っておりません。しかし、システム障害によりeSIMが発行されなかった場合は返金対象となります。\n\nまず、以下の点をご確認いただけますでしょうか。\n\n1.  **迷惑メールフォルダの確認:** 注文確認メールやQRコードが…",
+          "aiResponse": "yah.mobileをご利用いただきありがとうございます。\n\neSIMはデジタル商品であるため、決済完了後の返金は原則としてお受けしておりません。これは特定商取引法第15条の3に基づいております。\n\nしかしながら、お支払いいただいたにもかかわらずQRコードが届かない場合は、システムの不具合によりeSIMが発行されていない可能性がございます。この場合は例外的に返金対象となる可能性がございます。\n\nま…",
           "ragTopScore": 0.355,
-          "qualityScore": 0.9,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (digital product), identifies the system error as a potential exception, and provides appropriate next steps for both scenarios. It is empathetic ('ご不便をおかけし申し訳ございません') but firm in its policy. The language is correct Japanese. The only minor drawback is that it doesn't explicitly state 'no-refund policy' but rather '原則として決済完了後の返金は承っておりません' which implies it."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis, correctly identifies the user's issue as a potential exception, provides appropriate next steps for both scenarios (checking spam/email, then filling a form for exceptions), is empathetic yet firm, and is in the correct language. The only minor improvement could be to explicitly state 'no refund' more directly before offering the exception path, but it's very well handled overall."
         },
         {
           "turn": 2,
           "userMessage": "メールも迷惑メールフォルダも確認しましたが、どこにもありません",
-          "aiResponse": "ご確認いただきありがとうございます。メールも迷惑メールフォルダにもQRコードが見当たらないとのこと、承知いたしました。\n\nこの状況は、システム障害によりeSIMが正常に発行されなかった可能性がございます。この場合は返金の対象となりますのでご安心ください。\n\nつきましては、お手数ですが[yah.mobi/app](https://yah.mobi/app)のお問い合わせフォームより、以下の情報をご連…",
+          "aiResponse": "ご連絡ありがとうございます。メールおよび迷惑メールフォルダをご確認いただいたにもかかわらず、QRコードが見つからないとのこと、ご不便をおかけし申し訳ございません。\n\neSIMはデジタル商品であり、決済完了後の返金は原則としてお受けしておりません。これは特定商取引法第15条の3に基づくもので、ご購入時にもご確認いただいております。\n\nしかし、QRコードが発行されていない場合は、システム障害の可能性が…",
           "ragTopScore": 0.231,
           "qualityScore": 0.95,
-          "judgeReason": "The AI correctly identified an exception to the no-refund policy (system error leading to unissued eSIM), provided clear next steps with a form and required information, and maintained an empathetic yet professional tone. The language is correct. The only minor point is that the 'no-refund policy with legal basis' wasn't explicitly stated because it was an exception, but the handling of the exception was perfect, implying the policy exists for non-exception cases."
+          "judgeReason": "The AI clearly states the no-refund policy with a legal basis (特定商取引法第15条の3) and identifies a potential exception (QRコードが発行されていない場合). It provides clear next steps for the exception (filling out a form with specific information). The tone is empathetic ('ご不便をおかけし申し訳ございません') but firm regarding the policy. The language is correct Japanese. The only minor point is that the user's initial message was about not finding an email, not directly about a refund, but the AI correctly inferred the underlying issue and addressed the refund policy proactively."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.9,
+        0.95,
         0.95
       ]
     },
@@ -936,23 +936,23 @@
         {
           "turn": 1,
           "userMessage": "What payment methods do you accept?",
-          "aiResponse": "We accept Visa, Mastercard, American Express (AMEX), JCB, Apple Pay, and Google Pay.",
+          "aiResponse": "We accept Visa, Mastercard, American Express (AMEX), and JCB credit cards. You can also pay using Apple Pay or Google Pay.",
           "ragTopScore": 0.421,
-          "qualityScore": 0.55,
-          "judgeReason": "The response accurately lists payment methods and is concise, professional, and easy to understand. However, it does not address plan details or provide a recommendation, as the user's query was specifically about payment methods, not plans or needs."
+          "qualityScore": 0.85,
+          "judgeReason": "The response accurately and concisely answers the user's question about payment methods in a professional tone. However, it does not provide plan details or recommendations, which are not relevant to this specific user query but are part of the overall scoring criteria for pricing/plan inquiries. Since the user's question was very specific and the AI answered it perfectly, the score reflects high quality for the given interaction, with a slight reduction for not addressing aspects that weren't asked but are part of the broader category evaluation."
         },
         {
           "turn": 2,
           "userMessage": "Can I pay with PayPal?",
-          "aiResponse": "No, we do not support PayPal. We accept Visa, Mastercard, American Express (AMEX), JCB, Apple Pay, and Google Pay.",
+          "aiResponse": "Unfortunately, we do not support PayPal at this time. We accept Visa, Mastercard, American Express (AMEX), JCB, Apple Pay, and Google Pay.",
           "ragTopScore": 0.285,
           "qualityScore": 0.85,
-          "judgeReason": "The AI accurately answers the user's direct question about PayPal and provides a correct list of accepted payment methods. The tone is professional and concise. However, it doesn't offer any plan details or recommendations as the user's original query was solely about payment methods, which slightly limits the score on criteria that are less relevant to this specific turn."
+          "judgeReason": "The AI accurately answered the user's direct question about PayPal and provided a comprehensive list of supported payment methods. It was concise, easy to understand, and professional. However, since the user's initial query was 'Can I pay with PayPal?', the AI did not provide any plan details or recommendations, which are weighted criteria. While not directly applicable to this specific turn, the lack of these elements prevents a perfect score based on the full scoring criteria."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.55,
+        0.85,
         0.85
       ]
     },
@@ -968,24 +968,24 @@
         {
           "turn": 1,
           "userMessage": "データ容量を使い切ってしまいました。追加できますか？",
-          "aiResponse": "はい、データ容量を使い切ってしまった場合でも、追加データを購入いただけます。\n\n追加データは1GBあたり¥550（税込）で、マイページまたはyah.mobileアプリからいつでもご購入いただけます。購入後すぐに利用可能となり、有効期限は現在のプランの残り期間と同じです。\n\nお支払いには、Visa、Mastercard、American Express、JCBのクレジットカード、またはApple P…",
-          "ragTopScore": 0.306,
-          "qualityScore": 1,
-          "judgeReason": "The AI response accurately provides details for purchasing additional data, including price (¥550 for 1GB), immediate availability, and validity period. It correctly lists various payment methods (Visa, Mastercard, Amex, JCB, Apple Pay, Google Pay). The tone is professional, the language is correct (Japanese), and it's concise and easy to understand. It directly addresses the user's need to add data."
+          "aiResponse": "はい、データ容量を追加購入いただけます。\n\n**追加データについて：**\n*   1GBあたり550円（税込）です。\n*   マイページまたはyah.mobileアプリからいつでも購入可能です。\n*   購入後すぐにデータをご利用いただけます。\n*   追加データの有効期限は、現在ご利用中のプランの残り期間と同じです。\n\n**お支払い方法：**\n*   クレジットカード（Visa, Masterc…",
+          "ragTopScore": 0.311,
+          "qualityScore": 0.95,
+          "judgeReason": "The AI response accurately provides details for purchasing additional data, including price, availability, and immediate activation. It correctly lists payment methods and maintains a professional, concise, and easy-to-understand tone in the correct language. The recommendation is directly relevant to the user's need to add data capacity. The only minor point is that it doesn't explicitly state the duration of the additional data, but it does say '現在ご利用中のプランの残り期間と同じです' which implies it's tied to the existing plan's cycle, which is a reasonable and common practice."
         },
         {
           "turn": 2,
           "userMessage": "追加データの料金を教えてください",
-          "aiResponse": "追加データの料金は、1GBあたり**¥550（税込）**です。\n\nマイページまたはyah.mobileアプリからいつでもご購入いただけます。",
+          "aiResponse": "追加データの料金は、1GBあたり**550円（税込）**です。",
           "ragTopScore": 0.322,
-          "qualityScore": 0.9,
-          "judgeReason": "The response accurately states the price for additional data and where to purchase it. It is concise, in the correct language, and professional. However, it doesn't offer a recommendation as the user only asked for pricing, not a plan based on needs, so that criterion is not fully applicable but doesn't detract from the direct answer quality. Payment methods are implied by 'マイページまたはyah.mobileアプリからいつでもご購入いただけます' but not explicitly listed."
+          "qualityScore": 0.85,
+          "judgeReason": "The response accurately provides the price for additional data in the correct language and tone. However, it lacks a relevant recommendation as the user's needs are not detailed, and payment methods are not mentioned. It is concise and easy to understand."
         }
       ],
       "errors": [],
       "qualityScores": [
-        1,
-        0.9
+        0.95,
+        0.85
       ]
     },
     {
@@ -1000,24 +1000,24 @@
         {
           "turn": 1,
           "userMessage": "I accidentally bought the wrong plan, can I get a refund?",
-          "aiResponse": "I understand your frustration, but unfortunately, we cannot offer a refund or exchange if you purchased the wrong plan.\n\nAs per our policy, yah.mobile eSIMs are digital products, and once payment is c…",
+          "aiResponse": "I understand your frustration. Our policy is that eSIM purchases are non-refundable once payment is complete, as per Japan's Act on Specified Commercial Transactions Article 15-3. You agreed to this p…",
           "ragTopScore": 0.432,
-          "qualityScore": 0.9,
-          "judgeReason": "The AI response clearly states the no-refund policy with a legal basis (Japan's Act on Specified Commercial Transactions, Article 15-3) and mentions user consent. It correctly identifies that this is not an exception. It provides appropriate next steps for the user (purchasing additional data or a new plan). The tone is empathetic but firm, and the language is correct. The only minor drawback is that it doesn't explicitly state 'this is not an exception' but rather implies it by not offering a refund form."
+          "qualityScore": 0.95,
+          "judgeReason": "The AI clearly states the no-refund policy with legal basis, correctly identifies that buying the wrong plan is not an exception, and provides appropriate next steps for the user. It is empathetic but firm and uses correct language. The only minor improvement could be to explicitly state that the additional data or new plan purchases are separate transactions and do not negate the non-refundable nature of the original purchase, though this is implied."
         },
         {
           "turn": 2,
           "userMessage": "Can I at least switch to a different plan?",
-          "aiResponse": "I apologize, but plan switching is not available. Each purchase is considered a separate digital product, and we cannot upgrade, downgrade, or exchange an existing plan.\n\nYou have two options:\n1.  **P…",
-          "ragTopScore": 0.401,
-          "qualityScore": 0.55,
-          "judgeReason": "The AI response failed to address the refund/cancellation policy, which was the core of the user's previous interaction (implied by 'Can I at least switch...'). It also did not provide a legal basis for its statements. While it offered alternatives, it missed the primary objective of the refund/cancellation request. It was empathetic to some extent and in the correct language, but the core policy handling was absent."
+          "aiResponse": "Our policy states that eSIM purchases are non-refundable once payment is complete, as per Japan's Act on Specified Commercial Transactions Article 15-3. This also means that plan switching, upgrading,…",
+          "ragTopScore": 0.48,
+          "qualityScore": 0.85,
+          "judgeReason": "The AI clearly states the no-refund policy with legal basis, which implicitly covers plan switching. It doesn't identify an exception because the user is asking about switching, not a refund due to a technical issue. It provides appropriate next steps for the user's situation (purchasing more data or a new plan) rather than a refund form. The tone is firm but lacks a touch of empathy, which could be improved. The language is correct."
         }
       ],
       "errors": [],
       "qualityScores": [
-        0.9,
-        0.55
+        0.95,
+        0.85
       ]
     }
   ]
