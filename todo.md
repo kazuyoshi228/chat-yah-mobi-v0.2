@@ -420,3 +420,9 @@
 - [x] client/src/pages/admin/UserManuals.tsx を新規作成（PDF一覧・ダウンロードページ）
 - [x] App.tsx に /admin/user-manuals ルートを追加
 - [x] TypeScript: 0 エラー確認
+
+## Phase 44: 取扱説明書PDFのモバイルファースト化（完了）
+- [x] yah.mobi/app の各画面をモバイル表示（iPhone 390×844）でキャプチャー（8枚: 01_hero〜08_chat_support）
+- [x] 日本語版PDFをモバイル画像で再生成・ウェブストレージにアップロード（/manus-storage/yah_mobile_user_guide_ja_51713a85.pdf）
+- [x] 英語版PDFをモバイル画像で再生成・ウェブストレージにアップロード（/manus-storage/yah_mobile_user_guide_v2_cc60ea75.pdf）
+- [x] UserManuals.tsx の PDF URL を新しいものに更新
