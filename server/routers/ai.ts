@@ -514,7 +514,7 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
   }
 
   const response = await invokeLLM({
-    model: "gpt-4o",
+    model: "claude-opus-4-7",
     messages: [
       { role: "system", content: systemPrompt },
       ...messagesForLLM,

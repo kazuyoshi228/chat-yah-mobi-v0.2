@@ -148,9 +148,9 @@ export default function Improvements() {
             </thead>
             <tbody>
               {[
-                { name: "GPT-4o", quality: "★★★★☆", cost: "5.5円", ratio: "x1.0", status: "使用中", cls: "bg-emerald-100 text-emerald-700" },
-                { name: "Claude Sonnet 4.6", quality: "★★★★★", cost: "7.0円", ratio: "x1.3", status: "推奨", cls: "bg-blue-100 text-blue-700" },
-                { name: "Claude Opus 4.7", quality: "★★★★★", cost: "11.7円", ratio: "x2.1", status: "検証中", cls: "bg-amber-100 text-amber-700" },
+                { name: "GPT-4o", quality: "★★★★☆", cost: "5.5円", ratio: "x1.0", status: "旧モデル", cls: "bg-gray-100 text-gray-500" },
+                { name: "Claude Sonnet 4.6", quality: "★★★★★", cost: "7.0円", ratio: "x1.3", status: "候補", cls: "bg-blue-100 text-blue-700" },
+                { name: "Claude Opus 4.7", quality: "★★★★★", cost: "11.7円", ratio: "x2.1", status: "使用中", cls: "bg-emerald-100 text-emerald-700" },
                 { name: "Gemini 3.1 Pro", quality: "★★★★☆", cost: "2.8円", ratio: "x0.5", status: "候補", cls: "bg-gray-100 text-gray-600" },
                 { name: "GPT-5-mini", quality: "★★★☆☆", cost: "0.9円", ratio: "x0.2", status: "候補", cls: "bg-gray-100 text-gray-600" },
               ].map((m) => (
