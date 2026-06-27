@@ -307,6 +307,7 @@ export const purchases = mysqlTable("purchases", {
   status: mysqlEnum("status", ["pending", "active", "expired", "refunded", "cancelled"]).default("pending").notNull(),
   email: varchar("email", { length: 320 }),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 256 }),
+  qrCodeUrl: text("qrCodeUrl"), // QRコード画像URL（yah.mobi/appから受け取り再送に使用）
   syncedAt: timestamp("syncedAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

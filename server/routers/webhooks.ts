@@ -202,6 +202,7 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
       status?: "pending" | "active" | "expired" | "refunded" | "cancelled";
       stripePaymentIntentId: string; // 必須
       email: string;                 // 必須
+      qrCodeUrl?: string;            // QRコード画像URL（オプショナル）
     } = req.body;
 
     // Validate required fields
@@ -225,6 +226,7 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
         status: item.status ?? "pending",
         stripePaymentIntentId: item.stripePaymentIntentId,
         email: item.email,
+        qrCodeUrl: item.qrCodeUrl ?? null,
         syncedAt: new Date(),
       })
       .onDuplicateKeyUpdate({
@@ -237,6 +239,7 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
           status: item.status ?? "pending",
           stripePaymentIntentId: item.stripePaymentIntentId,
           email: item.email,
+          qrCodeUrl: item.qrCodeUrl ?? null,
           syncedAt: new Date(),
         },
       });

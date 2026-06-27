@@ -90,6 +90,13 @@ export default function ChatWidget() {
   const [formMessage, setFormMessage] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
 
+  // QR resend state
+  const [showQrResend, setShowQrResend] = useState(false);
+  const [qrEmail, setQrEmail] = useState("");
+  type QrResendStatus = "idle" | "sent" | "not_found" | "no_qr" | "error";
+  const [qrResendStatus, setQrResendStatus] = useState<QrResendStatus>("idle");
+  const [qrResendOrderId, setQrResendOrderId] = useState<string | undefined>();
+
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -127,6 +134,13 @@ export default function ChatWidget() {
     onSuccess: () => setSurveySubmitted(true),
   });
   const submitContactForm = trpc.chat.submitContactForm?.useMutation?.();
+  const checkQrResend = trpc.chat.checkQrResend.useMutation({
+    onSuccess: (data) => {
+      setQrResendStatus(data.status);
+      if ("orderId" in data && data.orderId) setQrResendOrderId(data.orderId);
+    },
+    onError: () => setQrResendStatus("error"),
+  });
 
   // Socket.io
   useEffect(() => {
@@ -180,9 +194,20 @@ export default function ChatWidget() {
     setBreadcrumb(prev);
     setCurrentNodeId(last);
     setShowFormPrompt(false);
+    setShowQrResend(false);
+    setQrEmail("");
+    setQrResendStatus("idle");
+    setQrResendOrderId(undefined);
   };
 
   const handleNodeSelect = (node: FlowNode) => {
+    // QR resend trigger: node label contains 'qr_resend' keyword
+    if (node.label && node.label.includes('"qr_resend"')) {
+      setBreadcrumb((prev) => [...prev, currentNodeId]);
+      setCurrentNodeId(node.id);
+      setShowQrResend(true);
+      return;
+    }
     if (node.formTrigger) {
       const content = parseI18n(node.content, language);
       setFormPromptContent(content);
@@ -265,6 +290,10 @@ export default function ChatWidget() {
     setFormSubmitted(false);
     setFormEmail("");
     setFormMessage("");
+    setShowQrResend(false);
+    setQrEmail("");
+    setQrResendStatus("idle");
+    setQrResendOrderId(undefined);
   };
 
   const closeWidget = () => setWidgetState("closed");
@@ -460,6 +489,162 @@ export default function ChatWidget() {
                   <CheckCircle className="w-10 h-10 text-green-500" />
                   <p className="text-sm text-gray-600 text-center">{ui("form_thanks")}</p>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* ── QR RESEND ── */}
+          {widgetState === "flow" && showQrResend && (
+            <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
+              {/* Bot message */}
+              <div className="flex items-start gap-2">
+                <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Bot className="w-3.5 h-3.5 text-gray-500" />
+                </div>
+                <div className="bg-gray-100 rounded-xl rounded-tl-sm px-3 py-2.5 text-xs text-gray-800 leading-relaxed max-w-[85%]">
+                  <p className="whitespace-pre-wrap">
+                    {{
+                      ja: "ご購入時のメールアドレスを入力してください。QRコードを再送します。",
+                      en: "Please enter the email address used for your purchase. We will resend your QR code.",
+                      zh: "请输入购买时使用的邮箱地址，我们将重新发送二维码。",
+                      ko: "구매 시 사용한 이메일 주소를 입력해 주세요. QR 코드를 재발송합니다.",
+                      th: "กรุณากรอกอีเมลที่ใช้ในการซื้อ เราจะส่ง QR Code ให้คุณอีกครั้ง",
+                      vi: "Vui lòng nhập email đã dùng khi mua hàng. Chúng tôi sẽ gửi lại mã QR.",
+                    }[language] ?? "Please enter the email address used for your purchase. We will resend your QR code."}
+                  </p>
+                </div>
+              </div>
+
+              {qrResendStatus === "idle" && (
+                <>
+                  <input
+                    type="email"
+                    value={qrEmail}
+                    onChange={(e) => setQrEmail(e.target.value)}
+                    placeholder={ui("form_email")}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && qrEmail.trim()) {
+                        checkQrResend.mutate({ email: qrEmail.trim(), language });
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={() => checkQrResend.mutate({ email: qrEmail.trim(), language })}
+                    disabled={!qrEmail.trim() || checkQrResend.isPending}
+                    className="w-full bg-black hover:bg-gray-800 text-white text-xs"
+                  >
+                    {checkQrResend.isPending ? (
+                      <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                    ) : null}
+                    {{
+                      ja: "QRコードを再送する",
+                      en: "Resend QR Code",
+                      zh: "重新发送二维码",
+                      ko: "QR 코드 재발송",
+                      th: "ส่ง QR Code อีกครั้ง",
+                      vi: "Gửi lại mã QR",
+                    }[language] ?? "Resend QR Code"}
+                  </Button>
+                </>
+              )}
+
+              {qrResendStatus === "sent" && (
+                <div className="flex flex-col items-center justify-center gap-3 py-4">
+                  <CheckCircle className="w-10 h-10 text-green-500" />
+                  <p className="text-xs text-gray-700 text-center">
+                    {{
+                      ja: `QRコードを ${qrEmail} に再送しました。メールをご確認ください。\n（迷惑メールフォルダもご確認ください）`,
+                      en: `QR code has been resent to ${qrEmail}. Please check your email.\n(Also check your spam folder)`,
+                      zh: `二维码已重新发送至 ${qrEmail}。请查收邮件。\n（请同时检查垃圾邮件文件夹）`,
+                      ko: `QR 코드가 ${qrEmail}로 재발송되었습니다. 이메일을 확인해 주세요.\n(스팸 폴더도 확인해 주세요)`,
+                      th: `ส่ง QR Code ไปยัง ${qrEmail} แล้ว กรุณาตรวจสอบอีเมล\n(ตรวจสอบโฟลเดอร์สแปมด้วย)`,
+                      vi: `Đã gửi lại mã QR đến ${qrEmail}. Vui lòng kiểm tra email.\n(Kiểm tra cả thư mục spam)`,
+                    }[language] ?? `QR code has been resent to ${qrEmail}. Please check your email.`}
+                  </p>
+                  {qrResendOrderId && (
+                    <p className="text-xs text-gray-400">Order: {qrResendOrderId}</p>
+                  )}
+                </div>
+              )}
+
+              {qrResendStatus === "not_found" && (
+                <div className="flex flex-col gap-3 py-2">
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    {{
+                      ja: `${qrEmail} での購入記録が見つかりませんでした。\nご購入時のメールアドレスをご確認ください。`,
+                      en: `No purchase record found for ${qrEmail}.\nPlease check the email address used for your purchase.`,
+                      zh: `未找到 ${qrEmail} 的购买记录。\n请确认购买时使用的邮箱地址。`,
+                      ko: `${qrEmail}에 대한 구매 기록을 찾을 수 없습니다.\n구매 시 사용한 이메일 주소를 확인해 주세요.`,
+                      th: `ไม่พบประวัติการซื้อสำหรับ ${qrEmail}\nกรุณาตรวจสอบอีเมลที่ใช้ในการซื้อ`,
+                      vi: `Không tìm thấy lịch sử mua hàng cho ${qrEmail}.\nVui lòng kiểm tra email đã dùng khi mua hàng.`,
+                    }[language] ?? `No purchase record found for ${qrEmail}.`}
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => { setQrResendStatus("idle"); setQrEmail(""); }}
+                    className="w-full text-xs"
+                  >
+                    {{
+                      ja: "別のアドレスで試す",
+                      en: "Try another email",
+                      zh: "尝试其他邮箱",
+                      ko: "다른 이메일로 시도",
+                      th: "ลองอีเมลอื่น",
+                      vi: "Thử email khác",
+                    }[language] ?? "Try another email"}
+                  </Button>
+                </div>
+              )}
+
+              {qrResendStatus === "no_qr" && (
+                <div className="flex flex-col gap-3 py-2">
+                  <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                    {{
+                      ja: "購入記録は確認できましたが、QRコードのURLがまだ準備中です。\nしばらくお待ちいただくか、チャットサポートにお問い合わせください。",
+                      en: "Purchase found, but QR code is not yet available.\nPlease wait a moment or contact chat support.",
+                      zh: "找到购买记录，但二维码尚未准备好。\n请稍等片刻或联系聊天支持。",
+                      ko: "구매 기록은 확인되었지만 QR 코드가 아직 준비되지 않았습니다.\n잠시 기다리시거나 채팅 지원에 문의해 주세요.",
+                      th: "พบประวัติการซื้อแล้ว แต่ QR Code ยังไม่พร้อม\nกรุณารอสักครู่หรือติดต่อฝ่ายสนับสนุนทางแชท",
+                      vi: "Đã tìm thấy lịch sử mua hàng nhưng mã QR chưa sẵn sàng.\nVui lòng đợi một chút hoặc liên hệ hỗ trợ qua chat.",
+                    }[language] ?? "Purchase found, but QR code is not yet available."}
+                  </p>
+                  <Button
+                    onClick={() => {
+                      const visitorId = getOrCreateVisitorId();
+                      startSession.mutate({
+                        visitorId,
+                        visitorName: visitorName || undefined,
+                        initialMessage: "QRコードが届いていません。サポートをお願いします。",
+                        language,
+                      });
+                    }}
+                    className="w-full bg-black hover:bg-gray-800 text-white text-xs"
+                  >
+                    <Bot className="w-3 h-3 mr-1" />
+                    {{
+                      ja: "チャットサポートに相談する",
+                      en: "Contact Chat Support",
+                      zh: "联系聊天支持",
+                      ko: "채팅 지원에 문의",
+                      th: "ติดต่อฝ่ายสนับสนุนทางแชท",
+                      vi: "Liên hệ hỗ trợ qua chat",
+                    }[language] ?? "Contact Chat Support"}
+                  </Button>
+                </div>
+              )}
+
+              {qrResendStatus === "error" && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {{
+                    ja: "送信中にエラーが発生しました。しばらくしてから再度お試しください。",
+                    en: "An error occurred. Please try again later.",
+                    zh: "发生错误，请稍后再试。",
+                    ko: "오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+                    th: "เกิดข้อผิดพลาด กรุณาลองใหม่ภายหลัง",
+                    vi: "Đã xảy ra lỗi. Vui lòng thử lại sau.",
+                  }[language] ?? "An error occurred. Please try again later."}
+                </p>
               )}
             </div>
           )}

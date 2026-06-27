@@ -369,3 +369,93 @@ export async function sendAIEscalationNotificationEmail(opts: {
     logLabel: `AI escalation notification sent to owner for session #${sessionId}`,
   });
 }
+
+// ---------------------------------------------------------------------------
+// QR Code Resend Email
+// ---------------------------------------------------------------------------
+
+/**
+ * Resend the eSIM QR code to the customer's email address.
+ * Called when a customer reports not receiving their QR code and we have
+ * the qrCodeUrl stored from the purchase webhook.
+ */
+export async function sendQrResendEmail(params: {
+  to: string;
+  qrCodeUrl: string;
+  planName: string;
+  orderId: string;
+  language?: string;
+}): Promise<boolean> {
+  const { to, qrCodeUrl, planName, orderId, language = "en" } = params;
+
+  const subjects: Record<string, string> = {
+    ja: "【yah.mobile】eSIM QRコードの再送",
+    en: "【yah.mobile】eSIM QR Code Resend",
+    zh: "【yah.mobile】eSIM 二维码重新发送",
+    ko: "【yah.mobile】eSIM QR 코드 재발송",
+    th: "【yah.mobile】ส่ง QR Code eSIM อีกครั้ง",
+    vi: "【yah.mobile】Gửi lại mã QR eSIM",
+  };
+
+  const greetings: Record<string, string> = {
+    ja: "お客様,",
+    en: "Dear Customer,",
+    zh: "尊敬的客户,",
+    ko: "고객님,",
+    th: "เรียนลูกค้า,",
+    vi: "Kính gửi Quý khách,",
+  };
+
+  const bodyTexts: Record<string, string> = {
+    ja: `eSIM QRコードを再送いたします。以下のQRコードをスキャンしてeSIMをインストールしてください。QRコードは一度のみ使用可能です。インストール後は再利用できません。`,
+    en: `We are resending your eSIM QR code. Please scan the QR code below to install your eSIM. The QR code can only be used once and cannot be reused after installation.`,
+    zh: `我们正在重新发送您的eSIM二维码。请扫描下方二维码安装eSIM。二维码只能使用一次，安装后无法重复使用。`,
+    ko: `eSIM QR 코드를 재발송합니다. 아래 QR 코드를 스캔하여 eSIM을 설치하세요. QR 코드는 한 번만 사용 가능하며 설치 후 재사용할 수 없습니다.`,
+    th: `เราส่ง QR Code eSIM ให้คุณอีกครั้ง กรุณาสแกน QR Code ด้านล่างเพื่อติดตั้ง eSIM QR Code ใช้ได้ครั้งเดียวและไม่สามารถใช้ซ้ำได้หลังติดตั้ง`,
+    vi: `Chúng tôi gửi lại mã QR eSIM cho bạn. Vui lòng quét mã QR bên dưới để cài đặt eSIM. Mã QR chỉ có thể sử dụng một lần và không thể tái sử dụng sau khi cài đặt.`,
+  };
+
+  const footerTexts: Record<string, string> = {
+    ja: "このメールはyah.mobile Chat Supportから自動送信されました。ご不明な点はチャットサポートまでお問い合わせください。",
+    en: "This email was automatically sent by yah.mobile Chat Support. If you have any questions, please contact our chat support.",
+    zh: "此邮件由yah.mobile Chat Support自动发送。如有疑问，请联系我们的聊天支持。",
+    ko: "이 이메일은 yah.mobile Chat Support에서 자동으로 발송되었습니다. 문의 사항이 있으시면 채팅 지원에 문의하세요.",
+    th: "อีเมลนี้ส่งโดยอัตโนมัติจาก yah.mobile Chat Support หากมีคำถาม กรุณาติดต่อฝ่ายสนับสนุนทางแชท",
+    vi: "Email này được gửi tự động bởi yah.mobile Chat Support. Nếu có thắc mắc, vui lòng liên hệ hỗ trợ qua chat.",
+  };
+
+  const lang = language in subjects ? language : "en";
+  const subject = subjects[lang];
+  const greeting = greetings[lang];
+  const bodyText = bodyTexts[lang];
+  const footerText = footerTexts[lang];
+
+  // Build QR code image block
+  const qrImageBlock = `
+    <div style="text-align:center;margin:24px 0;">
+      <img src="${qrCodeUrl}" alt="eSIM QR Code" style="max-width:220px;width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:8px;background:#fff;" />
+    </div>
+  `;
+
+  const html = buildEmailHtml({
+    lang,
+    alertHtml: qrImageBlock,
+    greeting,
+    bodyText,
+    detailRows: [
+      ["Plan", planName],
+      ["Order ID", orderId],
+      ["Email", to],
+    ],
+    buttonText: language === "ja" ? "yah.mobile サポートへ" : "yah.mobile Support",
+    buttonUrl: "https://yah.mobi/app",
+    footerText,
+  });
+
+  return sendEmail({
+    to,
+    subject,
+    html,
+    logLabel: `QR code resend email sent to ${to} for order ${orderId}`,
+  });
+}

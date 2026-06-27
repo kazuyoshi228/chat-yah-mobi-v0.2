@@ -553,7 +553,7 @@
 - [ ] 強化したドキュメントをDBに登録（既存を更新）
 - [ ] 10セッションシミュレーションでスコア改善を検証
 - [ ] 目標未達ならさらに改善を繰り返す
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: 45d927ad)
 
 ## Phase 59b: RAGスコア目標達成（一気通貫・コンテキスト注入+RAG大幅強化）
 - [ ] AIチャットにデシジョンツリーコンテキスト注入（選択した端末・状況をシステムプロンプトに追加）
@@ -561,7 +561,7 @@
 - [ ] RAGドキュメントのキーワード密度最大化（短文フォローアップにもマッチするよう設計）
 - [ ] シミュレーションスクリプトをコンテキスト付きに更新
 - [ ] シミュレーション実行・目標スコア達成確認
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: 45d927ad)
 
 ## Phase 60: RAG品質大幅改善 — LLM-as-Judge + デシジョンツリー強化
 - [x] RAGドキュメントをQ&A形式の小チャンクに全面再構築（rebuild_rag_qa.mjs）
@@ -619,7 +619,7 @@
 - [ ] 管理画面Pricingページ実装（自社プラン編集テーブル + 競合価格管理テーブル）
 - [ ] ai.tsのsystem promptをDB連動に変更（静的ハードコードを廃止）
 - [ ] yah.mobi/app向け公開API実装（chat.listPlans: publicProcedure）
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: 45d927ad)
 
 ## Phase 65: yah.mobi/app Webhook連動実装（全データ統合）
 - [x] plansテーブル作成（id, externalId, name, dataGb, durationDays, priceYen, bestFor, isActive, sortOrder, syncedAt）
@@ -641,7 +641,7 @@
 - [x] Customers.tsxを新規作成（顧客プロファイル・購入履歴・eSIM状態）、DashboardLayoutでラップ
 - [x] DashboardLayoutサイドバーにPricing（$アイコン）とCustomers（人物アイコン）を独立項目として追加
 - [x] App.tsxに/admin/customersルートを追加
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: 45d927ad)
 
 ## Phase 67: OMAX自動返金フロー＋全エラー監視基盤
 
@@ -658,7 +658,7 @@
 - [ ] 全エラー監視基盤：Stripeエラー監視
 - [ ] 全エラー監視基盤：Resend送信失敗監視
 - [ ] AIへのエラー状態コンテキスト注入（system promptに現在のシステム状態を反映）
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: 45d927ad)
 
 ## Phase 67: OMAX自動返金フロー実装
 
@@ -702,9 +702,16 @@
 
 ## Phase 71: SSoTページ作成 + 返信期間「3 business days」統一
 
-- [ ] ChatRoom.tsx のフォーム誘導バナーに「3 business days」を明記
-- [ ] WidgetChat.tsx のフォーム誘導バナーに「3 business days」を明記
-- [ ] ChatWidget.tsx の form_thanks を「3 business days」に統一確認
-- [ ] SSoT.tsx ページを新規作成（テーブル形式でシステム設定を一元管理）
-- [ ] サイドバー・ルーティングに SSoT を追加
+- [x] ChatRoom.tsx のフォーム誘導バナーに「3 business days」を明記
+- [x] WidgetChat.tsx のフォーム誘導バナーに「3 business days」を明記
+- [x] ChatWidget.tsx の form_thanks を「3 business days」に統一確認
+- [x] SSoT.tsx ページを新規作成（テーブル形式でシステム設定を一元管理）
+- [x] サイドバー・ルーティングに SSoT を追加
+- [x] チェックポイント保存 (version: 45d927ad)
+
+## Phase 72: QRコード自動再送フロー実装
+
+- [x] purchases テーブルに qrCodeUrl カラム追加（スキーマ・マイグレーション）
+- [x] Webhook受信処理に qrCodeUrl 保存を追加
+- [x] QR再送ロジック実装（checkQrResend mutation + sendQrResendEmail + ChatWidget UI）
 - [ ] チェックポイント保存

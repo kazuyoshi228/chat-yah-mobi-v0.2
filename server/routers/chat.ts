@@ -18,7 +18,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { detectLanguageFromMessage, generateAIResponse, generateSummary } from "./ai";
 import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
-import { sendEscalationEmail, sendNewChatEmail, sendAIEscalationNotificationEmail } from "../email";
+import { sendEscalationEmail, sendNewChatEmail, sendAIEscalationNotificationEmail, sendQrResendEmail } from "../email";
 import { getAllAdmins } from "../db";
 import { toTranslationLabel, translateToJapaneseWithResult } from "../_core/deepl";
 
@@ -488,5 +488,71 @@ export const chatRouter = router({
         content: `Email: ${input.email}\n\n${input.message}`,
       });
       return { success: true };
+    }),
+
+  // Check purchase and resend QR code email
+  checkQrResend: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        language: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { getDb } = await import("../db");
+      const { purchases } = await import("../../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+
+      const db = await getDb();
+      if (!db) return { status: "error" as const, message: "Service temporarily unavailable." };
+
+      // Find the most recent purchase by email
+      const [purchase] = await db
+        .select()
+        .from(purchases)
+        .where(eq(purchases.email, input.email))
+        .orderBy(desc(purchases.purchasedAt))
+        .limit(1);
+
+      if (!purchase) {
+        // No purchase record found
+        return {
+          status: "not_found" as const,
+          message: "no_purchase",
+        };
+      }
+
+      if (!purchase.qrCodeUrl) {
+        // Purchase exists but QR URL not stored yet
+        return {
+          status: "no_qr" as const,
+          message: "qr_not_available",
+          orderId: purchase.externalOrderId,
+        };
+      }
+
+      // Resend the QR code email
+      const sent = await sendQrResendEmail({
+        to: input.email,
+        qrCodeUrl: purchase.qrCodeUrl,
+        planName: purchase.planName,
+        orderId: purchase.externalOrderId,
+        language: input.language ?? "en",
+      });
+
+      if (sent) {
+        console.log(`[QR Resend] Sent QR code to ${input.email} for order ${purchase.externalOrderId}`);
+        return {
+          status: "sent" as const,
+          message: "qr_sent",
+          orderId: purchase.externalOrderId,
+          planName: purchase.planName,
+        };
+      } else {
+        return {
+          status: "error" as const,
+          message: "send_failed",
+        };
+      }
     }),
 });
