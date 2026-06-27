@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageCircle, Loader2 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 const LANGUAGES = [
   { value: "ja", label: "日本語" },
@@ -36,6 +37,8 @@ export default function ChatStart() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [language, setLanguage] = useState<"ja" | "en" | "zh" | "ko" | "th" | "vi">(lang as "ja" | "en" | "zh" | "ko" | "th" | "vi");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileError, setTurnstileError] = useState(false);
 
   const startSession = trpc.chat.startSession.useMutation({
     onSuccess: (data) => {
@@ -46,6 +49,11 @@ export default function ChatStart() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
+    const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+    if (siteKey && !turnstileToken) {
+      setTurnstileError(true);
+      return;
+    }
     const visitorId = getOrCreateVisitorId();
     startSession.mutate({
       visitorId,
@@ -54,6 +62,7 @@ export default function ChatStart() {
       initialMessage: message,
       language,
       isGoogleLogin: false,
+      turnstileToken: turnstileToken || undefined,
     });
   };
 
@@ -132,6 +141,22 @@ export default function ChatStart() {
               className="border-gray-200 focus:border-black focus:ring-black resize-none"
             />
           </div>
+
+          {/* Turnstile invisible widget */}
+          {import.meta.env.VITE_TURNSTILE_SITE_KEY && (
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              options={{ appearance: "interaction-only", size: "invisible" }}
+              onSuccess={(token) => { setTurnstileToken(token); setTurnstileError(false); }}
+              onError={() => setTurnstileError(true)}
+              onExpire={() => setTurnstileToken(null)}
+            />
+          )}
+          {turnstileError && (
+            <p className="text-xs text-red-500 text-center">
+              Security check failed. Please refresh and try again.
+            </p>
+          )}
 
           <Button
             type="submit"

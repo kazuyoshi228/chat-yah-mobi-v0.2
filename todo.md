@@ -750,3 +750,12 @@
 - [x] Improvements.tsx → SSoTにAIモデル比較表・RAG翻訳ステータスを統合し削除
 - [x] サイドバー・ルーティングから歴史資料・定期的な改善エントリを削除
 - [x] チェックポイント保存
+
+## Phase 75: 採点レポート最優先3課題の改善
+
+- [x] 改善①: Cloudflare Turnstile フロントエンド統合（WidgetChat.tsx・ChatStart.tsxにInvisible modeで追加）
+- [x] 改善②: LLM-as-Judge週次自動評価をHeartbeatに統合（毎週月曜 09:00 JST、6シナリオ評価・結果をオーナー通知）
+- [x] 改善③: ヒューマンエスカレーション経路の復活（感情Level4時に赤バナー表示・オペレーター接続ボタン）
+- [x] SLA定義をSSoTに追加（営業時間内1時間・フォーム3営業日）
+- [x] SSoTにTurnstile・LLM-as-Judge Heartbeat・LLM Qualityカテゴリを追加
+- [x] チェックポイント保存

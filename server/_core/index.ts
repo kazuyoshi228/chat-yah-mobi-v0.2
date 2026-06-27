@@ -287,6 +287,20 @@ async function startServer() {
     }
   });
 
+  // Heartbeat: LLM-as-Judge weekly quality evaluation (every Monday 00:00 UTC = 09:00 JST)
+  app.post("/api/scheduled/llm-judge", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+      const { runLlmJudgeJob } = await import("../llmJudgeJob");
+      const result = await runLlmJudgeJob();
+      return res.json({ ok: true, ...result, timestamp: new Date().toISOString() });
+    } catch (err: any) {
+      console.error("[LLM-Judge] Error:", err);
+      res.status(500).json({ error: err?.message ?? "unknown", timestamp: new Date().toISOString() });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

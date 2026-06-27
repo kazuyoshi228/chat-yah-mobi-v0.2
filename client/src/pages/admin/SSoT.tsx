@@ -53,6 +53,22 @@ const ROWS: SsoTRow[] = [
     note: "5回以上 + 「人と話したい」等のシグナルでオペレーターにエスカレーション",
     status: "active",
   },
+  {
+    category: "Response Time",
+    key: "SLA: Operator response (business hours)",
+    value: "1 hour",
+    location: "WidgetChat.tsx escalation banner",
+    note: "営業時間内（1時間以内）。時間外は翠日までに対応。バナーに表示済み",
+    status: "active",
+  },
+  {
+    category: "Response Time",
+    key: "SLA: Form submission response",
+    value: "3 business days",
+    location: "ai.ts (system prompt) / ChatRoom.tsx / WidgetChat.tsx",
+    note: "フォーム話導バナーに表示。全箇所で統一",
+    status: "active",
+  },
 
   // ── AI モデル・設定 ─────────────────────────────────────────────────────────
   {
@@ -151,6 +167,14 @@ const ROWS: SsoTRow[] = [
     value: "Helmet.js defaults",
     location: "server/_core/index.ts",
     note: "CSP, X-Frame-Options, HSTS等のセキュリティヘッダー",
+    status: "active",
+  },
+  {
+    category: "Security",
+    key: "CAPTCHA (Turnstile)",
+    value: "Cloudflare Turnstile — Invisible mode",
+    location: "WidgetChat.tsx / ChatStart.tsx / server/turnstile.ts",
+    note: "セッション開始時にサーバーサイド検証。Site Key: VITE_TURNSTILE_SITE_KEY。フロントエンド統合済み",
     status: "active",
   },
 
@@ -300,7 +324,25 @@ const ROWS: SsoTRow[] = [
     key: "System health check interval",
     value: "5 minutes (Heartbeat)",
     location: "server/healthCheckJob.ts",
-    note: "Stripe / Resend / OMAX / DB の疎通確認。障害時は AI プロンプトに注入",
+    note: "Stripe / Resend / OMAX / DB の疏通確認。障害時は AI プロンプトに注入",
+    status: "active",
+  },
+
+  // ── LLM品質監視 ──────────────────────────────────────────────────────────────────────
+  {
+    category: "LLM Quality",
+    key: "LLM-as-Judge weekly evaluation",
+    value: "毎週月曜 09:00 JST (Heartbeat)",
+    location: "server/llmJudgeJob.ts / server/_core/index.ts /api/scheduled/llm-judge",
+    note: "6シナリオを自動評価。結果をtest_run_logsに保存しオーナーに通知。task_uid: WPZMDuW2xG7FNtTfiWQQLz",
+    status: "active",
+  },
+  {
+    category: "LLM Quality",
+    key: "LLM-as-Judge test cases",
+    value: "6 cases: refund-ja, refund-en, esim-setup-ja, esim-setup-en, form-redirect-ja, language-ko",
+    location: "server/llmJudgeJob.ts JUDGE_CASES",
+    note: "返金ポリシー・設定手順・フォーム話導・多言語をカバー。合格基準: キーワード包含 + 禁止語句なし + 最低文字数",
     status: "active",
   },
 ];
