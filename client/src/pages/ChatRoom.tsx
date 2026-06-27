@@ -407,21 +407,34 @@ export default function ChatRoom() {
 
       {/* Form Redirect Banner - shown after 10 unresolved AI attempts */}
       {shouldRedirectToForm && !sessionEnded && (
-        <div className="bg-amber-50 border-b border-amber-100 px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <p className="text-xs text-amber-700">
-              お問い合わせフォームよりご連絡ください
-            </p>
+        <div className="bg-amber-50 border-b border-amber-100 px-4 py-3">
+          <div className="flex items-start gap-2 mb-2">
+            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-medium text-amber-800">
+                サポートチームへのお問い合わせは、返信まで最大3営業日かかります。
+              </p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                それでもお問い合わせフォームに進みますか？
+              </p>
+            </div>
           </div>
-          <a
-            href="https://yah.mobi/app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1 h-auto rounded-md font-medium transition-colors"
-          >
-            Contact Form ↗
-          </a>
+          <div className="flex gap-2 pl-6">
+            <a
+              href="https://yah.mobi/app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-md font-medium transition-colors"
+            >
+              フォームへ進む ↗
+            </a>
+            <button
+              onClick={() => setShouldRedirectToForm(false)}
+              className="text-xs text-amber-700 hover:text-amber-900 px-3 py-1.5 rounded-md border border-amber-200 hover:border-amber-400 transition-colors"
+            >
+              チャットを続ける
+            </button>
+          </div>
         </div>
       )}
 

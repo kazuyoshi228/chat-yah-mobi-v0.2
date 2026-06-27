@@ -699,3 +699,12 @@
 - [x] AI Chatbot ページ（/admin/ai-chatbot）を最新状況に更新・無駄なコピー削除
 - [x] RAG Documents に言語別フィルターボタン追加
 - [x] チェックポイント保存 (version: ee5b3be7)
+
+## Phase 71: SSoTページ作成 + 返信期間「3 business days」統一
+
+- [ ] ChatRoom.tsx のフォーム誘導バナーに「3 business days」を明記
+- [ ] WidgetChat.tsx のフォーム誘導バナーに「3 business days」を明記
+- [ ] ChatWidget.tsx の form_thanks を「3 business days」に統一確認
+- [ ] SSoT.tsx ページを新規作成（テーブル形式でシステム設定を一元管理）
+- [ ] サイドバー・ルーティングに SSoT を追加
+- [ ] チェックポイント保存

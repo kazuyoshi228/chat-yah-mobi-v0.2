@@ -523,19 +523,30 @@ export default function WidgetChat() {
         <>
           {/* Contact form redirect banner — shown when AI cannot resolve after 3 attempts */}
           {shouldRedirectToForm && (
-            <div className="bg-amber-50 border-b border-amber-100 px-3 py-2 flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-1.5">
-                <Headphones className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-amber-700">Need more help?</p>
+            <div className="bg-amber-50 border-b border-amber-100 px-3 py-2.5 flex-shrink-0">
+              <div className="flex items-start gap-1.5 mb-1.5">
+                <Headphones className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-medium text-amber-800">Replies take up to 3 business days.</p>
+                  <p className="text-xs text-amber-700">Would you like to contact our support team?</p>
+                </div>
               </div>
-              <a
-                href="https://yah.mobi/app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-medium px-2.5 py-1 rounded-full border border-amber-300 text-amber-700 hover:bg-amber-100 transition-all"
-              >
-                Contact Form ↗
-              </a>
+              <div className="flex gap-1.5 pl-5">
+                <a
+                  href="https://yah.mobi/app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                >
+                  Contact Form ↗
+                </a>
+                <button
+                  onClick={() => setShouldRedirectToForm(false)}
+                  className="text-xs px-2.5 py-1 rounded-full border border-amber-300 text-amber-700 hover:bg-amber-100 transition-all"
+                >
+                  Continue chat
+                </button>
+              </div>
             </div>
           )}
 
