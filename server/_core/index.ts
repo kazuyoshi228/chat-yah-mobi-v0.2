@@ -12,6 +12,7 @@ import { registerGoogleOAuthRoutes } from "./googleOAuth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { webhookRouter } from "../routers/webhooks";
+import { systemHealthRouter } from "../routers/systemHealth";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { setIo } from "../socket";
@@ -147,6 +148,9 @@ async function startServer() {
   // Webhook endpoints for yah.mobi/app integration
   app.use("/api/webhooks", webhookRouter);
 
+  // System health monitoring endpoints
+  app.use("/api", systemHealthRouter);
+
   // Allow /widget-chat to be embedded in iframes on external sites
   app.use("/widget-chat", (_req, res, next) => {
     res.setHeader("X-Frame-Options", "ALLOWALL");
@@ -246,6 +250,20 @@ async function startServer() {
       return esimMonitorHandler(req, res);
     } catch (err: any) {
       console.error("[eSIM-Monitor] Error:", err);
+      res.status(500).json({ error: err?.message ?? "unknown", timestamp: new Date().toISOString() });
+    }
+  });
+
+  // Heartbeat: System health check (every 5 min)
+  app.post("/api/scheduled/health-check", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+      const { runHealthCheckJob } = await import("../healthCheckJob");
+      await runHealthCheckJob();
+      return res.json({ ok: true, timestamp: new Date().toISOString() });
+    } catch (err: any) {
+      console.error("[HealthCheck] Error:", err);
       res.status(500).json({ error: err?.message ?? "unknown", timestamp: new Date().toISOString() });
     }
   });

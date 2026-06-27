@@ -12,6 +12,7 @@ import {
   purchases,
   esimStatuses,
   esimIncidents,
+  systemHealth,
 } from "../../drizzle/schema";
 import { desc, eq, and } from "drizzle-orm";
 
@@ -115,6 +116,30 @@ export const plansRouter = router({
     }),
 
   // ── Admin: customer detail (profile + purchases + esim) ────────────────────
+  // ── Admin: system health status ─────────────────────────────────────────
+  getSystemHealth: protectedProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { layers: {} };
+    const layers: Record<string, { status: string; message: string | null; errorCount: number | null; checkedAt: string | null }> = {};
+    const allRows = await db
+      .select()
+      .from(systemHealth)
+      .orderBy(desc(systemHealth.checkedAt));
+    const seen = new Set<string>();
+    for (const row of allRows) {
+      if (!seen.has(row.layer)) {
+        seen.add(row.layer);
+        layers[row.layer] = {
+          status: row.status,
+          message: row.message,
+          errorCount: row.errorCount,
+          checkedAt: row.checkedAt ? new Date(row.checkedAt).toISOString() : null,
+        };
+      }
+    }
+    return { layers };
+  }),
+
   customerDetail: protectedProcedure
     .input(z.object({ externalUserId: z.string() }))
     .query(async ({ input }) => {

@@ -366,3 +366,22 @@ export const esimIncidents = mysqlTable("esim_incidents", {
 });
 export type EsimIncident = typeof esimIncidents.$inferSelect;
 export type InsertEsimIncident = typeof esimIncidents.$inferInsert;
+
+/**
+ * System Health - 全レイヤーエラー監視レコード
+ * layer: frontend | server | stripe | resend | omax | database
+ * status: ok | degraded | down | unknown
+ */
+export const systemHealth = mysqlTable("system_health", {
+  id: int("id").autoincrement().primaryKey(),
+  layer: mysqlEnum("layer", ["frontend", "server", "stripe", "resend", "omax", "database"]).notNull(),
+  status: mysqlEnum("status", ["ok", "degraded", "down", "unknown"]).default("unknown").notNull(),
+  message: text("message"),
+  errorCount: int("errorCount").default(0).notNull(),
+  checkedAt: timestamp("checkedAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  metadata: json("metadata"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SystemHealth = typeof systemHealth.$inferSelect;
+export type InsertSystemHealth = typeof systemHealth.$inferInsert;

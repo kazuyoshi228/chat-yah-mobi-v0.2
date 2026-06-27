@@ -374,9 +374,10 @@ export function detectEscalation(message: string, language: string): boolean {
 async function fetchDynamicContext(visitorEmail?: string | null): Promise<{
   plansSection: string;
   customerSection: string;
+  systemHealthSection: string;
 }> {
   const db = await getDb();
-  if (!db) return { plansSection: "", customerSection: "" };
+  if (!db) return { plansSection: "", customerSection: "", systemHealthSection: "" };
 
   // ── Active plans ──────────────────────────────────────────────────────────
   let plansSection = "";
@@ -487,7 +488,41 @@ async function fetchDynamicContext(visitorEmail?: string | null): Promise<{
     }
   }
 
-  return { plansSection, customerSection };
+  // ── System health status ─────────────────────────────────────────────────
+  let systemHealthSection = "";
+  try {
+    const { systemHealth } = await import("../../drizzle/schema");
+    const { desc: descOrder } = await import("drizzle-orm");
+    const layers = ["server", "stripe", "resend", "omax", "database"] as const;
+    const issues: string[] = [];
+    for (const layer of layers) {
+      const [row] = await db
+        .select()
+        .from(systemHealth)
+        .where(eq(systemHealth.layer, layer))
+        .orderBy(descOrder(systemHealth.checkedAt))
+        .limit(1);
+      if (row && (row.status === "down" || row.status === "degraded")) {
+        issues.push(`- [${layer.toUpperCase()} ${row.status.toUpperCase()}] ${row.message ?? ""}`);
+      }
+    }
+    if (issues.length > 0) {
+      systemHealthSection =
+        `\n## ⚠️ System Status Alert (Active Issues)\n` +
+        `The following systems are currently experiencing issues:\n` +
+        issues.join("\n") +
+        `\n\nIMPORTANT: When users report issues that may be related to these system problems, ` +
+        `proactively inform them that we are aware of the issue and working on it. ` +
+        `Do NOT ask them to retry if the relevant system is down. ` +
+        `For payment issues when Stripe is down: apologize and ask them to try again in 30 minutes. ` +
+        `For email issues when Resend is down: inform them the QR code email may be delayed and offer to resend manually. ` +
+        `For eSIM issues when OMAX is down: inform them provisioning may be delayed and we will notify them when resolved.`;
+    }
+  } catch (e) {
+    console.warn("[AI] Failed to fetch system health:", e);
+  }
+
+  return { plansSection, customerSection, systemHealthSection };
 }
 
 // Generate AI response
@@ -511,8 +546,8 @@ export async function generateAIResponse(
   // Build flow context section for system prompt
   const flowContextSection = flowContext ? buildFlowContextPrompt(flowContext, langName) : "";
 
-  // Fetch dynamic context from DB (live plans + customer data)
-  const { plansSection, customerSection } = await fetchDynamicContext(visitorEmail);
+  // Fetch dynamic context from DB (live plans + customer data + system health)
+  const { plansSection, customerSection, systemHealthSection } = await fetchDynamicContext(visitorEmail);
 
   const systemPrompt = `You are a helpful customer support assistant for yah.mobile, a Japan-only eSIM service for international travelers.
 Always respond in ${langName}.
@@ -524,7 +559,7 @@ Always respond in ${langName}.
 - Plans: Light 3GB/7days ¥1,078, Standard 5GB/15days ¥1,848, Value 10GB/30days ¥3,278, Premium 20GB/30days ¥5,478, Ultra 50GB/30days ¥11,000, Unlimited/30days ¥16,500 (fallback if DB unavailable)
 - Payment: Credit card (Visa/Mastercard/AMEX/JCB), Apple Pay, Google Pay
 - eSIM compatible devices: iPhone XS or later, Google Pixel 3 or later, Samsung Galaxy S20 or later
-${plansSection}${customerSection}
+${plansSection}${customerSection}${systemHealthSection}
 
 ## Response Style & Hospitality Standards
 

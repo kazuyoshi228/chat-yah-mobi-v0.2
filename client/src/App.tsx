@@ -24,6 +24,7 @@ import Hospitality from "@/pages/admin/Hospitality";
 import Improvements from "@/pages/admin/Improvements";
 import Pricing from "@/pages/admin/Pricing";
 import Customers from "@/pages/admin/Customers";
+import SystemHealth from "@/pages/admin/SystemHealth";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -67,6 +68,7 @@ export default function App() {
         <Route path="/admin/improvements" component={Improvements} />
         <Route path="/admin/pricing" component={Pricing} />
         <Route path="/admin/customers" component={Customers} />
+        <Route path="/admin/system-health" component={SystemHealth} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
         <Route path="/widget-auth-success" component={WidgetAuthSuccess} />

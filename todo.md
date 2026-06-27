@@ -670,4 +670,17 @@
 - [x] Resend返金完了メール通知実装（日本語・英語対応）
 - [x] 管理画面Refundページに実装概要・遷移図・incidents一覧セクション追加
 - [x] Heartbeatジョブ登録（task_uid: AQXJvnynCvNrVnS7JDU6FQ）
+- [x] チェックポイント保存 (version: 1a96f6f7)
+
+## Phase 68: 全エラー監視基盤の構築
+
+- [x] system_healthテーブル新設（layer, status, message, errorCount, checkedAt, resolvedAt）
+- [x] マイグレーション実行（0016）
+- [x] フロントエンドエラー収集エンドポイント実装（POST /api/errors/report）
+- [x] systemHealthRouterをindex.tsに登録
+- [x] サーバーヘルスチェックHeartbeatジョブ実装（5分間隔）：Stripe・Resend・OMAX・DB疎通確認（server/healthCheckJob.ts）
+- [x] Heartbeatジョブ登録（5分間隔）
+- [x] AI system promptにシステム状態を動的注入（障害検知時に自動案内）
+- [x] 管理画面System Healthページ実装（/admin/system-health）
+- [x] DashboardLayoutサイドバーにSystem Health（Activityアイコン）を追加
 - [ ] チェックポイント保存
