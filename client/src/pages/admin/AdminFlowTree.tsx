@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -372,6 +373,7 @@ export default function AdminFlowTree() {
   const questionCount = (nodes as FlowNode[]).filter((n) => n.type === "question").length;
 
   return (
+    <DashboardLayout title="Flow Tree">
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
 
       {/* Header */}
@@ -626,5 +628,6 @@ export default function AdminFlowTree() {
         </DialogContent>
       </Dialog>
     </div>
+    </DashboardLayout>
   );
 }

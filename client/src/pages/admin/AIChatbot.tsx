@@ -24,13 +24,13 @@ export default function AIChatbot() {
           <Card className="border-0 bg-gradient-to-br from-indigo-50 to-blue-50">
             <CardContent className="pt-4 pb-4">
               <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">モデル</p>
-              <p className="text-lg font-bold text-gray-900 mt-1">Claude Opus 4</p>
+              <p className="text-lg font-bold text-gray-900 mt-1">Claude Opus 4.8</p>
             </CardContent>
           </Card>
           <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50">
             <CardContent className="pt-4 pb-4">
               <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wide">目標解決率</p>
-              <p className="text-lg font-bold text-gray-900 mt-1">99.9%</p>
+              <p className="text-lg font-bold text-gray-900 mt-1">≥90%</p>
             </CardContent>
           </Card>
           <Card className="border-0 bg-gradient-to-br from-purple-50 to-violet-50">

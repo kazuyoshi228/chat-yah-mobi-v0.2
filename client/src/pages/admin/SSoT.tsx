@@ -4,6 +4,7 @@
  * コードを変更した際はここも必ず更新すること。
  */
 import { Badge } from "@/components/ui/badge";
+import DashboardLayout from "@/components/DashboardLayout";
 
 interface SsoTRow {
   category: string;
@@ -218,6 +219,7 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
 
 export default function SSoT() {
   return (
+    <DashboardLayout title="SSoT">
     <div className="p-6 space-y-8 max-w-6xl">
       {/* Header */}
       <div>
@@ -284,5 +286,6 @@ export default function SSoT() {
         最終更新: 2026-06-27 — 変更時は対応するコードファイルと同時にこのページを更新してください。
       </p>
     </div>
+    </DashboardLayout>
   );
 }

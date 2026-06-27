@@ -717,3 +717,16 @@
 - [x] デシジョンツリー更新（cancel_no_qr_correct_email・refund_no_qr → QR再送トリガー）
 - [x] AdminFlowTree.tsx に QR再送トリガーバッジ・トグル追加
 - [x] チェックポイント保存
+
+## Phase 73: システムクリーンアップ＆セキュリティ強化
+
+- [x] AdminFlowTree.tsx に DashboardLayout 追加（サイドバー統一）
+- [x] SSoT.tsx に DashboardLayout 追加（サイドバー統一）
+- [x] AdminDashboard.tsx を削除し BigKPIs にリダイレクト（重複解消）
+- [x] AIChatbot.tsx のモデル名を Claude Opus 4.8 に更新
+- [x] AIChatbot.tsx の目標解決率を ≥90% に修正
+- [x] @upstash/ratelimit によるレート制限実装（セッション/メッセージ/QR再送）
+- [x] セッションあたりメッセージ数上限（50）を追加
+- [x] sendMessage に文字数制限（2000文字）を追加
+- [x] 改善レポート（CLEANUP_REPORT.md）を作成
+- [x] チェックポイント保存

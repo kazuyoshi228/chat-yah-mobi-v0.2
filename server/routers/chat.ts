@@ -21,16 +21,17 @@ import { getIo } from "../socket";
 import { sendEscalationEmail, sendNewChatEmail, sendAIEscalationNotificationEmail, sendQrResendEmail } from "../email";
 import { getAllAdmins } from "../db";
 import { toTranslationLabel, translateToJapaneseWithResult } from "../_core/deepl";
+import { checkRateLimit, messageLimiter, sessionLimiter, qrResendLimiter } from "../rateLimit";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
   startSession: publicProcedure
     .input(
       z.object({
-        visitorId: z.string().min(1),
-        visitorName: z.string().optional(),
-        visitorEmail: z.string().email().optional(),
-        initialMessage: z.string().min(1),
+        visitorId: z.string().min(1).max(100),
+        visitorName: z.string().max(100).optional(),
+        visitorEmail: z.string().email().max(254).optional(),
+        initialMessage: z.string().min(1).max(2000),
         language: z.enum(["ja", "en", "zh", "ko", "th", "vi"]).default("ja"),
         isGoogleLogin: z.boolean().optional().default(false),
         flowContext: z.object({
@@ -42,6 +43,11 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Rate limit: max 5 sessions per 10 min per visitorId
+      const rl = await checkRateLimit(sessionLimiter, input.visitorId);
+      if (!rl.success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many sessions. Please wait before starting a new chat." });
+      }
       // 5.3: Race condition guard — re-check after first lookup to prevent duplicate sessions
       // Pattern: check → create → re-check (handles concurrent requests from the same visitor)
       const existing = await getChatSessionByVisitorId(input.visitorId);
@@ -200,8 +206,8 @@ export const chatRouter = router({
     .input(
       z.object({
         sessionId: z.number(),
-        visitorId: z.string(),
-        content: z.string(),
+        visitorId: z.string().max(100),
+        content: z.string().max(2000),
         fileUrl: z.string().optional(),
         flowContext: z.object({
           category: z.string().optional(),
@@ -212,6 +218,11 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Rate limit: max 20 messages per minute per visitorId
+      const rl = await checkRateLimit(messageLimiter, input.visitorId);
+      if (!rl.success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "You are sending messages too quickly. Please wait a moment." });
+      }
       // Require either content or fileUrl
       if (!input.content.trim() && !input.fileUrl) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Message content or image required" });
@@ -226,6 +237,15 @@ export const chatRouter = router({
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "This chat session has ended.",
+        });
+      }
+
+      // Max 50 messages per session to prevent abuse
+      const existingMessages = await getMessagesBySessionId(input.sessionId);
+      if (existingMessages.length >= 50) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This session has reached the maximum message limit. Please start a new chat or use the contact form.",
         });
       }
 
@@ -499,6 +519,12 @@ export const chatRouter = router({
       })
     )
     .mutation(async ({ input }) => {
+      // Rate limit: max 3 QR resends per 30 min per email
+      const rl = await checkRateLimit(qrResendLimiter, input.email);
+      if (!rl.success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many resend attempts. Please wait 30 minutes." });
+      }
+
       const { getDb } = await import("../db");
       const { purchases } = await import("../../drizzle/schema");
       const { eq, desc } = await import("drizzle-orm");
