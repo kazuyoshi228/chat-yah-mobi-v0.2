@@ -683,4 +683,11 @@
 - [x] AI system promptにシステム状態を動的注入（障害検知時に自動案内）
 - [x] 管理画面System Healthページ実装（/admin/system-health）
 - [x] DashboardLayoutサイドバーにSystem Health（Activityアイコン）を追加
+- [x] チェックポイント保存 (version: f8e27bc3)
+
+## Phase 69: OMAX自動返金フロー実稼働
+
+- [x] purchases Webhook受信処理にstripePaymentIntentId・emailフィールドを追加
+- [x] refundJob.tsの動作確認（Heartbeat認証保護・エンドポイント登録確認）
+- [x] yah.mobi/app開発チーム向け指示書作成（purchases-webhook-update-guide.md）
 - [ ] チェックポイント保存

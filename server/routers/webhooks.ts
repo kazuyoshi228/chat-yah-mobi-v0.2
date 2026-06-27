@@ -200,6 +200,8 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
       purchasedAt: string;
       expiresAt?: string;
       status?: "pending" | "active" | "expired" | "refunded" | "cancelled";
+      stripePaymentIntentId?: string;
+      email?: string;
     } = req.body;
 
     await db
@@ -214,6 +216,8 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
         purchasedAt: new Date(item.purchasedAt),
         expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
         status: item.status ?? "pending",
+        stripePaymentIntentId: item.stripePaymentIntentId ?? null,
+        email: item.email ?? null,
         syncedAt: new Date(),
       })
       .onDuplicateKeyUpdate({
@@ -224,6 +228,8 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
           priceYen: item.priceYen,
           expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
           status: item.status ?? "pending",
+          stripePaymentIntentId: item.stripePaymentIntentId ?? null,
+          email: item.email ?? null,
           syncedAt: new Date(),
         },
       });
