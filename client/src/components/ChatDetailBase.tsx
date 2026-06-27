@@ -35,7 +35,7 @@ import { toast } from "sonner";
 interface ChatMessage {
   id?: number;
   sessionId: number;
-  role: "visitor" | "operator" | "ai";
+  role: "visitor" | "admin" | "ai";
   content: string;
   translation?: string | null;
   originalContent?: string | null;
@@ -143,7 +143,7 @@ export default function ChatDetailBase({ sessionId, backPath, sidebarItems }: Pr
     const tempId = -(Date.now());
     setMessages((prev) => [
       ...prev,
-      { id: tempId, sessionId, role: "operator", content: content ?? "", fileUrl: fileUrl ?? null, operatorName: user?.name ?? undefined, createdAt: new Date() },
+      { id: tempId, sessionId, role: "admin", content: content ?? "", fileUrl: fileUrl ?? null, operatorName: user?.name ?? undefined, createdAt: new Date() },
     ]);
     const onSuccess = (data: { messageId: number }) => {
       setMessages((prev) => prev.map((m) => m.id === tempId ? { ...m, id: data.messageId } : m));
@@ -335,7 +335,7 @@ export default function ChatDetailBase({ sessionId, backPath, sidebarItems }: Pr
               {messages.map((msg, i) => {
                 const isVisitor = msg.role === "visitor";
                 const isAI = msg.role === "ai";
-                const isOp = msg.role === "operator";
+                const isOp = msg.role === "admin";
                 return (
                   <div key={msg.id ?? i} className={cn("flex items-end gap-2 mb-3", isVisitor ? "flex-row" : "flex-row-reverse")}>
                     {!isOp && (

@@ -422,11 +422,11 @@ export async function getKpiStats(since?: Date) {
     : await db.select().from(chatSessions);
   const total = allSessions.length;
   const endedSessions = allSessions.filter((s) => s.status === "ended");
-  // AI resolved = sessions that ended without an operator
+  // AI resolved = sessions that ended without admin intervention
   const aiResolved = endedSessions.filter((s) => !s.operatorId).length;
-  // Operator Handled = sessions where an operator was assigned (active + ended)
+  // Admin Handled = sessions where an admin was assigned (active + ended)
   const operatorHandledSessions = allSessions.filter((s) => !!s.operatorId);
-  // Operator Handled count = sessions with operatorId that are ended
+  // Admin Handled count = sessions with operatorId that are ended
   const operatorResolved = operatorHandledSessions.filter((s) => s.status === "ended").length;
 
   const allSurveys = since
@@ -446,8 +446,8 @@ export async function getKpiStats(since?: Date) {
     ? Math.round((resolvedCount / surveysWithResolved.length) * 100)
     : null;
 
-  // AI vs Operator resolved rate
-  // Operator Resolution Rate = (operator-ended sessions) / (all operator-handled sessions) * 100
+  // AI vs Admin resolved rate
+  // Admin Resolution Rate = (admin-ended sessions) / (all admin-handled sessions) * 100
   const sessionMap = new Map(allSessions.map((s) => [s.id, s]));
   const aiSurveys = surveysWithResolved.filter((sv) => {
     const sess = sessionMap.get(sv.sessionId);
@@ -460,7 +460,7 @@ export async function getKpiStats(since?: Date) {
   const aiResolvedRate = aiSurveys.length > 0
     ? Math.round((aiSurveys.filter((s) => s.resolved === "yes").length / aiSurveys.length) * 100)
     : null;
-  // Operator Resolution Rate: operator-ended sessions / all ended sessions * 100
+  // Admin Resolution Rate: admin-ended sessions / all ended sessions * 100
   const operatorEndedCount = operatorHandledSessions.filter((s) => s.status === "ended").length;
   const operatorResolvedRate = endedSessions.length > 0
     ? Math.round((operatorEndedCount / endedSessions.length) * 100)
@@ -503,7 +503,7 @@ export async function getKpiStats(since?: Date) {
     unresolvedCount,
     resolvedRate,       // overall % resolved (null if no survey data)
     aiResolvedRate,     // AI-handled sessions % resolved
-    operatorResolvedRate, // Operator-handled sessions % resolved
+    operatorResolvedRate, // Admin-handled sessions % resolved
     // Bot-first KPIs
     formRedirectedCount,
     formRedirectRate,
@@ -694,7 +694,7 @@ export async function getTeamScorecard(since?: number, until?: number): Promise<
   escalationRate: number;       // 0-1: sessions that went from waiting → active
   avgCsat: number | null;       // 1-5
   resolutionRate: number | null; // 0-1
-  avgFirstResponseMs: number | null; // ms from session created to first operator message
+  avgFirstResponseMs: number | null; // ms from session created to first admin message
   totalScore: number;           // 0-100 composite
 }> {
   const db = await getDb();
@@ -758,15 +758,15 @@ export async function getTeamScorecard(since?: number, until?: number): Promise<
   const resolvedYes = Number(surveyStats?.resolvedYes ?? 0);
   const resolutionRate = totalSurveys > 0 ? resolvedYes / totalSurveys : null;
 
-  // ── Avg first response time (operator messages) ───────────────────────────
-  // For each session, find the earliest operator message and compare to session.createdAt
+  // ── Avg first response time (admin messages) ───────────────────────────
+  // For each session, find the earliest admin message and compare to session.createdAt
   const [frtStats] = await db.execute(sql`
     SELECT AVG(TIMESTAMPDIFF(SECOND, cs.createdAt, m.first_msg)) AS avg_frt_sec
     FROM chat_sessions cs
     JOIN (
       SELECT sessionId, MIN(createdAt) AS first_msg
       FROM messages
-      WHERE role = 'operator'
+      WHERE role = 'admin'
       GROUP BY sessionId
     ) m ON m.sessionId = cs.id
     ${sinceDate ? sql`WHERE cs.createdAt >= ${sinceDate}` : sql``}

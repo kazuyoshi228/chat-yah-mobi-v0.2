@@ -97,7 +97,7 @@ export default function BigKPIs() {
     name: LANG_LABELS[l.language] ?? l.language, count: l.count,
   }));
   const dailyData = (analysis?.dailyTrend ?? []).map((d) => ({
-    date: d.date.slice(5), total: (d.ai ?? 0) + (d.operator ?? 0),
+    date: d.date.slice(5), total: (d.ai ?? 0) + ((d as any).admin ?? 0),
   }));
 
   return (
@@ -265,7 +265,7 @@ export default function BigKPIs() {
                 {aiPct != null && <p className="text-xs text-muted-foreground">{aiPct}% of ended</p>}
               </CardContent></Card>
               <Card><CardContent className="py-4 px-4">
-                <div className="flex items-center gap-1.5 mb-1"><Users className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">Operator Handled</span></div>
+                <div className="flex items-center gap-1.5 mb-1"><Users className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">Admin Handled</span></div>
                 <p className="text-2xl font-semibold">{kpi?.operatorResolved ?? 0}</p>
                 {opPct != null && <p className="text-xs text-muted-foreground">{opPct}% of ended</p>}
               </CardContent></Card>
@@ -348,7 +348,7 @@ export default function BigKPIs() {
                 {analysis && analysis.total > 0 && <p className="text-xs text-muted-foreground">{Math.round((analysis.aiCount / analysis.total) * 100)}%</p>}
               </CardContent></Card>
               <Card><CardContent className="py-4 px-4">
-                <p className="text-xs text-muted-foreground mb-1">Operator-Assisted</p>
+                <p className="text-xs text-muted-foreground mb-1">Admin-Assisted</p>
                 <p className="text-xl font-semibold">{analysis?.operatorCount ?? "—"}</p>
                 {analysis && analysis.total > 0 && <p className="text-xs text-muted-foreground">{Math.round((analysis.operatorCount / analysis.total) * 100)}%</p>}
               </CardContent></Card>

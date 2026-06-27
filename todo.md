@@ -795,3 +795,35 @@
 - [x] タイ語10件・ベトナム語10件（合計20件）の新規ドキュメントを作成
 - [x] DBに一括登録（合計156件、タイ語16件→26件、ベトナム語16件→26件）
 - [x] チェックポイント保存
+
+## Phase 78: サイドバーにADMINセクション追加
+
+- [x] DashboardLayout.tsxのサイドバー最上部にADMINセクションを追加
+- [x] ShieldCheckアイコン付き「ADMIN」ラベルを表示
+- [x] Master Admin / kazuyoshi.yamada@bonfire.co.jp のカードを表示
+- [x] チェックポイント保存
+
+## Phase 79: operator→admin全コードベース統一クリーンアップ
+
+- [x] googleOAuth.ts: operator/portal参照を削除（admin専用に変更）
+- [x] oauth.ts: operatorロール分岐を削除
+- [x] chatService.ts: role="admin"であることを確認（変更不要）
+- [x] drizzle/schema.ts: messages.role enumを visitor|admin|ai に更新（operatorを削除）
+- [x] DBマイグレーション: messages.role enumを更新、既存33件のoperatorメッセージをadminに移行
+- [x] db.ts: SQLクエリ・コメントのoperator参照をadminに更新
+- [x] upload.ts: isOperatorOrAdmin → isAdmin
+- [x] chat.ts: operatorロール参照を削除
+- [x] WidgetChat.tsx: roleタイプからoperatorを削除
+- [x] deepl.ts: コメントをoperator→adminに更新
+- [x] chat.test.ts: validRolesをoperator→adminに更新
+- [x] ChatDetailBase.tsx: role型・sendMessage・isOp判定をadminに変更
+- [x] ChatWidget.tsx: role型をadminに変更
+- [x] ChatRoom.tsx: role型・operatorJoined→adminJoined・isOperator→isAdminに変更
+- [x] AdminDataAnalysis.tsx: dailyData計算のoperator→admin、ラベル更新
+- [x] BigKPIs.tsx: dailyData計算・ラベルをadminに更新
+- [x] admin.ts: dailyMap型・変数名をoperator→adminに変更
+- [x] email.ts: メール件名・本文のoperator参照をadminに更新
+- [x] SSoT.tsx: Escalation triggerのoperator→adminに変更
+- [x] schema.ts: コメントのoperator→adminに更新
+- [x] TypeScriptエラー0件確認
+- [x] チェックポイント保存

@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 interface ChatMessage {
   id?: number;
   sessionId: number;
-  role: "visitor" | "operator" | "ai";
+  role: "visitor" | "admin" | "ai";
   content: string;
   fileUrl?: string | null;
   operatorName?: string;
@@ -190,7 +190,7 @@ export default function ChatRoom() {
   const [shouldRedirectToForm, setShouldRedirectToForm] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [showSurvey, setShowSurvey] = useState(false);
-  const [operatorJoined, setOperatorJoined] = useState(false);
+  const [adminJoined, setAdminJoined] = useState(false);
   const [fileInputRef] = useState(() => ({ current: null as HTMLInputElement | null }));
 
   const socketRef = useRef<Socket | null>(null);
@@ -249,14 +249,14 @@ export default function ChatRoom() {
     socket.on("redirect_to_form", () => setShouldRedirectToForm(true));
 
     socket.on("operator_joined", (data: { operatorName?: string }) => {
-      setOperatorJoined(true);
+      setAdminJoined(true);
       setShouldRedirectToForm(false);
       setMessages((prev) => [
         ...prev,
         {
           sessionId,
           role: "ai",
-          content: `${data.operatorName ?? "Operator"} has joined. We'll continue to assist you.`,
+          content: `${data.operatorName ?? "Admin"} has joined. We'll continue to assist you.`,
           createdAt: new Date(),
         },
       ]);
@@ -444,7 +444,7 @@ export default function ChatRoom() {
           {messages.map((msg, i) => {
             const isVisitor = msg.role === "visitor";
             const isAI = msg.role === "ai";
-            const isOperator = msg.role === "operator";
+            const isAdmin = msg.role === "admin";
 
             return (
               <div
@@ -458,7 +458,7 @@ export default function ChatRoom() {
                   <div
                     className={cn(
                       "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
-                      isOperator ? "bg-black" : "bg-gray-200"
+                      isAdmin ? "bg-black" : "bg-gray-200"
                     )}
                   >
                     {getMessageIcon(msg.role)}
@@ -469,12 +469,12 @@ export default function ChatRoom() {
                     "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm",
                     isVisitor
                       ? "bg-black text-white rounded-br-sm"
-                      : isOperator
+                      : isAdmin
                       ? "bg-gray-900 text-white rounded-bl-sm"
                       : "bg-white border border-gray-100 text-gray-800 rounded-bl-sm shadow-sm"
                   )}
                 >
-                  {isOperator && msg.operatorName && (
+                  {isAdmin && msg.operatorName && (
                     <p className="text-xs text-gray-400 mb-1">{msg.operatorName}</p>
                   )}
                   {msg.fileUrl && (

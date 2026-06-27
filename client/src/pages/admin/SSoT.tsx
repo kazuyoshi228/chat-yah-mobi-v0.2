@@ -47,10 +47,10 @@ const ROWS: SsoTRow[] = [
   },
   {
     category: "Response Time",
-    key: "Escalation trigger (operator)",
+    key: "Escalation trigger (admin)",
     value: "5 messages + escalation signal",
     location: "ai.ts escalation detection",
-    note: "5回以上 + 「人と話したい」等のシグナルでオペレーターにエスカレーション",
+    note: "5回以上 + 「人と話したい」等のシグナルでアドミンにエスカレーション",
     status: "active",
   },
   {

@@ -171,7 +171,7 @@ export default function AdminDataAnalysis() {
 
   const dailyData = (data?.dailyTrend ?? []).map((d) => ({
     date: d.date.slice(5),
-    Total: (d.ai ?? 0) + ((d as any).operator ?? 0),
+    Total: (d.ai ?? 0) + ((d as any).admin ?? 0),
   }));
 
   return (

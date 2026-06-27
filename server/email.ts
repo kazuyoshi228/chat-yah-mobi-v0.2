@@ -151,7 +151,7 @@ async function sendEmail(opts: {
 
 export interface EscalationEmailOptions {
   toEmail: string;
-  operatorName: string;
+  operatorName: string; // kept as operatorName for backward compat
   sessionId: number;
   visitorName?: string | null;
   language?: string | null;
@@ -174,7 +174,7 @@ export async function sendEscalationEmail(opts: EscalationEmailOptions): Promise
   const langLabel = language ? ` (${language.toUpperCase()})` : "";
   const urgentBadge = urgent ? "🚨 URGENT — " : "";
   const chatUrl = `${appUrl}/ops/chats/${sessionId}`;
-  const subject = `${urgentBadge}Operator requested: ${visitorLabel}${langLabel} — Session #${sessionId}`;
+  const subject = `${urgentBadge}Admin alert: ${visitorLabel}${langLabel} — Session #${sessionId}`;
 
   const detailRows: Array<[string, string]> = [
     ["Session ID", `#${sessionId}`],
@@ -192,11 +192,11 @@ export async function sendEscalationEmail(opts: EscalationEmailOptions): Promise
   const html = buildEmailHtml({
     alertHtml,
     greeting: `Hi ${operatorName},`,
-    bodyText: "A visitor has requested to speak with a human operator. Please respond as soon as possible.",
+    bodyText: "A visitor has requested support. Please respond as soon as possible.",
     detailRows,
     buttonText: "Open Chat →",
     buttonUrl: chatUrl,
-    footerText: "This notification was sent by yah.mobile Chat Support. You are receiving this because you are registered as an operator.",
+    footerText: "This notification was sent by yah.mobile Chat Support. You are receiving this because you are registered as an admin.",
   });
 
   return sendEmail({

@@ -312,9 +312,9 @@ export const adminRouter = router({
       }
       const { sessions, messages } = await getAnalysisData(since);
 
-      // AI vs Operator breakdown
+      // AI vs Admin breakdown
       const aiSessions = sessions.filter((s) => !s.operatorId);
-      const operatorSessions = sessions.filter((s) => !!s.operatorId);
+      const adminSessions = sessions.filter((s) => !!s.operatorId);
 
       // Language breakdown
       const langMap: Record<string, number> = {};
@@ -333,11 +333,11 @@ export const adminRouter = router({
       }
 
       // Daily trend (last 30 days)
-      const dailyMap: Record<string, { ai: number; operator: number }> = {};
+      const dailyMap: Record<string, { ai: number; admin: number }> = {};
       for (const s of sessions) {
         const day = s.createdAt.toISOString().slice(0, 10);
-        if (!dailyMap[day]) dailyMap[day] = { ai: 0, operator: 0 };
-        if (s.operatorId) dailyMap[day].operator++;
+        if (!dailyMap[day]) dailyMap[day] = { ai: 0, admin: 0 };
+        if (s.operatorId) dailyMap[day].admin++;
         else dailyMap[day].ai++;
       }
       const dailyTrend = Object.entries(dailyMap)
@@ -407,7 +407,7 @@ Do not include any other text.`;
       return {
         total: sessions.length,
         aiCount: aiSessions.length,
-        operatorCount: operatorSessions.length,
+        operatorCount: adminSessions.length,
         languageBreakdown,
         statusBreakdown: Object.entries(statusMap).map(([status, count]) => ({ status, count })),
         dailyTrend,

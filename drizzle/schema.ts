@@ -34,7 +34,7 @@ export type InsertUser = typeof users.$inferInsert;
 
 /**
  * Chat sessions table - tracks each visitor conversation.
- * Status: waiting (AI responding) | active (operator assigned) | ended (closed)
+ * Status: waiting (AI responding) | active (admin assigned) | ended (closed)
  */
 export const chatSessions = mysqlTable("chat_sessions", {
   id: int("id").autoincrement().primaryKey(),
@@ -77,7 +77,7 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
 
 /**
- * Quick replies - predefined operator response templates.
+ * Quick replies - predefined admin response templates.
  */
 export const quickReplies = mysqlTable("quick_replies", {
   id: int("id").autoincrement().primaryKey(),

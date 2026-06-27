@@ -45,9 +45,9 @@ describe("Chat session logic", () => {
   });
 
   it("validates message roles", () => {
-    const validRoles = ["visitor", "operator", "ai"] as const;
+    const validRoles = ["visitor", "admin", "ai"] as const;
     expect(validRoles).toContain("visitor");
-    expect(validRoles).toContain("operator");
+    expect(validRoles).toContain("admin");
     expect(validRoles).toContain("ai");
   });
 

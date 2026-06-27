@@ -26,7 +26,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface ChatMessage {
   id?: number;
   sessionId: number;
-  role: "visitor" | "operator" | "ai";
+  role: "visitor" | "admin" | "ai";
   content: string;
   createdAt: Date | string;
 }

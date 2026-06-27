@@ -110,7 +110,7 @@ export function toTranslationLabel(result: TranslationResult): string | undefine
 }
 
 /**
- * Translate a visitor message to Japanese for operators.
+ * Translate a visitor message to Japanese for admin.
  * Only translates if the session language is not Japanese.
  */
 export async function translateToJapanese(
@@ -130,7 +130,7 @@ export async function translateToJapaneseWithResult(
 }
 
 /**
- * Translate an operator message to the visitor's language.
+ * Translate an admin message to the visitor's language.
  * Only translates if the session language is not Japanese.
  */
 export async function translateFromJapanese(
