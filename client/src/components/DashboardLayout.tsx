@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, RotateCcw, Heart, DollarSign, UserCircle, Activity, Target, Database } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, RotateCcw, Heart, DollarSign, UserCircle, Activity, Target, Database, ShieldCheck } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -51,6 +51,9 @@ const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "System Health", href: "/admin/system-health", icon: Activity },
   { title: "SSoT", href: "/admin/ssot", icon: Database },
 ];
+
+const MASTER_ADMIN_EMAIL = "kazuyoshi.yamada@bonfire.co.jp";
+const MASTER_ADMIN_NAME = "Master Admin";
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 260;
@@ -188,6 +191,22 @@ function DashboardLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
+            {/* Admin Section */}
+            <div className="px-3 pt-3 pb-1">
+              <div className="flex items-center gap-1.5 mb-2">
+                <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Admin</span>
+              </div>
+              <div className="rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2.5 flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-full bg-black flex items-center justify-center shrink-0">
+                  <span className="text-[11px] font-semibold text-white">M</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">{MASTER_ADMIN_NAME}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{MASTER_ADMIN_EMAIL}</p>
+                </div>
+              </div>
+            </div>
             <SidebarMenu className="px-2 py-2">
               {sidebarItems.map((item) => {
                 const isActive = location === item.href || location.startsWith(item.href + "/");
