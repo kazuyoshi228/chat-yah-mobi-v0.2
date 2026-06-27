@@ -40,6 +40,8 @@ webhookRouter.post("/plans-updated", async (req: Request, res: Response) => {
   try {
     const db = await getDb();
     if (!db) { res.status(503).json({ error: "DB unavailable" }); return; }
+    // Support both {plans: [...]} and direct array
+    const rawItems = req.body?.plans ?? req.body;
     const items: Array<{
       externalId: string;
       name: string;
@@ -49,7 +51,7 @@ webhookRouter.post("/plans-updated", async (req: Request, res: Response) => {
       bestFor?: string;
       isActive?: number;
       sortOrder?: number;
-    }> = Array.isArray(req.body) ? req.body : [req.body];
+    }> = Array.isArray(rawItems) ? rawItems : [rawItems];
 
     for (const item of items) {
       await db
@@ -91,6 +93,8 @@ webhookRouter.post("/competitor-plans-updated", async (req: Request, res: Respon
   try {
     const db = await getDb();
     if (!db) { res.status(503).json({ error: "DB unavailable" }); return; }
+    // Support both {plans: [...]} and direct array
+    const rawItems = req.body?.plans ?? req.body;
     const items: Array<{
       externalId: string;
       competitorName: string;
@@ -99,7 +103,7 @@ webhookRouter.post("/competitor-plans-updated", async (req: Request, res: Respon
       durationDays: number;
       priceYen: number;
       sourceUrl?: string;
-    }> = Array.isArray(req.body) ? req.body : [req.body];
+    }> = Array.isArray(rawItems) ? rawItems : [rawItems];
 
     for (const item of items) {
       await db
