@@ -642,3 +642,32 @@
 - [x] DashboardLayoutサイドバーにPricing（$アイコン）とCustomers（人物アイコン）を独立項目として追加
 - [x] App.tsxに/admin/customersルートを追加
 - [ ] チェックポイント保存
+
+## Phase 67: OMAX自動返金フロー＋全エラー監視基盤
+
+- [ ] OMAX_CLIENT_ID / OMAX_CLIENT_SECRET シークレット設定
+- [ ] STRIPE_SECRET_KEY シークレット設定（既存確認）
+- [ ] esim_incidents テーブル新設（iccid, externalOrderId, externalUserId, incidentType, detectedAt, resolvedAt, refundStatus, stripeRefundId, notifiedAt）
+- [ ] マイグレーション実行
+- [ ] OMAX APIクライアント実装（server/omax.ts）：認証・GET /v1/links/{iccid}
+- [ ] OMAX Webhook受信エンドポイント（/api/webhooks/omax）：sim.activated / sim.expired / sim.provisioning_failed
+- [ ] 15分タイマー（Heartbeat）：プロビジョニング失敗検知 → インシデント記録
+- [ ] Stripe自動返金処理（refunds.create()）
+- [ ] Resendメール通知（返金完了メール）
+- [ ] 全エラー監視基盤：フロントエンドエラー収集エンドポイント
+- [ ] 全エラー監視基盤：Stripeエラー監視
+- [ ] 全エラー監視基盤：Resend送信失敗監視
+- [ ] AIへのエラー状態コンテキスト注入（system promptに現在のシステム状態を反映）
+- [ ] チェックポイント保存
+
+## Phase 67: OMAX自動返金フロー実装
+
+- [x] esim_incidentsテーブル新設（iccid, externalOrderId, externalUserId, email, incidentType, detectedAt, resolvedAt, refundStatus, stripeRefundId, stripePaymentIntentId, refundAmountYen, notifiedAt, notes）
+- [x] マイグレーション実行（0014, 0015）
+- [x] OMAX APIクライアント実装（server/omax.ts）：OAuth2認証・トークンキャッシュ・GET /v1/links/{iccid}
+- [x] Heartbeatポーリングジョブ実装（15分間隔）：esim_statusesをスキャン→OMAXでステータス確認→プロビジョニング失敗検知→esim_incidentsに記録
+- [x] Stripe自動返金処理実装（refunds.create）：購入履歴のstripePaymentIntentIdを参照
+- [x] Resend返金完了メール通知実装（日本語・英語対応）
+- [x] 管理画面Refundページに実装概要・遷移図・incidents一覧セクション追加
+- [x] Heartbeatジョブ登録（task_uid: AQXJvnynCvNrVnS7JDU6FQ）
+- [ ] チェックポイント保存

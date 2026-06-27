@@ -1,7 +1,90 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { trpc } from "@/lib/trpc";
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+function IncidentStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+    pending:      { label: "待機中",   variant: "secondary" },
+    processing:   { label: "処理中",   variant: "default" },
+    refunded:     { label: "返金済",   variant: "outline" },
+    failed:       { label: "失敗",     variant: "destructive" },
+    not_required: { label: "対象外",   variant: "outline" },
+  };
+  const s = map[status] ?? { label: status, variant: "secondary" };
+  return <Badge variant={s.variant}>{s.label}</Badge>;
+}
+
+// ── Flow diagram (SVG) ────────────────────────────────────────────────────────
+function FlowDiagram() {
+  const steps = [
+    { id: 1, label: "OMAX eSIM\nプロビジョニング", color: "#6366f1" },
+    { id: 2, label: "Heartbeat\n15分ポーリング", color: "#8b5cf6" },
+    { id: 3, label: "ステータス確認\nOMAX API", color: "#a78bfa" },
+    { id: 4, label: "インシデント\n記録 (DB)", color: "#f59e0b" },
+    { id: 5, label: "Stripe\n自動返金", color: "#10b981" },
+    { id: 6, label: "Resend\nメール通知", color: "#3b82f6" },
+  ];
+  const BOX_W = 110;
+  const BOX_H = 52;
+  const GAP = 30;
+  const TOTAL_W = steps.length * BOX_W + (steps.length - 1) * GAP;
+  const SVG_H = 120;
+  return (
+    <div className="overflow-x-auto py-2">
+      <svg viewBox={`0 0 ${TOTAL_W + 20} ${SVG_H}`} width="100%" style={{ minWidth: TOTAL_W + 20 }}>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#64748b" />
+          </marker>
+        </defs>
+        {steps.map((step, i) => {
+          const x = 10 + i * (BOX_W + GAP);
+          const cy = SVG_H / 2;
+          return (
+            <g key={step.id}>
+              {i < steps.length - 1 && (
+                <line x1={x + BOX_W} y1={cy} x2={x + BOX_W + GAP} y2={cy}
+                  stroke="#64748b" strokeWidth="1.5" markerEnd="url(#arrow)" />
+              )}
+              <rect x={x} y={cy - BOX_H / 2} width={BOX_W} height={BOX_H} rx={8}
+                fill={step.color} opacity={0.9} />
+              <circle cx={x + 12} cy={cy - BOX_H / 2 + 12} r={9} fill="rgba(0,0,0,0.25)" />
+              <text x={x + 12} y={cy - BOX_H / 2 + 16} textAnchor="middle" fill="white" fontSize={9} fontWeight="bold">
+                {step.id}
+              </text>
+              {step.label.split("\n").map((line, li) => (
+                <text key={li} x={x + BOX_W / 2} y={cy - 6 + li * 14}
+                  textAnchor="middle" fill="white" fontSize={10} fontWeight="500">
+                  {line}
+                </text>
+              ))}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
 
 const refundEligibleCases = [
   {
@@ -92,12 +175,20 @@ function ScoreBadge({ score, isPercent = false }: { score: number; isPercent?: b
 }
 
 export default function Refund() {
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { data: incidentsData, isLoading: incidentsLoading } = trpc.plans.incidents.useQuery({
+    limit: 100,
+    offset: 0,
+    status: statusFilter as any,
+  });
+  const incidents = incidentsData?.items ?? [];
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6 p-6 max-w-5xl">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">返金管理 / Refund Policy</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">返金管理 / Refund Management</h1>
           <p className="text-sm text-muted-foreground mt-1">
             自動返金対応フロー・対象ケース・AIスコア予測
           </p>
@@ -217,6 +308,132 @@ export default function Refund() {
               ただし、事業者側の技術的不具合・二重課金・未発行等のシステムエラーによる場合は例外として返金対応を行う。
               自動返金対応の実装により、例外ケースの検知・対応を迅速化し、顧客満足度とAIスコアの向上を図る。
             </p>
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        {/* Auto-refund implementation overview */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">自動返金実装概要</h2>
+          <Card>
+            <CardContent className="pt-4 space-y-3 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold">自動返金トリガー条件</h3>
+                  <ul className="space-y-1 text-muted-foreground">
+                    <li className="flex gap-2"><span className="text-amber-500">●</span><span><strong>provisioning_failed</strong> — OMAXステータスが <code>error</code></span></li>
+                    <li className="flex gap-2"><span className="text-orange-500">●</span><span><strong>activation_timeout</strong> — <code>not_installed</code> かつ作成かつ1時間経過</span></li>
+                    <li className="flex gap-2"><span className="text-red-500">●</span><span><strong>esim_expired_early</strong> — 期待使用期間の80%未満で失効</span></li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold">処理フロー</h3>
+                  <ul className="space-y-1 text-muted-foreground">
+                    <li className="flex gap-2"><span className="text-indigo-500">①</span><span>Heartbeat (15分間隔) でeSIM状態をOMAX APIに問い合わせ</span></li>
+                    <li className="flex gap-2"><span className="text-purple-500">②</span><span>異常検知 → <code>esim_incidents</code> テーブルに記録</span></li>
+                    <li className="flex gap-2"><span className="text-green-500">③</span><span>Stripe <code>refunds.create()</code> で小売価格を全額返金</span></li>
+                    <li className="flex gap-2"><span className="text-blue-500">④</span><span>Resend でユーザーに返金完了メール（日英）を送信</span></li>
+                  </ul>
+                </div>
+              </div>
+              <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
+                <strong>注:</strong> OMAX卸値はOMAX側で自動返金。chat.yah.mobi はStripe経由の小売価格返金のみ担当。
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Flow diagram */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">処理フロー遷移図</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FlowDiagram />
+            <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2 text-xs text-center text-muted-foreground">
+              {[
+                { color: "#6366f1", label: "OMAX eSIM" },
+                { color: "#8b5cf6", label: "Heartbeat" },
+                { color: "#a78bfa", label: "API確認" },
+                { color: "#f59e0b", label: "DB記録" },
+                { color: "#10b981", label: "Stripe返金" },
+                { color: "#3b82f6", label: "メール通知" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center gap-1 justify-center">
+                  <span className="w-3 h-3 rounded-sm inline-block" style={{ background: item.color }} />
+                  {item.label}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Incidents table */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base">インシデント一覧</CardTitle>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="ステータス" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">すべて</SelectItem>
+                <SelectItem value="pending">待機中</SelectItem>
+                <SelectItem value="processing">処理中</SelectItem>
+                <SelectItem value="refunded">返金済</SelectItem>
+                <SelectItem value="failed">失敗</SelectItem>
+                <SelectItem value="not_required">対象外</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardHeader>
+          <CardContent>
+            {incidentsLoading ? (
+              <div className="space-y-2">
+                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+              </div>
+            ) : incidents.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground">
+                <p className="text-3xl mb-2">✅</p>
+                <p className="font-medium">インシデントなし</p>
+                <p className="text-sm">現在、返金対象のeSIMインシデントはありません</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>ICCID</TableHead>
+                      <TableHead>種別</TableHead>
+                      <TableHead>OMAXステータス</TableHead>
+                      <TableHead>返金額</TableHead>
+                      <TableHead>ステータス</TableHead>
+                      <TableHead>検知日時</TableHead>
+                      <TableHead>解決日時</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {incidents.map((inc) => (
+                      <TableRow key={inc.id}>
+                        <TableCell className="font-mono text-xs">#{inc.id}</TableCell>
+                        <TableCell className="font-mono text-xs max-w-[120px] truncate">{inc.iccid ?? "—"}</TableCell>
+                        <TableCell><span className="text-xs bg-muted px-2 py-0.5 rounded">{inc.incidentType.replace(/_/g, " ")}</span></TableCell>
+                        <TableCell className="text-xs">{inc.omaxStatus ?? "—"}</TableCell>
+                        <TableCell className="text-xs">{inc.refundAmountYen != null ? `¥${inc.refundAmountYen.toLocaleString()}` : "—"}</TableCell>
+                        <TableCell><IncidentStatusBadge status={inc.refundStatus} /></TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {inc.detectedAt ? new Date(inc.detectedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "—"}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {inc.resolvedAt ? new Date(inc.resolvedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }) : "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

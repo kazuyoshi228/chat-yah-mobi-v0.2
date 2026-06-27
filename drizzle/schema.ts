@@ -305,6 +305,8 @@ export const purchases = mysqlTable("purchases", {
   purchasedAt: timestamp("purchasedAt").notNull(),
   expiresAt: timestamp("expiresAt"),
   status: mysqlEnum("status", ["pending", "active", "expired", "refunded", "cancelled"]).default("pending").notNull(),
+  email: varchar("email", { length: 320 }),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 256 }),
   syncedAt: timestamp("syncedAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -329,3 +331,38 @@ export const esimStatuses = mysqlTable("esim_statuses", {
 });
 export type EsimStatus = typeof esimStatuses.$inferSelect;
 export type InsertEsimStatus = typeof esimStatuses.$inferInsert;
+
+/**
+ * eSIM Incidents - プロビジョニング失敗・自動返金の記録
+ */
+export const esimIncidents = mysqlTable("esim_incidents", {
+  id: int("id").autoincrement().primaryKey(),
+  iccid: varchar("iccid", { length: 64 }),
+  externalOrderId: varchar("externalOrderId", { length: 128 }),
+  externalUserId: varchar("externalUserId", { length: 128 }),
+  email: varchar("email", { length: 256 }),
+  incidentType: mysqlEnum("incidentType", [
+    "provisioning_failed",
+    "activation_timeout",
+    "esim_expired_early",
+    "manual_refund",
+  ]).notNull(),
+  detectedAt: timestamp("detectedAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  refundStatus: mysqlEnum("refundStatus", [
+    "pending",
+    "processing",
+    "refunded",
+    "failed",
+    "not_required",
+  ]).default("pending").notNull(),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 256 }),
+  stripeRefundId: varchar("stripeRefundId", { length: 256 }),
+  refundAmountYen: int("refundAmountYen"),
+  notifiedAt: timestamp("notifiedAt"),
+  omaxStatus: varchar("omaxStatus", { length: 64 }),
+  notes: text("notes"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type EsimIncident = typeof esimIncidents.$inferSelect;
+export type InsertEsimIncident = typeof esimIncidents.$inferInsert;

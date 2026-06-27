@@ -16,4 +16,7 @@ export const ENV = {
   deeplApiKey: process.env.DEEPL_API_KEY ?? "",
   openAiApiKey: process.env.OPENAI_API_KEY ?? "",
   webhookSecret: process.env.WEBHOOK_SECRET ?? "",
+  omaxClientId: process.env.OMAX_CLIENT_ID ?? "",
+  omaxClientSecret: process.env.OMAX_CLIENT_SECRET ?? "",
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
 };

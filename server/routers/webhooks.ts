@@ -53,7 +53,13 @@ webhookRouter.post("/plans-updated", async (req: Request, res: Response) => {
       sortOrder?: number;
     }> = Array.isArray(rawItems) ? rawItems : [rawItems];
 
+    let synced = 0;
     for (const item of items) {
+      // Skip items missing required fields
+      if (!item.externalId || !item.name || item.dataGb == null || item.durationDays == null || item.priceYen == null) {
+        console.warn("[Webhook] plans-updated: skipping item with missing required fields", item);
+        continue;
+      }
       await db
         .insert(plans)
         .values({
@@ -79,8 +85,9 @@ webhookRouter.post("/plans-updated", async (req: Request, res: Response) => {
             syncedAt: new Date(),
           },
         });
+      synced++;
     }
-    res.json({ ok: true, synced: items.length });
+    res.json({ ok: true, synced });
   } catch (e) {
     console.error("[Webhook] plans-updated error:", e);
     res.status(500).json({ error: "Internal server error" });

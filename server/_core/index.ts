@@ -237,6 +237,19 @@ async function startServer() {
     }
   });
 
+  // Heartbeat: OMAX eSIM provisioning monitor & auto-refund (every 15 min)
+  app.post("/api/scheduled/esim-monitor", async (req, res) => {
+    try {
+      const user = await sdk.authenticateRequest(req);
+      if (!user.isCron) return res.status(403).json({ error: "cron-only" });
+      const { esimMonitorHandler } = await import("../refundJob");
+      return esimMonitorHandler(req, res);
+    } catch (err: any) {
+      console.error("[eSIM-Monitor] Error:", err);
+      res.status(500).json({ error: err?.message ?? "unknown", timestamp: new Date().toISOString() });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",

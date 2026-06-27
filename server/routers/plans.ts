@@ -11,6 +11,7 @@ import {
   customerProfiles,
   purchases,
   esimStatuses,
+  esimIncidents,
 } from "../../drizzle/schema";
 import { desc, eq, and } from "drizzle-orm";
 
@@ -77,6 +78,39 @@ export const plansRouter = router({
         .from(esimStatuses)
         .orderBy(desc(esimStatuses.syncedAt))
         .limit(input.limit);
+      return { items };
+    }),
+
+  // ── Admin: eSIM incidents (refund tracking) ───────────────────────────────
+  incidents: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().default(50),
+        offset: z.number().default(0),
+        status: z
+          .enum(["pending", "processing", "refunded", "failed", "not_required", "all"])
+          .default("all"),
+      })
+    )
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return { items: [] };
+      const baseQuery = db
+        .select()
+        .from(esimIncidents)
+        .orderBy(desc(esimIncidents.detectedAt))
+        .limit(input.limit)
+        .offset(input.offset);
+      const items =
+        input.status !== "all"
+          ? await db
+              .select()
+              .from(esimIncidents)
+              .where(eq(esimIncidents.refundStatus, input.status as any))
+              .orderBy(desc(esimIncidents.detectedAt))
+              .limit(input.limit)
+              .offset(input.offset)
+          : await baseQuery;
       return { items };
     }),
 
