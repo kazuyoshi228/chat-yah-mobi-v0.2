@@ -1,5 +1,5 @@
 import { YahLogo } from "@/components/YahLogo";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -8,10 +8,54 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2, BookOpen, Clock, AlertTriangle } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, BookOpen, Clock, AlertTriangle, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+// ─── Language detection (client-side heuristic) ─────────────────────────────
+type LangFilter = "all" | "ja" | "en" | "zh" | "ko" | "th" | "vi" | "other";
+
+const LANG_FILTERS: { key: LangFilter; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "ja", label: "日本語" },
+  { key: "en", label: "EN" },
+  { key: "zh", label: "中文" },
+  { key: "ko", label: "한국어" },
+  { key: "th", label: "ไทย" },
+  { key: "vi", label: "Tiếng Việt" },
+  { key: "other", label: "Other" },
+];
+
+function detectLanguage(text: string): LangFilter {
+  // Check first 200 chars of title+content for dominant script
+  const sample = text.slice(0, 200);
+  const ja = (sample.match(/[\u3040-\u309F\u30A0-\u30FF]/g) || []).length;
+  const zh = (sample.match(/[\u4E00-\u9FFF]/g) || []).length;
+  const ko = (sample.match(/[\uAC00-\uD7AF\u1100-\u11FF]/g) || []).length;
+  const th = (sample.match(/[\u0E00-\u0E7F]/g) || []).length;
+  const vi = (sample.match(/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/gi) || []).length;
+
+  // If Japanese kana detected, it's Japanese (even if kanji present)
+  if (ja >= 3) return "ja";
+  // Korean
+  if (ko >= 3) return "ko";
+  // Thai
+  if (th >= 3) return "th";
+  // Vietnamese (Latin-based with diacritics)
+  if (vi >= 3) return "vi";
+  // Chinese (kanji without kana)
+  if (zh >= 5 && ja === 0) return "zh";
+  // Check if mostly ASCII/Latin → English
+  const ascii = (sample.match(/[a-zA-Z]/g) || []).length;
+  if (ascii > sample.length * 0.4) return "en";
+  // If has kanji but also some kana → Japanese
+  if (zh >= 2 && ja >= 1) return "ja";
+  if (zh >= 3) return "zh";
+
+  return "other";
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
 function isExpired(expiresAt: Date | string | null | undefined): boolean {
   if (!expiresAt) return false;
   return new Date(expiresAt) < new Date();
@@ -21,10 +65,10 @@ function isExpiringSoon(expiresAt: Date | string | null | undefined): boolean {
   if (!expiresAt) return false;
   const d = new Date(expiresAt);
   const now = new Date();
-  const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-  return d > now && d.getTime() - now.getTime() < thirtyDays;
+  return d > now && d.getTime() - now.getTime() < 30 * 86400000;
 }
 
+// ─── Main ───────────────────────────────────────────────────────────────────
 export default function AdminRag() {
   const { user } = useAuth();
   const { data: docs, refetch, isLoading } = trpc.admin.listRagDocuments.useQuery(undefined, {
@@ -35,7 +79,8 @@ export default function AdminRag() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [expiresAt, setExpiresAt] = useState(""); // date input value (YYYY-MM-DD)
+  const [expiresAt, setExpiresAt] = useState("");
+  const [langFilter, setLangFilter] = useState<LangFilter>("all");
 
   const createDoc = trpc.admin.createRagDocument.useMutation({
     onSuccess: () => { toast.success("Document added"); refetch(); resetForm(); },
@@ -64,14 +109,12 @@ export default function AdminRag() {
     setEditingId(doc.id);
     setTitle(doc.title);
     setContent(doc.content);
-    // Convert to YYYY-MM-DD for date input
     setExpiresAt(doc.expiresAt ? new Date(doc.expiresAt).toISOString().split("T")[0] : "");
     setShowDialog(true);
   };
 
   const handleSubmit = () => {
     if (!title.trim() || !content.trim()) return;
-    // Convert date string to ISO 8601 or null
     const expiresAtISO = expiresAt ? new Date(expiresAt + "T23:59:59Z").toISOString() : undefined;
     if (editingId) {
       updateDoc.mutate({ id: editingId, title, content, expiresAt: expiresAtISO ?? null });
@@ -79,6 +122,24 @@ export default function AdminRag() {
       createDoc.mutate({ title, content, expiresAt: expiresAtISO });
     }
   };
+
+  // Filter docs by detected language
+  const filteredDocs = useMemo(() => {
+    if (!docs) return [];
+    if (langFilter === "all") return docs;
+    return docs.filter((doc) => detectLanguage(doc.title + " " + doc.content) === langFilter);
+  }, [docs, langFilter]);
+
+  // Count per language for badges
+  const langCounts = useMemo(() => {
+    if (!docs) return {};
+    const counts: Record<string, number> = {};
+    docs.forEach((doc) => {
+      const lang = detectLanguage(doc.title + " " + doc.content);
+      counts[lang] = (counts[lang] || 0) + 1;
+    });
+    return counts;
+  }, [docs]);
 
   if (user?.role !== "admin") {
     return (
@@ -91,10 +152,12 @@ export default function AdminRag() {
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <YahLogo height={32} className="text-black" />
             <h1 className="text-xl font-semibold text-gray-900">RAG Documents</h1>
+            {docs && <span className="text-xs text-muted-foreground">{docs.length} docs</span>}
           </div>
           <Button
             onClick={() => setShowDialog(true)}
@@ -105,22 +168,54 @@ export default function AdminRag() {
           </Button>
         </div>
 
+        {/* Language filter buttons */}
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
+          <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
+          <div className="flex gap-1">
+            {LANG_FILTERS.map((f) => {
+              const count = f.key === "all" ? (docs?.length ?? 0) : (langCounts[f.key] ?? 0);
+              const isActive = langFilter === f.key;
+              return (
+                <button
+                  key={f.key}
+                  onClick={() => setLangFilter(f.key)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap border",
+                    isActive
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                  )}
+                >
+                  {f.label}
+                  {count > 0 && (
+                    <span className={cn("ml-1.5 text-[10px] tabular-nums", isActive ? "text-white/70" : "text-gray-400")}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Document list */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
           </div>
         ) : (
           <div className="space-y-2">
-            {!docs || docs.length === 0 ? (
+            {filteredDocs.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No documents found</p>
+                <p className="text-sm">{langFilter === "all" ? "No documents found" : `No ${LANG_FILTERS.find(f => f.key === langFilter)?.label} documents`}</p>
                 <p className="text-xs mt-1">Add FAQs and product info to improve AI answer accuracy</p>
               </div>
             ) : (
-              docs.map((doc) => {
+              filteredDocs.map((doc) => {
                 const expired = isExpired(doc.expiresAt);
                 const expiringSoon = isExpiringSoon(doc.expiresAt);
+                const lang = detectLanguage(doc.title + " " + doc.content);
                 return (
                   <div
                     key={doc.id}
@@ -132,10 +227,13 @@ export default function AdminRag() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-medium text-gray-900">{doc.title}</p>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200 font-mono">
+                          {lang}
+                        </span>
                         {expired && (
                           <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">
                             <AlertTriangle className="w-3 h-3" />
-                            Expired (excluded from AI search)
+                            Expired
                           </span>
                         )}
                         {!expired && expiringSoon && (
@@ -157,7 +255,7 @@ export default function AdminRag() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => handleEdit(doc)}
                         className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
@@ -218,7 +316,7 @@ export default function AdminRag() {
                 className="border-gray-200"
               />
               <p className="text-xs text-gray-400">
-                After this date, the document will be excluded from AI search. Leave blank for no expiry.
+                After this date, the document will be excluded from AI search.
               </p>
             </div>
           </div>

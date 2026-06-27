@@ -1,603 +1,439 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import {
-  AlertCircle,
-  Clock,
-  Headphones,
-  Bot,
-  Users,
-  MessageCircle,
-  CheckCircle,
-  XCircle,
-  Star,
-  BarChart2,
-  TrendingUp,
-  Activity,
-  Zap,
-  Target,
+  Bot, Clock, Headphones, Users, MessageCircle, CheckCircle,
+  XCircle, Star, Target, Activity, Zap,
 } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  Cell,
+  ResponsiveContainer, LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Cell,
 } from "recharts";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 type Period = "all" | "today" | "week" | "month";
-const PERIOD_LABELS: Record<Period, string> = {
-  all: "All Time",
-  today: "Today",
-  week: "Last 7 Days",
-  month: "This Month",
-};
+const PERIODS: { key: Period; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "today", label: "Today" },
+  { key: "week", label: "7 Days" },
+  { key: "month", label: "30 Days" },
+];
 
-const LANG_LABEL: Record<string, string> = {
+const LANG_LABELS: Record<string, string> = {
   ja: "日本語", en: "English", zh: "中文", ko: "한국어",
-  th: "ภาษาไทย", vi: "Tiếng Việt", unknown: "Unknown",
+  th: "ไทย", vi: "Tiếng Việt", unknown: "Other",
 };
 
-const PIE_COLORS = ["#111", "#6b7280", "#d1d5db", "#f3f4f6", "#e5e7eb"];
+const BAR_COLORS = ["#111", "#374151", "#6b7280", "#9ca3af", "#d1d5db"];
 
-function periodToRange(period: Period): { since?: number; until?: number } {
+function periodToRange(p: Period) {
   const now = Date.now();
-  if (period === "today") return { since: new Date().setHours(0, 0, 0, 0), until: now };
-  if (period === "week") return { since: now - 7 * 24 * 60 * 60 * 1000, until: now };
-  if (period === "month") return { since: now - 30 * 24 * 60 * 60 * 1000, until: now };
+  if (p === "today") return { since: new Date().setHours(0, 0, 0, 0), until: now };
+  if (p === "week") return { since: now - 7 * 86400000, until: now };
+  if (p === "month") return { since: now - 30 * 86400000, until: now };
   return {};
 }
 
-function fmtMs(ms: number | null): string {
-  if (ms === null) return "—";
-  const sec = Math.round(ms / 1000);
-  if (sec < 60) return `${sec}s`;
-  const min = Math.floor(sec / 60);
-  const rem = sec % 60;
-  return rem > 0 ? `${min}m ${rem}s` : `${min}m`;
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function pct(n: number | null | undefined, fallback = "—") {
+  return n != null ? `${n}%` : fallback;
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
-function RateBar({ rate, color }: { rate: number | null; color: string }) {
-  if (rate === null) return <p className="text-xs text-muted-foreground mt-1">No data</p>;
+function fmtMs(ms: number | null | undefined) {
+  if (ms == null) return "—";
+  const s = Math.round(ms / 1000);
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+function ProgressBar({ value, max = 100, color = "#111" }: { value: number; max?: number; color?: string }) {
   return (
-    <div className="mt-2">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-muted-foreground">{rate}%</span>
-        <span className="text-xs text-muted-foreground/50">100%</span>
-      </div>
-      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all duration-700", color)} style={{ width: `${rate}%` }} />
-      </div>
+    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden mt-2">
+      <div
+        className="h-full rounded-full transition-all duration-500"
+        style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }}
+      />
     </div>
   );
 }
 
-function MetricBar({ value, max = 100, color = "#111" }: { value: number; max?: number; color?: string }) {
-  const pct = Math.min(100, Math.round((value / max) * 100));
-  return (
-    <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1.5">
-      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
-    </div>
-  );
-}
-
-function StatCard({
-  label, value, sub, accent, icon: Icon,
-}: {
-  label: string; value: string | number; sub?: string;
-  accent?: "green" | "amber" | "red" | "blue";
-  icon?: React.ComponentType<{ className?: string }>;
-}) {
-  const accentClass = accent === "green" ? "text-emerald-600" : accent === "amber" ? "text-amber-500" : accent === "red" ? "text-red-500" : accent === "blue" ? "text-blue-600" : "";
-  return (
-    <Card className="border shadow-none">
-      <CardContent className="pt-4 pb-3">
-        <div className="flex items-center gap-1.5 mb-1">
-          {Icon && <Icon className="w-3.5 h-3.5 text-muted-foreground" />}
-          <p className="text-xs text-muted-foreground">{label}</p>
-        </div>
-        <p className={`text-2xl font-semibold mt-0.5 ${accentClass}`}>{value}</p>
-        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
-      </CardContent>
-    </Card>
-  );
-}
-
-// ── Big KPI Card (top 3) ───────────────────────────────────────────────────────
-function BigKpiCard({
-  rank, title, value, sub, status, description, target, icon: Icon, colorClass,
-}: {
-  rank: number; title: string; value: string; sub?: string;
-  status: "good" | "warn" | "bad" | "neutral";
-  description: string; target?: string;
-  icon: React.ComponentType<{ className?: string }>;
-  colorClass: string;
-}) {
-  const statusConfig = {
-    good:    { badge: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-400", label: "Good" },
-    warn:    { badge: "bg-amber-50 text-amber-700 border-amber-200",       dot: "bg-amber-400",   label: "Needs Attention" },
-    bad:     { badge: "bg-red-50 text-red-700 border-red-200",             dot: "bg-red-400",     label: "Action Required" },
-    neutral: { badge: "bg-slate-50 text-slate-600 border-slate-200",       dot: "bg-slate-300",   label: "No Data" },
+function KpiStatus({ status }: { status: "good" | "warn" | "bad" | "none" }) {
+  if (status === "none") return null;
+  const cfg = {
+    good: { label: "Good", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    warn: { label: "Attention", cls: "bg-amber-50 text-amber-700 border-amber-200" },
+    bad: { label: "Action Required", cls: "bg-red-50 text-red-700 border-red-200" },
   }[status];
-
-  return (
-    <Card className={`relative overflow-hidden border-2 ${status === "bad" ? "border-red-200" : status === "warn" ? "border-amber-200" : "border-transparent"}`}>
-      <div className={`absolute top-0 left-0 w-1 h-full ${statusConfig.dot}`} />
-      <CardContent className="pt-5 pb-5 pl-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${colorClass}`}>#{rank}</span>
-              <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${statusConfig.badge}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot}`} />
-                {statusConfig.label}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <Icon className={`w-4 h-4 ${colorClass.includes("indigo") ? "text-indigo-500" : colorClass.includes("blue") ? "text-blue-500" : "text-emerald-500"}`} />
-              <h3 className="text-sm font-semibold">{title}</h3>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-            {target && (
-              <p className="text-xs text-muted-foreground mt-1">
-                <span className="font-medium">Target:</span> {target}
-              </p>
-            )}
-          </div>
-          <div className="text-right shrink-0">
-            <p className={`text-4xl font-bold tabular-nums leading-none ${status === "good" ? "text-emerald-600" : status === "warn" ? "text-amber-500" : status === "bad" ? "text-red-500" : "text-muted-foreground"}`}>
-              {value}
-            </p>
-            {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  return <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${cfg.cls}`}>{cfg.label}</span>;
 }
 
-// ── Main ───────────────────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function BigKPIs() {
   const [period, setPeriod] = useState<Period>("all");
+  const range = useMemo(() => periodToRange(period), [period]);
 
-  const { data: kpi, isLoading: kpiLoading } = trpc.admin.getKpi.useQuery({ period });
-  const { data: activeCounts, isLoading: countsLoading } = trpc.admin.getActiveCounts.useQuery(
-    undefined, { refetchInterval: 15000 }
-  );
-  const { data: analysis, isLoading: analysisLoading } = trpc.admin.getAnalysis.useQuery({ period });
-  const scoreRange = useMemo(() => periodToRange(period), [period]);
-  const { data: scorecard, isLoading: scoreLoading } = trpc.admin.getTeamScorecard.useQuery(scoreRange);
+  const { data: kpi, isLoading: kpiL } = trpc.admin.getKpi.useQuery({ period });
+  const { data: counts, isLoading: countsL } = trpc.admin.getActiveCounts.useQuery(undefined, { refetchInterval: 15000 });
+  const { data: analysis, isLoading: analysisL } = trpc.admin.getAnalysis.useQuery({ period });
+  const { data: scorecard, isLoading: scoreL } = trpc.admin.getTeamScorecard.useQuery(range);
 
-  // ── Derived values ──────────────────────────────────────────────────────────
-  const aiResolvedRate = kpi?.aiResolvedRate ?? null;
-  const heroTarget = 99.9;
-  const heroGap = aiResolvedRate !== null ? (heroTarget - aiResolvedRate).toFixed(1) : null;
-  const heroColor = aiResolvedRate === null ? "neutral" : aiResolvedRate >= 99 ? "good" : aiResolvedRate >= 85 ? "warn" : "bad";
+  // Derived
+  const aiRate = kpi?.aiResolvedRate ?? null;
+  const totalSessions = kpi?.total ?? 0;
+  const surveyCount = kpi?.surveyCount ?? 0;
+  const surveyRate = totalSessions > 0 ? Math.round((surveyCount / totalSessions) * 100) : null;
+  const formRate = kpi?.formRedirectRate ?? null;
 
   const endedTotal = (kpi?.aiResolved ?? 0) + (kpi?.operatorResolved ?? 0);
-  const aiHandledRate = endedTotal > 0 ? Math.round(((kpi?.aiResolved ?? 0) / endedTotal) * 100) : null;
-  const opHandledRate = endedTotal > 0 ? Math.round(((kpi?.operatorResolved ?? 0) / endedTotal) * 100) : null;
-
-  const totalSessions = kpi?.total ?? 0;
-  const surveysAnswered = kpi?.surveyCount ?? 0;
-  const surveyResponseRate = totalSessions > 0 ? Math.round((surveysAnswered / totalSessions) * 100) : null;
-  const surveyStatus: "good" | "warn" | "bad" | "neutral" = surveyResponseRate === null ? "neutral" : surveyResponseRate >= 40 ? "good" : surveyResponseRate >= 20 ? "warn" : "bad";
-
-  const formRedirectRate = kpi?.formRedirectRate ?? null;
-  const formStatus: "good" | "warn" | "bad" | "neutral" = formRedirectRate === null ? "neutral" : formRedirectRate <= 5 ? "good" : formRedirectRate <= 15 ? "warn" : "bad";
+  const aiPct = endedTotal > 0 ? Math.round(((kpi?.aiResolved ?? 0) / endedTotal) * 100) : null;
+  const opPct = endedTotal > 0 ? Math.round(((kpi?.operatorResolved ?? 0) / endedTotal) * 100) : null;
 
   const langData = (analysis?.languageBreakdown ?? []).map((l) => ({
-    name: LANG_LABEL[l.language] ?? l.language,
-    count: l.count,
+    name: LANG_LABELS[l.language] ?? l.language, count: l.count,
   }));
-
   const dailyData = (analysis?.dailyTrend ?? []).map((d) => ({
-    date: d.date.slice(5),
-    Total: (d.ai ?? 0) + (d.operator ?? 0),
+    date: d.date.slice(5), total: (d.ai ?? 0) + (d.operator ?? 0),
   }));
-
-  const isLoading = kpiLoading || countsLoading;
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 p-6 max-w-6xl mx-auto">
+      <div className="p-6 max-w-6xl mx-auto space-y-8">
 
-        {/* ── Header ── */}
+        {/* Header + Period */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Big KPIs</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              最重要指標・チャット状況・詳細分析の統合ビュー
-            </p>
+            <p className="text-sm text-muted-foreground mt-0.5">最重要指標・リアルタイム状況・品質スコア</p>
           </div>
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-            {(["all", "today", "week", "month"] as Period[]).map((p) => (
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
+            {PERIODS.map((p) => (
               <button
-                key={p}
-                onClick={() => setPeriod(p)}
+                key={p.key}
+                onClick={() => setPeriod(p.key)}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                  period === p ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
+                  period === p.key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {PERIOD_LABELS[p]}
+                {p.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 1: Big KPIs — Adminが必ず確認すべき最重要3項目
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="flex flex-col gap-3">
+        {/* ═══ SECTION 1: Big KPIs (Top 3) ═══ */}
+        <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-indigo-500" />
-            <h2 className="text-base font-semibold">Big KPIs — 最重要3項目</h2>
-            <span className="text-xs text-muted-foreground">Adminが毎日確認すべき指標</span>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">最重要3項目</h2>
           </div>
 
-          {kpiLoading ? (
-            <div className="grid gap-3">
-              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}
-            </div>
+          {kpiL ? (
+            <div className="grid gap-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-xl" />)}</div>
           ) : (
             <div className="grid gap-3">
-              {/* KPI #1: AI自己解決率 */}
-              <BigKpiCard
-                rank={1}
-                title="AI Self-Resolution Rate（AI自己解決率）"
-                value={aiResolvedRate !== null ? `${aiResolvedRate}%` : "—"}
-                sub={heroGap !== null ? (Number(heroGap) <= 0 ? `✓ ${Math.abs(Number(heroGap))}% above target` : `${heroGap}% to target`) : undefined}
-                status={heroColor}
-                description="AIがオペレーター介入なしにチャットを解決した割合。サービス品質と運用コストの最重要指標。低下時はRAGドキュメントの更新・AIプロンプト改善が必要。"
-                target={`${heroTarget}%`}
-                icon={Bot}
-                colorClass="bg-indigo-100 text-indigo-700"
-              />
+              {/* #1 AI Self-Resolution */}
+              <Card className={cn("border-l-4", aiRate == null ? "border-l-slate-200" : aiRate >= 99 ? "border-l-emerald-400" : aiRate >= 85 ? "border-l-amber-400" : "border-l-red-400")}>
+                <CardContent className="py-4 px-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Bot className="w-4 h-4 text-indigo-500" />
+                        <span className="text-sm font-semibold">#1 AI Self-Resolution Rate</span>
+                        <KpiStatus status={aiRate == null ? "none" : aiRate >= 99 ? "good" : aiRate >= 85 ? "warn" : "bad"} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">目標 99.9% — AIがオペレーター介入なしに解決した割合</p>
+                    </div>
+                    <span className={cn("text-3xl font-bold tabular-nums", aiRate == null ? "text-muted-foreground" : aiRate >= 99 ? "text-emerald-600" : aiRate >= 85 ? "text-amber-500" : "text-red-500")}>
+                      {pct(aiRate)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* KPI #2: Survey Response Rate */}
-              <BigKpiCard
-                rank={2}
-                title="Survey Response Rate（アンケート回答率）"
-                value={surveyResponseRate !== null ? `${surveyResponseRate}%` : "—"}
-                sub={surveysAnswered > 0 ? `${surveysAnswered} / ${totalSessions} sessions` : "No surveys yet"}
-                status={surveyStatus}
-                description="チャット終了後のアンケートに回答したユーザーの割合。20%未満だとKPI信頼性が低下し、AI自己解決率の精度が担保できなくなる。低下時はアンケート導線の見直しが必要。"
-                target="≥ 40%"
-                icon={Star}
-                colorClass="bg-blue-100 text-blue-700"
-              />
+              {/* #2 Survey Response Rate */}
+              <Card className={cn("border-l-4", surveyRate == null ? "border-l-slate-200" : surveyRate >= 40 ? "border-l-emerald-400" : surveyRate >= 20 ? "border-l-amber-400" : "border-l-red-400")}>
+                <CardContent className="py-4 px-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm font-semibold">#2 Survey Response Rate</span>
+                        <KpiStatus status={surveyRate == null ? "none" : surveyRate >= 40 ? "good" : surveyRate >= 20 ? "warn" : "bad"} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">目標 ≥40% — {surveyCount}/{totalSessions} sessions</p>
+                    </div>
+                    <span className={cn("text-3xl font-bold tabular-nums", surveyRate == null ? "text-muted-foreground" : surveyRate >= 40 ? "text-emerald-600" : surveyRate >= 20 ? "text-amber-500" : "text-red-500")}>
+                      {pct(surveyRate)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* KPI #3: Form Redirect Rate */}
-              <BigKpiCard
-                rank={3}
-                title="Form Redirect Rate（フォーム転送率）"
-                value={formRedirectRate !== null ? `${formRedirectRate}%` : "—"}
-                sub={kpi?.formRedirectedCount ? `${kpi.formRedirectedCount} sessions redirected` : "No redirects yet"}
-                status={formStatus}
-                description="AIがユーザーをサポートフォームに誘導した割合。高い場合はAIが問題を自己解決できていないことを示す。RAGドキュメントの充実やフロー改善で低下させることが目標。"
-                target="≤ 5%"
-                icon={Zap}
-                colorClass="bg-emerald-100 text-emerald-700"
-              />
+              {/* #3 Form Redirect Rate */}
+              <Card className={cn("border-l-4", formRate == null ? "border-l-slate-200" : formRate <= 5 ? "border-l-emerald-400" : formRate <= 15 ? "border-l-amber-400" : "border-l-red-400")}>
+                <CardContent className="py-4 px-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-emerald-500" />
+                        <span className="text-sm font-semibold">#3 Form Redirect Rate</span>
+                        <KpiStatus status={formRate == null ? "none" : formRate <= 5 ? "good" : formRate <= 15 ? "warn" : "bad"} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">目標 ≤5% — AIが解決できずフォームに転送した割合</p>
+                    </div>
+                    <span className={cn("text-3xl font-bold tabular-nums", formRate == null ? "text-muted-foreground" : formRate <= 5 ? "text-emerald-600" : formRate <= 15 ? "text-amber-500" : "text-red-500")}>
+                      {pct(formRate)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 2: 対応必要（リアルタイム）
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-500" />
-            <h2 className="text-base font-semibold">対応必要（リアルタイム）</h2>
-            <span className="text-xs text-muted-foreground">15秒ごとに自動更新</span>
-          </div>
+        {/* ═══ SECTION 2: Real-time ═══ */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">リアルタイム（15秒更新）</h2>
           <div className="grid grid-cols-2 gap-3">
             <Link href="/admin/chats?status=waiting">
-              <div className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${(activeCounts?.waiting ?? 0) > 0 ? "border-red-300 bg-red-50" : "border-border bg-card"}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5">
+              <Card className={cn("cursor-pointer transition-shadow hover:shadow-md border-2", (counts?.waiting ?? 0) > 0 ? "border-red-300 bg-red-50/50" : "border-transparent")}>
+                <CardContent className="py-5 px-5">
+                  <div className="flex items-center gap-2 mb-2">
                     <Clock className="w-4 h-4 text-red-400" />
                     <span className="text-xs font-medium text-muted-foreground">Waiting</span>
+                    {(counts?.waiting ?? 0) > 0 && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
                   </div>
-                  {(activeCounts?.waiting ?? 0) > 0 && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
-                </div>
-                {countsLoading ? (
-                  <Skeleton className="h-10 w-16" />
-                ) : (
-                  <p className={`text-5xl font-bold tabular-nums ${(activeCounts?.waiting ?? 0) > 0 ? "text-red-600" : "text-muted-foreground/30"}`}>
-                    {activeCounts?.waiting ?? 0}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground mt-2">オペレーター待ち</p>
-              </div>
+                  {countsL ? <Skeleton className="h-10 w-14" /> : (
+                    <p className={cn("text-4xl font-bold tabular-nums", (counts?.waiting ?? 0) > 0 ? "text-red-600" : "text-muted-foreground/30")}>
+                      {counts?.waiting ?? 0}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </Link>
             <Link href="/admin/chats?status=active">
-              <div className={`relative p-5 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${(activeCounts?.active ?? 0) > 0 ? "border-blue-300 bg-blue-50" : "border-border bg-card"}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5">
+              <Card className={cn("cursor-pointer transition-shadow hover:shadow-md border-2", (counts?.active ?? 0) > 0 ? "border-blue-300 bg-blue-50/50" : "border-transparent")}>
+                <CardContent className="py-5 px-5">
+                  <div className="flex items-center gap-2 mb-2">
                     <Headphones className="w-4 h-4 text-blue-400" />
                     <span className="text-xs font-medium text-muted-foreground">Active</span>
+                    {(counts?.active ?? 0) > 0 && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
                   </div>
-                  {(activeCounts?.active ?? 0) > 0 && <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />}
-                </div>
-                {countsLoading ? (
-                  <Skeleton className="h-10 w-16" />
-                ) : (
-                  <p className={`text-5xl font-bold tabular-nums ${(activeCounts?.active ?? 0) > 0 ? "text-blue-600" : "text-muted-foreground/30"}`}>
-                    {activeCounts?.active ?? 0}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground mt-2">対応中</p>
-              </div>
+                  {countsL ? <Skeleton className="h-10 w-14" /> : (
+                    <p className={cn("text-4xl font-bold tabular-nums", (counts?.active ?? 0) > 0 ? "text-blue-600" : "text-muted-foreground/30")}>
+                      {counts?.active ?? 0}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </Link>
           </div>
-        </div>
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 3: Volume & Quality KPIs
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-base font-semibold">Volume & Quality</h2>
-          </div>
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
-            </div>
+        {/* ═══ SECTION 3: Volume & Quality ═══ */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Volume & Quality</h2>
+          {kpiL ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">{[...Array(6)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <StatCard label="Total Chats" value={kpi?.total ?? 0} sub={PERIOD_LABELS[period]} icon={MessageCircle} />
-              <StatCard
-                label="CSAT Score"
-                value={scorecard?.avgCsat != null ? `${scorecard.avgCsat.toFixed(1)} / 5` : "—"}
-                sub={`${surveysAnswered} responses`}
-                icon={Star}
-                accent={scorecard?.avgCsat != null ? (scorecard.avgCsat >= 4 ? "green" : scorecard.avgCsat >= 3 ? "amber" : "red") : undefined}
-              />
-              <StatCard
-                label="Overall Resolution Rate"
-                value={kpi?.resolvedRate != null ? `${kpi.resolvedRate}%` : "—"}
-                sub="survey-confirmed"
-                icon={CheckCircle}
-                accent={kpi?.resolvedRate != null ? (kpi.resolvedRate >= 80 ? "green" : kpi.resolvedRate >= 60 ? "amber" : "red") : undefined}
-              />
-              <StatCard label="AI Handled" value={kpi?.aiResolved ?? 0} sub={aiHandledRate !== null ? `${aiHandledRate}% of ended` : undefined} icon={Bot} accent="blue" />
-              <StatCard label="Operator Handled" value={kpi?.operatorResolved ?? 0} sub={opHandledRate !== null ? `${opHandledRate}% of ended` : undefined} icon={Users} />
-              <StatCard label="Unresolved" value={kpi?.unresolvedCount ?? 0} sub="survey-reported" icon={XCircle} accent={kpi?.unresolvedCount ? "red" : undefined} />
+              <Card><CardContent className="py-4 px-4">
+                <div className="flex items-center gap-1.5 mb-1"><MessageCircle className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">Total Chats</span></div>
+                <p className="text-2xl font-semibold">{kpi?.total ?? 0}</p>
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <div className="flex items-center gap-1.5 mb-1"><Star className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">CSAT</span></div>
+                <p className={cn("text-2xl font-semibold", scorecard?.avgCsat != null ? (scorecard.avgCsat >= 4 ? "text-emerald-600" : scorecard.avgCsat >= 3 ? "text-amber-500" : "text-red-500") : "")}>
+                  {scorecard?.avgCsat != null ? `${scorecard.avgCsat.toFixed(1)}/5` : "—"}
+                </p>
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <div className="flex items-center gap-1.5 mb-1"><CheckCircle className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">Resolution Rate</span></div>
+                <p className={cn("text-2xl font-semibold", kpi?.resolvedRate != null ? (kpi.resolvedRate >= 80 ? "text-emerald-600" : kpi.resolvedRate >= 60 ? "text-amber-500" : "text-red-500") : "")}>
+                  {pct(kpi?.resolvedRate)}
+                </p>
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <div className="flex items-center gap-1.5 mb-1"><Bot className="w-3.5 h-3.5 text-blue-500" /><span className="text-xs text-muted-foreground">AI Handled</span></div>
+                <p className="text-2xl font-semibold text-blue-600">{kpi?.aiResolved ?? 0}</p>
+                {aiPct != null && <p className="text-xs text-muted-foreground">{aiPct}% of ended</p>}
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <div className="flex items-center gap-1.5 mb-1"><Users className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">Operator Handled</span></div>
+                <p className="text-2xl font-semibold">{kpi?.operatorResolved ?? 0}</p>
+                {opPct != null && <p className="text-xs text-muted-foreground">{opPct}% of ended</p>}
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <div className="flex items-center gap-1.5 mb-1"><XCircle className="w-3.5 h-3.5 text-red-400" /><span className="text-xs text-muted-foreground">Unresolved</span></div>
+                <p className={cn("text-2xl font-semibold", (kpi?.unresolvedCount ?? 0) > 0 ? "text-red-500" : "")}>{kpi?.unresolvedCount ?? 0}</p>
+              </CardContent></Card>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 4: Quality Scorecard
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="flex flex-col gap-3">
+        {/* ═══ SECTION 4: Quality Scorecard ═══ */}
+        <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-base font-semibold">Quality Scorecard</h2>
-            <span className="text-xs text-muted-foreground">Bot-first composite score</span>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Quality Scorecard</h2>
           </div>
-          <Card className="border shadow-none">
-            <CardContent className="pt-5 pb-5">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <p className="text-xs text-muted-foreground">Composite Score (CSAT · Resolution · AI Rate · Redirect Rate)</p>
-                </div>
-                {scoreLoading ? (
-                  <Skeleton className="h-10 w-24 rounded-lg" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className={`text-4xl font-bold tabular-nums ${(scorecard?.totalScore ?? 0) >= 80 ? "text-emerald-600" : (scorecard?.totalScore ?? 0) >= 60 ? "text-amber-500" : "text-red-500"}`}>
-                      {scorecard?.totalScore ?? 0}
-                    </span>
-                    <span className="text-lg text-muted-foreground">/100</span>
-                    <Badge variant={(scorecard?.totalScore ?? 0) >= 80 ? "default" : (scorecard?.totalScore ?? 0) >= 60 ? "secondary" : "destructive"} className="text-xs">
-                      {(scorecard?.totalScore ?? 0) >= 80 ? "Good" : (scorecard?.totalScore ?? 0) >= 60 ? "Fair" : "Needs Work"}
-                    </Badge>
+          <Card>
+            <CardContent className="py-5 px-5">
+              {scoreL ? <Skeleton className="h-32 w-full rounded-lg" /> : (
+                <>
+                  <div className="flex items-center justify-between mb-5">
+                    <p className="text-xs text-muted-foreground">Composite Score (CSAT 35% + Resolution 30% + AI Rate 25% + Redirect 10%)</p>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-3xl font-bold tabular-nums", (scorecard?.totalScore ?? 0) >= 80 ? "text-emerald-600" : (scorecard?.totalScore ?? 0) >= 60 ? "text-amber-500" : "text-red-500")}>
+                        {scorecard?.totalScore ?? 0}
+                      </span>
+                      <span className="text-sm text-muted-foreground">/100</span>
+                      <Badge variant={(scorecard?.totalScore ?? 0) >= 80 ? "default" : (scorecard?.totalScore ?? 0) >= 60 ? "secondary" : "destructive"} className="text-xs">
+                        {(scorecard?.totalScore ?? 0) >= 80 ? "Good" : (scorecard?.totalScore ?? 0) >= 60 ? "Fair" : "Needs Work"}
+                      </Badge>
+                    </div>
                   </div>
-                )}
-              </div>
-              {scoreLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="bg-muted/40 rounded-lg p-3">
-                    <p className="text-[11px] text-muted-foreground">CSAT Score</p>
-                    <p className="text-xl font-semibold mt-1">
-                      {scorecard?.avgCsat != null ? scorecard.avgCsat.toFixed(1) : "—"}
-                      <span className="text-xs font-normal text-muted-foreground ml-0.5">/5</span>
-                    </p>
-                    <MetricBar value={scorecard?.avgCsat ?? 0} max={5} color="#111" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Weight: 35%</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-muted/40 rounded-lg p-3">
+                      <p className="text-[11px] text-muted-foreground">CSAT</p>
+                      <p className="text-lg font-semibold mt-1">{scorecard?.avgCsat != null ? scorecard.avgCsat.toFixed(1) : "—"}<span className="text-xs text-muted-foreground">/5</span></p>
+                      <ProgressBar value={scorecard?.avgCsat ?? 0} max={5} />
+                    </div>
+                    <div className="bg-muted/40 rounded-lg p-3">
+                      <p className="text-[11px] text-muted-foreground">Resolution</p>
+                      <p className="text-lg font-semibold mt-1">{scorecard?.resolutionRate != null ? `${Math.round(scorecard.resolutionRate * 100)}%` : "—"}</p>
+                      <ProgressBar value={(scorecard?.resolutionRate ?? 0) * 100} color="#2563eb" />
+                    </div>
+                    <div className="bg-muted/40 rounded-lg p-3">
+                      <p className="text-[11px] text-muted-foreground">AI Rate</p>
+                      <p className="text-lg font-semibold mt-1">{scorecard?.totalSessions ? `${Math.round((scorecard.aiHandled / scorecard.totalSessions) * 100)}%` : "—"}</p>
+                      <ProgressBar value={scorecard?.totalSessions ? (scorecard.aiHandled / scorecard.totalSessions) * 100 : 0} color="#7c3aed" />
+                    </div>
+                    <div className="bg-muted/40 rounded-lg p-3">
+                      <p className="text-[11px] text-muted-foreground">Redirect (lower=better)</p>
+                      <p className="text-lg font-semibold mt-1">{pct(formRate)}</p>
+                      <ProgressBar value={formRate != null ? Math.max(0, 100 - formRate * 4) : 0} color="#059669" />
+                    </div>
                   </div>
-                  <div className="bg-muted/40 rounded-lg p-3">
-                    <p className="text-[11px] text-muted-foreground">Resolution Rate</p>
-                    <p className="text-xl font-semibold mt-1">
-                      {scorecard?.resolutionRate != null ? `${Math.round(scorecard.resolutionRate * 100)}%` : "—"}
-                    </p>
-                    <MetricBar value={(scorecard?.resolutionRate ?? 0) * 100} color="#2563eb" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Weight: 30%</p>
-                  </div>
-                  <div className="bg-muted/40 rounded-lg p-3">
-                    <p className="text-[11px] text-muted-foreground">AI Handling Rate</p>
-                    <p className="text-xl font-semibold mt-1">
-                      {scorecard?.totalSessions && scorecard.totalSessions > 0 ? `${Math.round((scorecard.aiHandled / scorecard.totalSessions) * 100)}%` : "—"}
-                    </p>
-                    <MetricBar value={scorecard?.totalSessions ? (scorecard.aiHandled / scorecard.totalSessions) * 100 : 0} color="#7c3aed" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Weight: 25%</p>
-                  </div>
-                  <div className="bg-muted/40 rounded-lg p-3">
-                    <p className="text-[11px] text-muted-foreground">Form Redirect Rate</p>
-                    <p className="text-xl font-semibold mt-1">
-                      {formRedirectRate !== null ? `${formRedirectRate}%` : "—"}
-                    </p>
-                    <MetricBar value={formRedirectRate !== null ? Math.max(0, 100 - formRedirectRate * 4) : 0} color="#059669" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Weight: 10% (lower is better)</p>
-                  </div>
-                </div>
+                </>
               )}
             </CardContent>
           </Card>
-        </div>
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 5: Bot Health
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-base font-semibold">Bot Health</h2>
-          </div>
-          {kpiLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
-            </div>
+        {/* ═══ SECTION 5: Bot Health ═══ */}
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Bot Health</h2>
+          {kpiL ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatCard
-                label="Avg AI Messages / Session"
-                value={kpi?.avgAiMessagesPerSession != null ? kpi.avgAiMessagesPerSession : "—"}
-                sub="ended sessions only"
-                accent={kpi?.avgAiMessagesPerSession != null ? (kpi.avgAiMessagesPerSession >= 3 && kpi.avgAiMessagesPerSession <= 8 ? "green" : "amber") : undefined}
-              />
-              <StatCard
-                label="Avg Session Duration"
-                value={fmtMs(kpi?.avgSessionDurationMs ?? null)}
-                sub="start to last message"
-              />
-              <StatCard
-                label="AI-Only Sessions"
-                value={analysis ? `${analysis.aiCount}` : "—"}
-                sub={analysis && analysis.total > 0 ? `${Math.round((analysis.aiCount / analysis.total) * 100)}% of total` : undefined}
-                accent="blue"
-              />
-              <StatCard
-                label="Operator-Assisted"
-                value={analysis ? `${analysis.operatorCount}` : "—"}
-                sub={analysis && analysis.total > 0 ? `${Math.round((analysis.operatorCount / analysis.total) * 100)}% of total` : undefined}
-                accent={analysis && analysis.total > 0 && (analysis.operatorCount / analysis.total) < 0.05 ? "green" : "amber"}
-              />
+              <Card><CardContent className="py-4 px-4">
+                <p className="text-xs text-muted-foreground mb-1">Avg AI Msgs/Session</p>
+                <p className="text-xl font-semibold">{kpi?.avgAiMessagesPerSession ?? "—"}</p>
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <p className="text-xs text-muted-foreground mb-1">Avg Duration</p>
+                <p className="text-xl font-semibold">{fmtMs(kpi?.avgSessionDurationMs)}</p>
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <p className="text-xs text-muted-foreground mb-1">AI-Only Sessions</p>
+                <p className="text-xl font-semibold text-blue-600">{analysis?.aiCount ?? "—"}</p>
+                {analysis && analysis.total > 0 && <p className="text-xs text-muted-foreground">{Math.round((analysis.aiCount / analysis.total) * 100)}%</p>}
+              </CardContent></Card>
+              <Card><CardContent className="py-4 px-4">
+                <p className="text-xs text-muted-foreground mb-1">Operator-Assisted</p>
+                <p className="text-xl font-semibold">{analysis?.operatorCount ?? "—"}</p>
+                {analysis && analysis.total > 0 && <p className="text-xs text-muted-foreground">{Math.round((analysis.operatorCount / analysis.total) * 100)}%</p>}
+              </CardContent></Card>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 6: Charts
-        ══════════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Daily Volume */}
-          <Card className="border shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Daily Chat Volume</CardTitle>
-            </CardHeader>
+        {/* ═══ SECTION 6: Charts ═══ */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Daily Chat Volume</CardTitle></CardHeader>
             <CardContent>
-              {analysisLoading ? (
-                <Skeleton className="h-48 w-full rounded-lg" />
-              ) : dailyData.length === 0 ? (
-                <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">No data</div>
+              {analysisL ? <Skeleton className="h-44 w-full rounded-lg" /> : dailyData.length === 0 ? (
+                <div className="flex items-center justify-center h-44 text-sm text-muted-foreground">No data</div>
               ) : (
-                <ResponsiveContainer width="100%" height={180}>
-                  <LineChart data={dailyData} margin={{ left: 0, right: 16, top: 8 }}>
+                <ResponsiveContainer width="100%" height={176}>
+                  <LineChart data={dailyData} margin={{ left: 0, right: 12, top: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="Total" stroke="#111" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="total" stroke="#111" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
           </Card>
-
-          {/* Language Distribution */}
-          <Card className="border shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Language Distribution</CardTitle>
-            </CardHeader>
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">Language Distribution</CardTitle></CardHeader>
             <CardContent>
-              {analysisLoading ? (
-                <Skeleton className="h-48 w-full rounded-lg" />
-              ) : langData.length === 0 ? (
-                <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">No data</div>
+              {analysisL ? <Skeleton className="h-44 w-full rounded-lg" /> : langData.length === 0 ? (
+                <div className="flex items-center justify-center h-44 text-sm text-muted-foreground">No data</div>
               ) : (
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={langData} layout="vertical" margin={{ left: 8, right: 16 }}>
+                <ResponsiveContainer width="100%" height={176}>
+                  <BarChart data={langData} layout="vertical" margin={{ left: 8, right: 12 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                     <XAxis type="number" tick={{ fontSize: 11 }} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={60} />
                     <Tooltip formatter={(v: number) => [`${v} chats`]} />
-                    <Bar dataKey="count" fill="#111" radius={[0, 4, 4, 0]}>
-                      {langData.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                      ))}
+                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                      {langData.map((_, i) => <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />)}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
           </Card>
-        </div>
+        </section>
 
-        {/* ══════════════════════════════════════════════════════════════════════
-            SECTION 7: Inquiry Category Breakdown
-        ══════════════════════════════════════════════════════════════════════ */}
+        {/* ═══ SECTION 7: Category Breakdown (conditional) ═══ */}
         {(analysis?.categoryBreakdown?.length ?? 0) > 0 && (
-          <Card className="border shadow-none">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Inquiry Category Breakdown
-                {analysis?.analyzedMessageCount ? (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    (based on {analysis.analyzedMessageCount} visitor messages)
-                  </span>
-                ) : null}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+          <section>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Inquiry Categories
+                  {analysis?.analyzedMessageCount ? <span className="ml-2 text-xs font-normal text-muted-foreground">({analysis.analyzedMessageCount} messages)</span> : null}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {analysis!.categoryBreakdown.map((cat, i) => {
                   const total = analysis!.categoryBreakdown.reduce((s, c) => s + c.count, 0);
-                  const pct = total > 0 ? Math.round((cat.count / total) * 100) : 0;
-                  const barColors = ["#111", "#374151", "#6b7280", "#9ca3af", "#d1d5db", "#e5e7eb"];
+                  const p = total > 0 ? Math.round((cat.count / total) * 100) : 0;
                   return (
                     <div key={`${cat.category}-${i}`}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium">{cat.category}</span>
-                        <span className="text-xs text-muted-foreground">{cat.count} ({pct}%)</span>
+                        <span className="text-xs text-muted-foreground">{cat.count} ({p}%)</span>
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColors[i % barColors.length] === "#e5e7eb" ? "#9ca3af" : barColors[i % barColors.length] }} />
+                        <div className="h-full rounded-full" style={{ width: `${p}%`, background: BAR_COLORS[i % BAR_COLORS.length] }} />
                       </div>
                       {cat.examples.length > 0 && (
-                        <div className="mt-1.5 space-y-0.5">
+                        <div className="mt-1 space-y-0.5">
                           {cat.examples.map((ex, j) => (
-                            <p key={j} className="text-xs text-muted-foreground truncate pl-1 border-l-2 border-border">{ex}</p>
+                            <p key={j} className="text-xs text-muted-foreground truncate pl-2 border-l-2 border-border">{ex}</p>
                           ))}
                         </div>
                       )}
                     </div>
                   );
                 })}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </section>
         )}
 
       </div>

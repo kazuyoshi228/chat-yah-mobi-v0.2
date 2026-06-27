@@ -691,3 +691,11 @@
 - [x] refundJob.tsの動作確認（Heartbeat認証保護・エンドポイント登録確認）
 - [x] yah.mobi/app開発チーム向け指示書作成（purchases-webhook-update-guide.md）
 - [x] チェックポイント保存 (version: 092c5662)
+
+## Phase 70: UI根本改善・ページ更新
+
+- [x] BigKPIs.tsx を根本からミニマル・クリーンに書き直し（壊れない構造）
+- [x] Refund.tsx の安定化確認
+- [x] AI Chatbot ページ（/admin/ai-chatbot）を最新状況に更新・無駄なコピー削除
+- [x] RAG Documents に言語別フィルターボタン追加
+- [ ] チェックポイント保存
