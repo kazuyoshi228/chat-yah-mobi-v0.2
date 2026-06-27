@@ -17,5 +17,6 @@ export default defineConfig({
     include: ["server/**/*.e2e.test.ts"],
     testTimeout: 60_000,
     hookTimeout: 30_000,
+    setupFiles: ["server/e2e.setup.ts"],
   },
 });

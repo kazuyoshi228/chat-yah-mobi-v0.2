@@ -681,14 +681,45 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
     }));
   }
 
-  const response = await invokeLLM({
-    model: "claude-opus-4-7",
-    messages: [
-      { role: "system", content: systemPrompt },
+  // Use Anthropic API directly if ANTHROPIC_API_KEY is set
+  let content: string;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY ?? "";
+  if (anthropicKey) {
+    const anthropicMessages = [
       ...messagesForLLM,
-      { role: "user", content: userMessage },
-    ],
-  });
+      { role: "user" as const, content: userMessage },
+    ];
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": anthropicKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-opus-4-8",
+        system: systemPrompt,
+        messages: anthropicMessages,
+        max_tokens: 1024,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Anthropic API error: ${res.status} – ${errText}`);
+    }
+    const json = await res.json() as any;
+    content = json.content?.[0]?.text ?? "";
+  } else {
+    const response = await invokeLLM({
+      model: "claude-opus-4-7",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messagesForLLM,
+        { role: "user", content: userMessage },
+      ],
+    });
+    content = (response as any)?.choices?.[0]?.message?.content ?? "";
+  }
 
   const FALLBACK: Record<string, string> = {
     ja: "申し訳ありませんが、現在応答できません。",
@@ -698,10 +729,7 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
     th: "ขอโทษ ขณะนี้ไม่สามารถตอบได้",
     vi: "Xin lỗi, hiện tại tôi không thể phản hồi.",
   };
-  const content =
-    (response as any)?.choices?.[0]?.message?.content ??
-    FALLBACK[detectedLang] ??
-    FALLBACK["en"];
+  const resolvedContent = content || FALLBACK[detectedLang] || FALLBACK["en"];
 
   // shouldEscalate is kept for backward compat but no longer triggers operator handoff
   const shouldEscalate = false;
@@ -722,7 +750,7 @@ ${ragContext ? `\n## Knowledge Base\n${ragContext}` : ""}`;
   // OR condition: redirect if 10+ AI attempts OR user signals unresolved after 5+ attempts
   const shouldRedirectToForm = aiMessageCount >= 10 || (aiMessageCount >= 5 && userSignalsUnresolved);
 
-  return { content, shouldEscalate, shouldRedirectToForm, detectedLanguage: detectedLang };
+  return { content: resolvedContent, shouldEscalate, shouldRedirectToForm, detectedLanguage: detectedLang };
 }
 
 // Generate conversation summary
