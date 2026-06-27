@@ -8,7 +8,6 @@ export default function AdminChatReply() {
   return (
     <ChatDetailBase
       sessionId={sessionId}
-      mode="admin"
       backPath="/admin/chats"
     />
   );

@@ -1,12 +1,5 @@
 /**
- * ChatDetailBase — shared chat detail shell used by both
- * OperatorChatDetail (/ops/chats/:id) and AdminChatReply (/admin/chats/:id/reply).
- *
- * Differences between the two callers are injected via props:
- *   - mode: "operator" | "admin"
- *   - backPath: where the back button navigates
- *   - sidebarItems (optional, operator only)
- *   - mutations differ: assignSession vs assignChat, endSession vs endChat, etc.
+ * ChatDetailBase — admin chat detail shell.
  */
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
@@ -26,28 +19,16 @@ import {
   RefreshCw,
   ArrowLeft,
   Loader2,
-  MessageCircle,
   Paperclip,
   ImageIcon,
   X as XIcon,
-  PhoneOff,
-  Star,
-  UserCheck,
   StopCircle,
+  Star,
   CheckCircle2,
   XCircle,
-  Search,
-  Users,
   Globe,
   AlertTriangle,
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -56,8 +37,8 @@ interface ChatMessage {
   sessionId: number;
   role: "visitor" | "operator" | "ai";
   content: string;
-  translation?: string | null; // DeepL translated text
-  originalContent?: string | null; // original text before translation (for operator messages)
+  translation?: string | null;
+  originalContent?: string | null;
   fileUrl?: string | null;
   operatorName?: string;
   createdAt: Date | string;
@@ -88,12 +69,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 interface Props {
   sessionId: number;
-  mode: "operator" | "admin";
   backPath: string;
   sidebarItems?: { title: string; href: string; icon: React.ComponentType<{ className?: string }> }[];
 }
 
-export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems }: Props) {
+export default function ChatDetailBase({ sessionId, backPath, sidebarItems }: Props) {
   const isValidSession = !isNaN(sessionId) && sessionId > 0;
   const [, navigate] = useLocation();
   const { user } = useAuth();
@@ -104,9 +84,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   const [surveyResult, setSurveyResult] = useState<SurveyResult | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
 
-  // Right panel (operator mode only)
-  const [rightTab, setRightTab] = useState<"summary" | "quickreplies">("quickreplies");
-  const [qrSearch, setQrSearch] = useState("");
+  // Quick replies state
   const [showQuickReplies, setShowQuickReplies] = useState(false);
 
   // Image state
@@ -118,20 +96,12 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
 
   const socketRef = useRef<Socket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Queries ──────────────────────────────────────────────────────────────
-  const { data: opDetail, refetch: refetchOp } = trpc.operator.getSessionDetail.useQuery(
+  const { data: adminDetail, refetch } = trpc.admin.getChatDetail.useQuery(
     { sessionId },
-    { enabled: isValidSession && mode === "operator" }
+    { enabled: isValidSession }
   );
-  const { data: adminDetail, refetch: refetchAdmin } = trpc.admin.getChatDetail.useQuery(
-    { sessionId },
-    { enabled: isValidSession && mode === "admin" }
-  );
-
-  const detail = mode === "operator" ? opDetail : adminDetail;
-  const refetch = mode === "operator" ? refetchOp : refetchAdmin;
 
   const { data: polledMessages } = trpc.chat.getMessages.useQuery(
     { sessionId },
@@ -142,80 +112,32 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
     }
   );
 
-  // Operator-only quick replies query
-  const { data: opQuickReplies } = trpc.operator.listQuickReplies.useQuery(
-    undefined,
-    { enabled: mode === "operator" }
-  );
-  const adminQuickReplies = (adminDetail as any)?.quickReplies ?? [];
-  const quickReplies = mode === "operator" ? (opQuickReplies ?? []) : adminQuickReplies;
-
-  // Admin-only: operator list for assignment dropdown
-  const { data: operatorList } = trpc.admin.listOperators.useQuery(
-    undefined,
-    { enabled: mode === "admin" }
-  );
-  const operators = (operatorList ?? []).filter((op: any) => op.role === "operator" || op.role === "admin");
+  const quickReplies = (adminDetail as any)?.quickReplies ?? [];
 
   // ── Mutations ─────────────────────────────────────────────────────────────
-  const assignSession = trpc.operator.assignSession.useMutation({
-    onSuccess: () => { toast.success("Session assigned"); refetch(); },
-  });
-  const assignChat = trpc.admin.assignChat.useMutation({
-    onSuccess: () => { toast.success("オペレーターをアサインしました"); refetch(); },
-    onError: (e) => { toast.error(e.message); },
-  });
-
-  const opSendMessage = trpc.operator.sendMessage.useMutation({ onSuccess: () => setInput("") });
   const adminSendMessage = trpc.admin.sendChatMessage.useMutation({
     onSuccess: () => setInput(""),
     onError: () => toast.error("Failed to send message"),
   });
 
-  const endSession = trpc.operator.endSession.useMutation({
-    onSuccess: () => { toast.success("Session ended"); navigate(backPath); },
-  });
   const endChat = trpc.admin.endChat.useMutation({
     onSuccess: () => { toast.success("Session ended"); navigate(backPath); },
   });
 
-  const generateSummary = trpc.operator.generateSummary.useMutation({
-    onSuccess: () => { toast.success("Summary generated"); refetch(); },
-  });
   const refreshSummary = trpc.admin.refreshChatSummary.useMutation({
     onSuccess: () => { toast.success("Summary updated"); refetch(); },
   });
 
-  const opTyping = trpc.operator.typing.useMutation();
   const uploadFile = trpc.upload.uploadFile.useMutation();
 
-  // Mark read
-  const opMarkRead = trpc.operator.markRead.useMutation();
   const adminMarkRead = trpc.admin.markRead.useMutation();
-  const markRead = () => {
-    if (mode === "operator") opMarkRead.mutate({ sessionId });
-    else adminMarkRead.mutate({ sessionId });
-  };
+  const markRead = () => adminMarkRead.mutate({ sessionId });
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const handleAssign = (operatorId?: number) => {
-    if (mode === "operator") assignSession.mutate({ sessionId });
-    else assignChat.mutate({ sessionId, operatorId });
-  };
-  const isAssignPending = mode === "operator" ? assignSession.isPending : assignChat.isPending;
-
   const handleEnd = () => {
     if (!confirm("このセッションを終了しますか？")) return;
-    if (mode === "operator") endSession.mutate({ sessionId });
-    else endChat.mutate({ sessionId });
+    endChat.mutate({ sessionId });
   };
-  const isEndPending = mode === "operator" ? endSession.isPending : endChat.isPending;
-
-  const handleSummaryUpdate = () => {
-    if (mode === "operator") generateSummary.mutate({ sessionId });
-    else refreshSummary.mutate({ sessionId });
-  };
-  const isSummaryPending = mode === "operator" ? generateSummary.isPending : refreshSummary.isPending;
 
   const sendMessageMutate = (content: string, fileUrl?: string) => {
     const tempId = -(Date.now());
@@ -230,13 +152,8 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       if (fileUrl) toast.error("Failed to send image.");
     };
-    if (mode === "operator") {
-      opSendMessage.mutate({ sessionId, content, fileUrl }, { onSuccess, onError });
-    } else {
-      adminSendMessage.mutate({ sessionId, content, fileUrl }, { onSuccess, onError });
-    }
+    adminSendMessage.mutate({ sessionId, content, fileUrl }, { onSuccess, onError });
   };
-  const isSendPending = mode === "operator" ? opSendMessage.isPending : adminSendMessage.isPending;
 
   // ── Polling merge ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -260,10 +177,10 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
 
   // ── Load initial detail ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!detail) return;
-    if (detail.messages) setMessages(detail.messages as ChatMessage[]);
-    if ((detail as any).survey && !surveyResult) {
-      const s = (detail as any).survey as any;
+    if (!adminDetail) return;
+    if (adminDetail.messages) setMessages(adminDetail.messages as ChatMessage[]);
+    if ((adminDetail as any).survey && !surveyResult) {
+      const s = (adminDetail as any).survey as any;
       setSurveyResult({
         sessionId: s.sessionId,
         rating: s.rating,
@@ -273,7 +190,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail]);
+  }, [adminDetail]);
 
   // ── Socket.io ─────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -281,20 +198,18 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
     const socket: Socket = io(window.location.origin, { path: "/api/socket.io" });
     socketRef.current = socket;
     socket.emit("join_session", sessionId);
-    socket.emit("join_operators");
+    socket.emit("join_admins");
     socket.on("connect", () => setSocketConnected(true));
     socket.on("disconnect", () => setSocketConnected(false));
     socket.on("new_message", (msg: ChatMessage) => {
-      if (msg.role === "operator") return;
       setMessages((prev) => {
         if (msg.id && prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
-      // Auto-mark as read when viewing the session
       markRead();
     });
     socket.on("typing", (data: { role: string; isTyping: boolean }) => {
-      if (data.role !== "operator") setTypingInfo(data);
+      setTypingInfo(data);
     });
     socket.on("session_ended", () => { toast.info("Session has ended"); refetch(); });
     socket.on("survey_submitted", (data: any) => {
@@ -321,22 +236,13 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   // ── Send handlers ─────────────────────────────────────────────────────────
   const handleSend = () => {
     const content = input.trim();
-    if (!content || isSendPending) return;
+    if (!content || adminSendMessage.isPending) return;
     setInput("");
     sendMessageMutate(content);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    if (mode === "operator") {
-      opTyping.mutate({ sessionId, isTyping: true });
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = setTimeout(() => opTyping.mutate({ sessionId, isTyping: false }), 1500);
-    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -372,9 +278,8 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   };
 
   // ── Derived state ─────────────────────────────────────────────────────────
-  const session = (detail as any)?.session;
+  const session = (adminDetail as any)?.session;
   const isEnded = session?.status === "ended";
-  const isAssigned = mode === "operator" ? session?.operatorId === user?.id : false;
 
   // ── Render ────────────────────────────────────────────────────────────────
   const resolvedBool = (v: boolean | "yes" | "no" | null | undefined): boolean | null => {
@@ -384,7 +289,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
   };
 
   return (
-    <DashboardLayout sidebarItems={sidebarItems} title={mode === "operator" ? "Operator" : "Admin Dashboard"}>
+    <DashboardLayout sidebarItems={sidebarItems} title="Admin Dashboard">
       {/* Lightbox */}
       {lightboxSrc && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center" onClick={() => setLightboxSrc(null)}>
@@ -416,55 +321,9 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
               <Badge className={cn("text-xs border-0", STATUS_COLORS[session?.status ?? "ended"])}>
                 {session?.status === "waiting" ? "Waiting" : session?.status === "active" ? "Active" : "Ended"}
               </Badge>
-              {!isEnded && !isAssigned && mode === "operator" && (
-                <Button size="sm" onClick={() => handleAssign()} disabled={isAssignPending} className="bg-black text-white hover:bg-gray-800 text-xs h-7 gap-1">
-                  {isAssignPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <><UserCheck className="w-3 h-3" /> Assign to me</>}
-                </Button>
-              )}
-              {/* Admin: operator assignment dropdown */}
-              {mode === "admin" && !isEnded && (
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-gray-400" />
-                  <Select
-                    value={session?.operatorId ? String(session.operatorId) : ""}
-                    onValueChange={(val) => {
-                      if (val === "unassign") {
-                        // no unassign API yet — show info
-                        toast.info("アサイン解除は現在未対応です");
-                        return;
-                      }
-                      handleAssign(Number(val));
-                    }}
-                    disabled={isAssignPending}
-                  >
-                    <SelectTrigger className="h-7 text-xs w-40 border-gray-200 bg-white">
-                      <SelectValue placeholder="オペレーターを選択..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {operators.length === 0 && (
-                        <SelectItem value="__none" disabled>オペレーターなし</SelectItem>
-                      )}
-                      {operators.map((op: any) => {
-                        const displayName = op.firstName
-                          ? `${op.firstName}${op.lastName ? " " + op.lastName : ""}`
-                          : op.name ?? op.email;
-                        return (
-                          <SelectItem key={op.id} value={String(op.id)}>
-                            {displayName}
-                            {op.role === "admin" && (
-                              <span className="ml-1 text-[10px] text-gray-400">(admin)</span>
-                            )}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  {isAssignPending && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
-                </div>
-              )}
               {!isEnded && (
-                <Button size="sm" onClick={handleEnd} disabled={isEndPending} className="bg-red-500 hover:bg-red-600 text-white text-xs h-7 gap-1.5 border-0">
-                  {isEndPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <><StopCircle className="w-3 h-3" /> End</>}
+                <Button size="sm" onClick={handleEnd} disabled={endChat.isPending} className="bg-red-500 hover:bg-red-600 text-white text-xs h-7 gap-1.5 border-0">
+                  {endChat.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <><StopCircle className="w-3 h-3" /> End</>}
                 </Button>
               )}
             </div>
@@ -487,7 +346,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                     <div className={cn("max-w-[70%] flex flex-col", isVisitor ? "items-start" : "items-end")}>
                       {!isOp && (
                         <span className="text-[10px] text-gray-400 mb-0.5">
-                          {isAI ? "AI" : isVisitor ? (session?.visitorName ?? "Visitor") : (msg.operatorName ?? "Operator")}
+                          {isAI ? "AI" : isVisitor ? (session?.visitorName ?? "Visitor") : (msg.operatorName ?? "Admin")}
                         </span>
                       )}
                       <div className={cn(
@@ -501,11 +360,10 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                         )}
                         {msg.content && (
                           <div className="px-3 py-2 text-sm whitespace-pre-wrap break-words">
-                            {/* For operator messages: show originalContent (JP) if available, else content */}
                             {isOp ? (msg.originalContent ?? msg.content) : msg.content}
                           </div>
                         )}
-                        {/* Layer 1: Show translation for visitor messages (non-Japanese sessions) */}
+                        {/* Translation for visitor messages */}
                         {isVisitor && msg.translation && (() => {
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
                           return (
@@ -517,7 +375,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                             </div>
                           );
                         })()}
-                        {/* Layer 1b: Show translation for AI messages (non-Japanese sessions) */}
+                        {/* Translation for AI messages */}
                         {isAI && msg.translation && (() => {
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
                           return (
@@ -529,7 +387,7 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                             </div>
                           );
                         })()}
-                        {/* Layer 2: Show translated text for operator messages sent to non-Japanese visitors */}
+                        {/* Translation for admin messages sent to non-Japanese visitors */}
                         {isOp && msg.translation && (() => {
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
                           return (
@@ -600,11 +458,11 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
             </div>
           </div>
 
-          {/* Admin: inline quick replies strip */}
-          {mode === "admin" && !isEnded && quickReplies.length > 0 && (
+          {/* Quick replies strip */}
+          {!isEnded && quickReplies.length > 0 && showQuickReplies && (
             <div className="px-4 py-2 border-t flex gap-2 overflow-x-auto shrink-0 bg-white">
-              {quickReplies.slice(0, 5).map((qr: { id: number; title: string; content: string }) => (
-                <button key={qr.id} onClick={() => setInput(qr.content)}
+              {quickReplies.slice(0, 8).map((qr: { id: number; title: string; content: string }) => (
+                <button key={qr.id} onClick={() => { setInput(qr.content); setShowQuickReplies(false); }}
                   className="text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 whitespace-nowrap transition-colors">
                   {qr.title}
                 </button>
@@ -612,12 +470,12 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
             </div>
           )}
 
-          {/* Admin: summary strip */}
-          {mode === "admin" && session?.summary && (
+          {/* Summary strip */}
+          {session?.summary && (
             <div className="px-4 py-2 border-t bg-gray-50 shrink-0">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-gray-500">Summary</span>
-                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={handleSummaryUpdate} disabled={isSummaryPending}>
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => refreshSummary.mutate({ sessionId })} disabled={refreshSummary.isPending}>
                   <RefreshCw className="h-3 w-3 mr-1" /> Update
                 </Button>
               </div>
@@ -632,28 +490,6 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
             </div>
           ) : (
             <div className="shrink-0 bg-white border-t border-gray-100 px-4 py-3">
-              {/* Operator: assign banner */}
-              {mode === "operator" && !isAssigned && (
-                <div className="mb-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                  <p className="text-xs text-amber-700">このセッションはまだアサインされていません</p>
-                  <Button size="sm" onClick={() => handleAssign()} disabled={isAssignPending} className="bg-black text-white hover:bg-gray-800 text-xs h-6 ml-2">
-                    {isAssignPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Assign to me"}
-                  </Button>
-                </div>
-              )}
-
-              {/* Operator: quick reply popup */}
-              {mode === "operator" && showQuickReplies && quickReplies.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
-                  {quickReplies.map((qr: { id: number; title: string; content: string }) => (
-                    <button key={qr.id} onClick={() => { setInput(qr.content); setShowQuickReplies(false); }}
-                      className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full transition-colors">
-                      {qr.title}
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {/* Image preview */}
               {imagePreview && (
                 <div className="mb-2">
@@ -669,7 +505,8 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
 
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
               <div className="flex items-end gap-2">
-                {mode === "operator" && (
+                {/* Quick reply toggle */}
+                {quickReplies.length > 0 && (
                   <button onClick={() => setShowQuickReplies(!showQuickReplies)}
                     className={cn("p-2 transition-colors flex-shrink-0", showQuickReplies ? "text-black" : "text-gray-400 hover:text-gray-600")}>
                     <Zap className="w-4 h-4" />
@@ -687,13 +524,13 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                   <>
                     <Textarea
                       value={input}
-                      onChange={handleInputChange}
+                      onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Type a message… (Shift+Enter for newline)"
                       rows={1}
                       className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[40px] max-h-[120px] py-2.5 text-sm"
                     />
-                    <Button onClick={handleSend} disabled={!input.trim() || isSendPending}
+                    <Button onClick={handleSend} disabled={!input.trim() || adminSendMessage.isPending}
                       className="bg-black hover:bg-gray-800 text-white rounded-full w-10 h-10 p-0 flex-shrink-0">
                       <Send className="w-4 h-4" />
                     </Button>
@@ -703,73 +540,6 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
             </div>
           )}
         </div>
-
-        {/* ── Right Panel (operator mode only) ── */}
-        {mode === "operator" && (
-          <div className="hidden lg:flex w-72 border-l border-gray-100 bg-white flex-col min-h-0 overflow-hidden">
-            <div className="shrink-0 flex border-b border-gray-100">
-              {(["quickreplies", "summary"] as const).map((tab) => (
-                <button key={tab} onClick={() => setRightTab(tab)}
-                  className={cn("flex-1 px-3 py-2.5 text-xs font-medium transition-colors",
-                    rightTab === tab ? "text-black border-b-2 border-black" : "text-gray-400 hover:text-gray-600")}>
-                  {tab === "quickreplies" ? "Quick Replies" : "Summary"}
-                </button>
-              ))}
-            </div>
-
-            {rightTab === "quickreplies" && (
-              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <div className="shrink-0 px-3 py-2 border-b border-gray-100">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <input type="text" value={qrSearch} onChange={(e) => setQrSearch(e.target.value)} placeholder="Search..."
-                      className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-black bg-gray-50" />
-                  </div>
-                </div>
-                <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1">
-                  {quickReplies.filter((qr: { title: string; content: string }) =>
-                    qrSearch === "" || qr.title.toLowerCase().includes(qrSearch.toLowerCase()) || qr.content.toLowerCase().includes(qrSearch.toLowerCase())
-                  ).map((qr: { id: number; title: string; content: string }) => (
-                    <button key={qr.id} onClick={() => { setInput(qr.content); toast.success(`"${qr.title}" をセット`); }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors group border border-transparent hover:border-gray-200">
-                      <p className="text-xs font-medium text-gray-800 group-hover:text-black truncate">{qr.title}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">{qr.content}</p>
-                    </button>
-                  ))}
-                  {quickReplies.length > 0 && quickReplies.filter((qr: { title: string; content: string }) =>
-                    qrSearch === "" || qr.title.toLowerCase().includes(qrSearch.toLowerCase()) || qr.content.toLowerCase().includes(qrSearch.toLowerCase())
-                  ).length === 0 && (
-                    <p className="text-xs text-gray-400 text-center py-6">No results</p>
-                  )}
-                  {quickReplies.length === 0 && (
-                    <p className="text-xs text-gray-400 text-center py-6">No quick replies</p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {rightTab === "summary" && (
-              <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                <div className="flex-1 min-h-0 overflow-y-auto p-4">
-                  {session?.summary ? (
-                    <p className="text-sm text-gray-600 leading-relaxed">{session.summary}</p>
-                  ) : (
-                    <p className="text-xs text-gray-400">No summary yet</p>
-                  )}
-                </div>
-                {!isEnded && (
-                  <div className="p-4 border-t border-gray-100">
-                    <Button variant="outline" size="sm" className="w-full text-xs gap-2 border-gray-200"
-                      onClick={handleSummaryUpdate} disabled={isSummaryPending}>
-                      {isSummaryPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                      Update Summary
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </DashboardLayout>
   );

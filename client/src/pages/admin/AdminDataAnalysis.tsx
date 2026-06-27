@@ -171,7 +171,7 @@ export default function AdminDataAnalysis() {
 
   const dailyData = (data?.dailyTrend ?? []).map((d) => ({
     date: d.date.slice(5),
-    Total: (d.ai ?? 0) + (d.operator ?? 0),
+    Total: (d.ai ?? 0) + ((d as any).operator ?? 0),
   }));
 
   return (
@@ -315,7 +315,7 @@ export default function AdminDataAnalysis() {
                 accent="blue"
               />
               <StatCard
-                label="Operator-Assisted"
+                label="Admin対応"
                 value={data ? `${data.operatorCount}` : "—"}
                 sub={data && data.total > 0 ? `${Math.round((data.operatorCount / data.total) * 100)}% of total` : undefined}
                 accent={data && data.total > 0 && (data.operatorCount / data.total) < 0.05 ? "green" : "amber"}

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { getLoginUrl } from "@/const";
 
 /**
  * ルートアクセス時にログイン状態とロールに応じて適切なページへリダイレクトする。
  * - admin  → /admin
- * - operator → /ops/chats
- * - 未ログイン / その他 → /portal
+ * - 未ログイン / その他 → Manus OAuth ログインページ
  */
 export default function RootRedirect() {
   const [, navigate] = useLocation();
@@ -15,15 +15,14 @@ export default function RootRedirect() {
   useEffect(() => {
     if (isLoading) return;
     if (!user) {
-      navigate("/portal", { replace: true });
+      window.location.href = getLoginUrl();
       return;
     }
     if (user.role === "admin") {
       navigate("/admin", { replace: true });
-    } else if (user.role === "operator") {
-      navigate("/ops/chats", { replace: true });
     } else {
-      navigate("/portal", { replace: true });
+      // 非adminユーザーはログインページへ
+      window.location.href = getLoginUrl();
     }
   }, [user, isLoading, navigate]);
 

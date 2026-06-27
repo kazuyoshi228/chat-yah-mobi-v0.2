@@ -18,8 +18,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { detectLanguageFromMessage, generateAIResponse, generateSummary } from "./ai";
 import { notifyOwner } from "../_core/notification";
 import { getIo } from "../socket";
-import { sendEscalationEmail, sendNewChatEmail, sendAIEscalationNotificationEmail, sendQrResendEmail } from "../email";
-import { getAllAdmins } from "../db";
+import { sendNewChatEmail, sendAIEscalationNotificationEmail, sendQrResendEmail } from "../email";
 import { toTranslationLabel, translateToJapaneseWithResult } from "../_core/deepl";
 import { checkRateLimit, messageLimiter, sessionLimiter, qrResendLimiter, ipLimiter, dailyAiCostLimiter } from "../rateLimit";
 import { sanitizeInput, containsXSS, isSpamContent, isNonsenseMessage } from "../sanitize";
@@ -125,7 +124,7 @@ export const chatRouter = router({
       // Notify via socket
       const io = getIo();
       if (io) {
-        io.to("operators").emit("new_session", {
+        io.to("admins").emit("new_session", {
           sessionId,
           visitorName: input.visitorName,
           language: input.language,
@@ -138,26 +137,6 @@ export const chatRouter = router({
         title: "新規チャット開始",
         content: `${input.visitorName ?? "訪問者"} がチャットを開始しました。\n最初のメッセージ: ${input.initialMessage}`,
       }).catch(() => {});
-
-      // Send email notification to admins if escalation is needed
-      if (shouldEscalate) {
-        const admins = await getAllAdmins().catch(() => []);
-        await Promise.allSettled(
-          admins
-            .filter((a) => a.email)
-            .map((a) =>
-              sendEscalationEmail({
-                toEmail: a.email!,
-                operatorName: a.name ?? "Admin",
-                sessionId,
-                visitorName: input.visitorName,
-                language: input.language,
-                urgent: true,
-                appUrl: "https://chat.yah.mobi",
-              })
-            )
-        );
-      }
 
       return { sessionId, isNew: true, aiResponse: aiContent, shouldEscalate };
     }),
@@ -185,10 +164,9 @@ export const chatRouter = router({
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isOperatorOrAdmin =
-        ctx.user && (ctx.user.role === "operator" || ctx.user.role === "admin");
+      const isAdmin = ctx.user && ctx.user.role === "admin";
 
-      if (!isOperatorOrAdmin) {
+      if (!isAdmin) {
         if (!input.visitorId || session.visitorId !== input.visitorId) {
           throw new TRPCError({
             code: "FORBIDDEN",
@@ -200,7 +178,7 @@ export const chatRouter = router({
       const msgs = await getMessagesBySessionId(input.sessionId);
 
       // For visitors: remap operator messages so they see translated content
-      if (!isOperatorOrAdmin) {
+      if (!isAdmin) {
         return msgs.map((m) => {
           if (m.role === "operator" && m.translation) {
             return { ...m, content: m.translation, translation: null };
@@ -302,8 +280,8 @@ export const chatRouter = router({
         });
       }
 
-      // If operator is assigned OR session is active (operator taking over), don't auto-reply
-      if (session.status === "active" || session.operatorId) {
+      // If session is active (admin took over), don't auto-reply
+      if (session.status === "active") {
         return { aiResponse: null, shouldEscalate: false };
       }
 
@@ -437,7 +415,7 @@ export const chatRouter = router({
         io.to(`session:${input.sessionId}`).emit("session_ended", {
           sessionId: input.sessionId,
         });
-        io.to("operators").emit("session_ended", { sessionId: input.sessionId });
+        io.to("admins").emit("session_ended", { sessionId: input.sessionId });
       }
 
       return { success: true };
@@ -474,7 +452,7 @@ export const chatRouter = router({
         freeComment: input.freeComment,
       });
 
-      // Notify operators via Socket.io that survey has been submitted
+      // Notify via Socket.io that survey has been submitted
       const io = getIo();
       if (io) {
         const surveyPayload = {
@@ -484,61 +462,14 @@ export const chatRouter = router({
           freeComment: input.freeComment ?? null,
           submittedAt: new Date(),
         };
-        // Notify the session room (operator viewing this specific chat)
         io.to(`session:${input.sessionId}`).emit("survey_submitted", surveyPayload);
-        // Also notify all operators (for list view updates)
-        io.to("operators").emit("survey_submitted", surveyPayload);
+        io.to("admins").emit("survey_submitted", surveyPayload);
       }
 
       return { success: true };
     }),
 
-  // Request escalation to operator
-  requestEscalation: publicProcedure
-    .input(
-      z.object({
-        sessionId: z.number(),
-        visitorId: z.string(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const session = await getChatSession(input.sessionId);
-      if (!session) throw new TRPCError({ code: "NOT_FOUND" });
-      if (session.visitorId !== input.visitorId) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      const io = getIo();
-      if (io) {
-        io.to("operators").emit("escalation_alert", {
-          sessionId: input.sessionId,
-          visitorName: session.visitorName,
-          urgent: true,
-        });
-      }
-
-      // Send escalation email to admins only
-      const admins = await getAllAdmins().catch(() => []);
-      await Promise.allSettled(
-        admins
-          .filter((a) => a.email)
-          .map((a) =>
-            sendEscalationEmail({
-              toEmail: a.email!,
-              operatorName: a.name ?? "Admin",
-              sessionId: input.sessionId,
-              visitorName: session.visitorName,
-              language: session.language,
-              urgent: true,
-              appUrl: "https://chat.yah.mobi",
-            })
-          )
-      );
-
-      return { success: true };
-    }),
-
-  // Public read-only quick replies (used by operator and admin panels)
+  // Public read-only quick replies (used by admin panel)
   listQuickReplies: publicProcedure.query(async () => {
     return listQuickReplies();
   }),

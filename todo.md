@@ -759,3 +759,31 @@
 - [x] SLA定義をSSoTに追加（営業時間内1時間・フォーム3営業日）
 - [x] SSoTにTurnstile・LLM-as-Judge Heartbeat・LLM Qualityカテゴリを追加
 - [x] チェックポイント保存
+
+## Phase 76: オペレーター関連コードの全削除（Admin専用構成）
+
+- [x] server/routers/operator.ts を削除
+- [x] client/src/pages/operator/ ディレクトリ（OperatorChats・OperatorChatDetail等）を削除
+- [x] client/src/pages/Portal.tsx を削除
+- [x] client/src/pages/admin/AdminOperators.tsx を削除
+- [x] App.tsx からoperator/portalルートとimportを削除
+- [x] DashboardLayout.tsxからOperatorsサイドバーエントリ・portal遷移・role分岐を削除
+- [x] RootRedirect.tsxをAdmin専用に書き直し
+- [x] ChatListBase.tsxのjoin_operatorsをjoin_adminsに変更・session_assignedイベント削除
+- [x] ChatDetailBase.tsxのjoin_operatorsをjoin_adminsに変更・operatorロールフィルタ削除
+- [x] server/routers.tsからoperatorRouterのimportと登録を削除
+- [x] server/routers/admin.tsからlistOperators・createOperator・updateOperator・deleteOperator手順を削除
+- [x] admin.tsのsetUserRoleからoperatorロールを削除
+- [x] admin.tsのassignChatからoperatorId引数・operator専用メール・operators roomブロードキャストを削除
+- [x] admin.tsのendChatのoperators roomブロードキャストをadminsに変更
+- [x] server/routers/chat.tsからsendEscalationEmail・getAllAdmins importを削除
+- [x] chat.tsのio.to("operators")を全てio.to("admins")に変更
+- [x] chat.tsのrequestEscalation procedureを削除
+- [x] chat.tsのisOperatorOrAdminをisAdminに変更
+- [x] server/_core/index.tsのjoin_operatorsをjoin_adminsに変更・operatorロールチェック削除
+- [x] WidgetChat.tsxのrequestEscalation mutation・エスカレーションバナーを削除（shouldEscalate→フォームリダイレクト）
+- [x] AdminFeedback.tsxの「Operator」バッジを「Admin対応」に変更
+- [x] AdminDataAnalysis.tsxの「Operator-Assisted」を「Admin対応」に変更
+- [x] useAuth.tsのredirectPathデフォルトを/portalから/adminに変更
+- [x] TypeScriptエラー0件・サーバー正常起動確認
+- [x] チェックポイント保存

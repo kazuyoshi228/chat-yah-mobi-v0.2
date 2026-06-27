@@ -97,7 +97,7 @@ export default function AdminFeedback() {
                             </Badge>
                           )}
                           {item.operatorId ? (
-                            <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">Operator</Badge>
+                            <Badge variant="outline" className="text-xs text-blue-600 border-blue-200">Admin対応</Badge>
                           ) : (
                             <Badge variant="outline" className="text-xs text-purple-600 border-purple-200">AI</Badge>
                           )}

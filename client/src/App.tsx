@@ -3,12 +3,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ChatStart from "@/pages/ChatStart";
 import ChatRoom from "@/pages/ChatRoom";
-import OperatorChats from "@/pages/operator/OperatorChats";
-import OperatorChatDetail from "@/pages/operator/OperatorChatDetail";
-import OperatorQuickReplies from "@/pages/operator/OperatorQuickReplies";
 // AdminDashboard removed — merged into BigKPIs
 import BigKPIs from "@/pages/admin/BigKPIs";
-import AdminOperators from "@/pages/admin/AdminOperators";
 import AdminQuickReplies from "@/pages/admin/AdminQuickReplies";
 import AdminRag from "@/pages/admin/AdminRag";
 import AdminFeedback from "@/pages/admin/AdminFeedback";
@@ -27,7 +23,6 @@ import SystemHealth from "@/pages/admin/SystemHealth";
 import SSoT from "@/pages/admin/SSoT";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
-import Portal from "@/pages/Portal";
 import RootRedirect from "@/pages/RootRedirect";
 import WidgetAuthSuccess from "@/pages/WidgetAuthSuccess";
 
@@ -38,21 +33,13 @@ export default function App() {
         {/* Root */}
         <Route path="/" component={RootRedirect} />
 
-        {/* Auth */}
-        <Route path="/portal" component={Portal} />
-
         {/* Visitor chat */}
         <Route path="/chat" component={ChatStart} />
         <Route path="/chat/:sessionId" component={ChatRoom} />
 
-        {/* Operator portal */}
-        <Route path="/ops/chats" component={OperatorChats} />
-        <Route path="/ops/chats/:id" component={OperatorChatDetail} />
-        <Route path="/ops/quick-replies" component={OperatorQuickReplies} />
         {/* Admin portal */}
         <Route path="/admin" component={BigKPIs} />
         <Route path="/admin/dashboard" component={BigKPIs} />
-        <Route path="/admin/operators" component={AdminOperators} />
         <Route path="/admin/quick-replies" component={AdminQuickReplies} />
         <Route path="/admin/rag" component={AdminRag} />
         <Route path="/admin/feedback" component={AdminFeedback} />

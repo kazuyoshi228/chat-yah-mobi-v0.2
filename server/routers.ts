@@ -3,7 +3,6 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { chatRouter } from "./routers/chat";
-import { operatorRouter } from "./routers/operator";
 import { adminRouter } from "./routers/admin";
 import { uploadRouter } from "./routers/upload";
 import { improvementsRouter } from "./routers/improvements";
@@ -20,7 +19,6 @@ export const appRouter = router({
     }),
   }),
   chat: chatRouter,
-  operator: operatorRouter,
   admin: adminRouter,
   upload: uploadRouter,
   improvements: improvementsRouter,

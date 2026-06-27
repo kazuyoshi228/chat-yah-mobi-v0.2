@@ -122,19 +122,18 @@ async function startServer() {
 
   // Socket.io connection handling
   io.on("connection", (socket) => {
-    // Join operator room — requires a valid operator/admin session cookie
-    socket.on("join_operators", async () => {
+    // Join admin room — requires a valid admin session cookie
+    socket.on("join_admins", async () => {
       const session = await resolveSocketUser(socket);
       if (!session) {
-        socket.emit("auth_error", { message: "Authentication required to join operator room." });
+        socket.emit("auth_error", { message: "Authentication required to join admin room." });
         return;
       }
-      // Only operators and admins may join the operator room
-      if (session.role !== "operator" && session.role !== "admin") {
-        socket.emit("auth_error", { message: "Operator or admin role required." });
+      if (session.role !== "admin") {
+        socket.emit("auth_error", { message: "Admin role required." });
         return;
       }
-      socket.join("operators");
+      socket.join("admins");
     });
 
     // Join specific session room

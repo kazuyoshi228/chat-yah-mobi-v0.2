@@ -1,19 +1,15 @@
 import { z } from "zod";
 import {
-  createOperatorUser,
   createQuickReply,
   createRagDocument,
   createTestRunLog,
   deleteQuickReply,
   deleteRagDocument,
-  getAllOperators,
-  getAllOperatorsWithChatCount,
   getAnalysisData,
   getChatSession,
   getKpiStats,
   getLatestTestRunLogs,
   getMessagesBySessionId,
-  getOperatorChatCount,
   getSurveyBySessionId,
   getUnreadSessionIds,
   listChatSessions,
@@ -32,7 +28,6 @@ import {
   markSessionRead,
   scheduleSessionDeletion,
   updateChatSession,
-  updateOperatorProfile,
   updateQuickReply,
   updateRagDocument,
   updateUserRole,
@@ -43,8 +38,6 @@ import { getEmbedding, generateSummary } from "./ai";
 import { invokeLLM } from "../_core/llm";
 import { getIo } from "../socket";
 import { sendOperatorMessage } from "../chatService";
-import { sendAssignmentEmail } from "../email";
-import { getUserById } from "../db";
 
 // Middleware: require admin role
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -75,52 +68,12 @@ export const adminRouter = router({
       return getKpiStats(since);
     }),
 
-  // Operator management
-  listOperators: adminProcedure.query(async () => {
-    // B-4: Use single-query helper to avoid N+1 (one COUNT per operator)
-    return getAllOperatorsWithChatCount();
-  }),
-
-  createOperator: adminProcedure
-    .input(
-      z.object({
-        firstName: z.string().min(1),
-        lastName: z.string().min(1),
-        email: z.string().email(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const id = await createOperatorUser(input);
-      return { id };
-    }),
-
-  updateOperator: adminProcedure
-    .input(
-      z.object({
-        userId: z.number(),
-        firstName: z.string().min(1).optional(),
-        lastName: z.string().min(1).optional(),
-        email: z.string().email().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const { userId, ...data } = input;
-      await updateOperatorProfile(userId, data);
-      return { success: true };
-    }),
-
-  deleteOperator: adminProcedure
-    .input(z.object({ userId: z.number() }))
-    .mutation(async ({ input }) => {
-      await updateUserRole(input.userId, "user");
-      return { success: true };
-    }),
-
+  // User role management (admin only)
   setUserRole: adminProcedure
     .input(
       z.object({
         userId: z.number(),
-        role: z.enum(["user", "admin", "operator"]),
+        role: z.enum(["user", "admin"]),
       })
     )
     .mutation(async ({ input }) => {
@@ -289,39 +242,19 @@ export const adminRouter = router({
     }),
 
   assignChat: adminProcedure
-    .input(z.object({ sessionId: z.number(), operatorId: z.number().optional() }))
+    .input(z.object({ sessionId: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
-      // If operatorId is provided, assign to that operator; otherwise assign to admin (self)
-      const assigneeId = input.operatorId ?? ctx.user.id;
-      await updateChatSession(input.sessionId, { status: "active", operatorId: assigneeId });
+      // Assign to admin (self)
+      await updateChatSession(input.sessionId, { status: "active", operatorId: ctx.user.id });
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("operator_joined", {
           sessionId: input.sessionId,
           operatorName: ctx.user.name,
         });
-        io.to("operators").emit("session_assigned", { sessionId: input.sessionId, operatorId: assigneeId });
-      }
-      // Send email to the assigned operator (if different from admin self-assign)
-      if (input.operatorId && input.operatorId !== ctx.user.id) {
-        const assignee = await getUserById(input.operatorId).catch(() => null);
-        if (assignee?.email) {
-          const firstMsg = await getMessagesBySessionId(input.sessionId).catch(() => []);
-          const initialMessage = firstMsg.find((m) => m.role === "visitor")?.content ?? null;
-          await sendAssignmentEmail({
-            toEmail: assignee.email,
-            operatorName: assignee.name ?? "Operator",
-            sessionId: input.sessionId,
-            visitorName: session.visitorName,
-            language: session.language,
-            initialMessage,
-            appUrl: "https://chat.yah.mobi",
-          }).catch(() => {});
-        }
-      } else if (!input.operatorId) {
-        // Admin assigned to self — no email needed
+        io.to("admins").emit("session_assigned", { sessionId: input.sessionId });
       }
       return { success: true };
     }),
@@ -346,7 +279,7 @@ export const adminRouter = router({
       const io = getIo();
       if (io) {
         io.to(`session:${input.sessionId}`).emit("session_ended", { sessionId: input.sessionId });
-        io.to("operators").emit("session_ended", { sessionId: input.sessionId });
+        io.to("admins").emit("session_ended", { sessionId: input.sessionId });
       }
       return { success: true };
     }),

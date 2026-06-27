@@ -33,14 +33,9 @@ export type SidebarItem = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const DEFAULT_OPERATOR_ITEMS: SidebarItem[] = [
-  { title: "Chat List", href: "/ops/chats", icon: MessageCircle },
-];
-
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "Big KPIs", href: "/admin", icon: Target },
   { title: "Chat List", href: "/admin/chats", icon: MessageCircle },
-  { title: "Operators", href: "/admin/operators", icon: Users },
   { title: "AI Chatbot", href: "/admin/ai-chatbot", icon: Bot },
   { title: "Quick Replies", href: "/admin/quick-replies", icon: Zap },
   { title: "RAG Documents", href: "/admin/rag", icon: BookOpen },
@@ -98,7 +93,7 @@ export default function DashboardLayout({
             </p>
           </div>
           <Button
-            onClick={() => { window.location.href = "/portal"; }}
+            onClick={() => { window.location.href = getLoginUrl(); }}
             size="lg"
             className="w-full bg-black hover:bg-gray-800 text-white"
           >
@@ -110,9 +105,7 @@ export default function DashboardLayout({
   }
 
   // Determine menu items based on role if not provided
-  const items = sidebarItems ?? (
-    user.role === "admin" ? DEFAULT_ADMIN_ITEMS : DEFAULT_OPERATOR_ITEMS
-  );
+  const items = sidebarItems ?? DEFAULT_ADMIN_ITEMS;
 
   return (
     <SidebarProvider
