@@ -21,7 +21,9 @@ import { getIo } from "../socket";
 import { sendEscalationEmail, sendNewChatEmail, sendAIEscalationNotificationEmail, sendQrResendEmail } from "../email";
 import { getAllAdmins } from "../db";
 import { toTranslationLabel, translateToJapaneseWithResult } from "../_core/deepl";
-import { checkRateLimit, messageLimiter, sessionLimiter, qrResendLimiter } from "../rateLimit";
+import { checkRateLimit, messageLimiter, sessionLimiter, qrResendLimiter, ipLimiter, dailyAiCostLimiter } from "../rateLimit";
+import { sanitizeInput, containsXSS, isSpamContent, isNonsenseMessage } from "../sanitize";
+import { verifyTurnstile } from "../turnstile";
 
 export const chatRouter = router({
   // Start a new chat session or resume existing one
@@ -40,9 +42,18 @@ export const chatRouter = router({
           stage: z.string().optional(),
           issue: z.string().optional(),
         }).optional(),
+        turnstileToken: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
+      // Turnstile CAPTCHA verification (if token provided)
+      if (input.turnstileToken) {
+        const isHuman = await verifyTurnstile(input.turnstileToken);
+        if (!isHuman) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "CAPTCHA verification failed. Please try again." });
+        }
+      }
+
       // Rate limit: max 5 sessions per 10 min per visitorId
       const rl = await checkRateLimit(sessionLimiter, input.visitorId);
       if (!rl.success) {
@@ -223,9 +234,14 @@ export const chatRouter = router({
       if (!rl.success) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "You are sending messages too quickly. Please wait a moment." });
       }
-      // Require either content or fileUrl
-      if (!input.content.trim() && !input.fileUrl) {
+      // Sanitize input
+      const sanitizedContent = sanitizeInput(input.content);
+      if (!sanitizedContent.trim() && !input.fileUrl) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Message content or image required" });
+      }
+      // Block XSS attempts
+      if (containsXSS(input.content)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid message content." });
       }
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
@@ -249,16 +265,25 @@ export const chatRouter = router({
         });
       }
 
+      // Spam/nonsense detection (repeated messages, gibberish)
+      if (isSpamContent(sanitizedContent, existingMessages.filter(m => m.role === "visitor").slice(-3).map(m => m.content))) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Please provide a meaningful message." });
+      }
+      // Nonsense/random character detection
+      if (isNonsenseMessage(sanitizedContent)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Please provide a meaningful message related to your inquiry." });
+      }
+
       // Save visitor message (with translation if non-Japanese)
       const visitorTxResult = await translateToJapaneseWithResult(
-        input.content,
+        sanitizedContent,
         session.language ?? "ja"
       ).catch(() => ({ ok: false as const, reason: "network_error" as const }));
       const visitorTranslation = toTranslationLabel(visitorTxResult) ?? null;
       const msgId = await createMessage({
         sessionId: input.sessionId,
         role: "visitor",
-        content: input.content,
+        content: sanitizedContent,
         translation: visitorTranslation ?? undefined,
         fileUrl: input.fileUrl,
       });
@@ -270,7 +295,7 @@ export const chatRouter = router({
           id: msgId,
           sessionId: input.sessionId,
           role: "visitor",
-          content: input.content,
+          content: sanitizedContent,
           translation: visitorTranslation ?? null,
           fileUrl: input.fileUrl,
           createdAt: new Date(),
@@ -292,6 +317,38 @@ export const chatRouter = router({
         await updateChatSession(input.sessionId, { language: detectedLang }).catch(() => {});
       }
       const effectiveLang = detectedLang;
+
+      // Daily AI cost limit check (global)
+      const costCheck = await checkRateLimit(dailyAiCostLimiter, "global");
+      if (!costCheck.success) {
+        // Cost limit exceeded — return a polite fallback without calling LLM
+        const fallbackMsg = effectiveLang === "ja"
+          ? "現在AIサポートが一時的に利用できません。お手数ですが、お問い合わせフォームよりご連絡ください。"
+          : "AI support is temporarily unavailable. Please use the contact form for assistance.";
+        const fallbackMsgId = await createMessage({
+          sessionId: input.sessionId,
+          role: "ai",
+          content: fallbackMsg,
+        });
+        if (io) {
+          io.to(`session:${input.sessionId}`).emit("new_message", {
+            id: fallbackMsgId,
+            sessionId: input.sessionId,
+            role: "ai",
+            content: fallbackMsg,
+            createdAt: new Date(),
+          });
+        }
+        // Notify owner about cost limit reached (fire-and-forget)
+        import("../_core/notification").then(({ notifyOwner }) => {
+          notifyOwner({
+            title: "[Alert] AI日次コスト上限に到達",
+            content: `本日のAI応答回数が上限(500回)に達しました。\nAI応答は一時停止中です。\n\n対応: Upstash Redisのrl:cost:globalキーを削除するか、翌日の自動リセットをお待ちください。`,
+          }).catch(() => {});
+        }).catch(() => {});
+
+        return { aiResponse: fallbackMsg, shouldEscalate: true };
+      }
 
       // Generate AI response (language detection already done above, with flow context if available)
       const { content: aiContent, shouldEscalate, shouldRedirectToForm } = await generateAIResponse(

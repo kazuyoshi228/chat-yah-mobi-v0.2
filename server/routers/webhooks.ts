@@ -4,6 +4,7 @@
  * Auth: X-Webhook-Secret header must match WEBHOOK_SECRET env var
  */
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
 import { getDb } from "../db";
 import { ENV } from "../_core/env";
 import {
@@ -20,13 +21,43 @@ const webhookRouter = Router();
 
 // ── Auth middleware ──────────────────────────────────────────────────────────
 function verifyWebhookSecret(req: Request, res: Response): boolean {
-  const secret = req.headers["x-webhook-secret"];
   const expected = ENV.webhookSecret;
   if (!expected) {
     console.warn("[Webhook] WEBHOOK_SECRET not set — rejecting all requests");
     res.status(500).json({ error: "Webhook secret not configured" });
     return false;
   }
+
+  // Method 1: HMAC-SHA256 signature verification (preferred)
+  const signature = req.headers["x-webhook-signature"] as string | undefined;
+  if (signature) {
+    try {
+      const body = JSON.stringify(req.body);
+      const expectedSig = crypto
+        .createHmac("sha256", expected)
+        .update(body)
+        .digest("hex");
+      if (signature.length !== expectedSig.length) {
+        res.status(401).json({ error: "Invalid webhook signature" });
+        return false;
+      }
+      const isValid = crypto.timingSafeEqual(
+        Buffer.from(signature, "hex"),
+        Buffer.from(expectedSig, "hex")
+      );
+      if (!isValid) {
+        res.status(401).json({ error: "Invalid webhook signature" });
+        return false;
+      }
+      return true;
+    } catch {
+      res.status(401).json({ error: "Invalid webhook signature format" });
+      return false;
+    }
+  }
+
+  // Method 2: Simple secret header (backward compatible)
+  const secret = req.headers["x-webhook-secret"];
   if (!secret || secret !== expected) {
     res.status(401).json({ error: "Invalid webhook secret" });
     return false;

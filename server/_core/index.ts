@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import helmet from "helmet";
 import { createServer } from "http";
 import net from "net";
 import path from "path";
@@ -43,6 +44,24 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // Security headers via Helmet.js
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", "wss:", "ws:", "https:"],
+        frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+        frameAncestors: ["*"],  // Allow widget embedding
+      },
+    },
+    crossOriginEmbedderPolicy: false,  // Allow cross-origin resources
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }));
 
   // Configure body parser — 20 MB covers screenshot uploads (base64 overhead included)
   app.use(express.json({ limit: "20mb" }));

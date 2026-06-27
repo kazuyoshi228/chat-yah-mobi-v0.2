@@ -19,10 +19,8 @@ import AIChatbot from "@/pages/admin/AIChatbot";
 import UserManuals from "@/pages/admin/UserManuals";
 import AdminTesting from "@/pages/admin/AdminTesting";
 import AdminFlowTree from "@/pages/admin/AdminFlowTree";
-import HistoricalDocs from "@/pages/admin/HistoricalDocs";
 import Refund from "@/pages/admin/Refund";
 import Hospitality from "@/pages/admin/Hospitality";
-import Improvements from "@/pages/admin/Improvements";
 import Pricing from "@/pages/admin/Pricing";
 import Customers from "@/pages/admin/Customers";
 import SystemHealth from "@/pages/admin/SystemHealth";
@@ -65,10 +63,8 @@ export default function App() {
         <Route path="/admin/user-manuals" component={UserManuals} />
         <Route path="/admin/testing" component={AdminTesting} />
         <Route path="/admin/flow-tree" component={AdminFlowTree} />
-        <Route path="/admin/historical-docs" component={HistoricalDocs} />
         <Route path="/admin/refund" component={Refund} />
         <Route path="/admin/hospitality" component={Hospitality} />
-        <Route path="/admin/improvements" component={Improvements} />
         <Route path="/admin/pricing" component={Pricing} />
         <Route path="/admin/customers" component={Customers} />
         <Route path="/admin/system-health" component={SystemHealth} />

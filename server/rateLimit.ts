@@ -51,6 +51,26 @@ export const aiResponseLimiter = new Ratelimit({
 });
 
 /**
+ * IP-based global rate limit: max 60 requests per minute per IP.
+ * Catches distributed bot attacks regardless of visitorId.
+ */
+export const ipLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(60, "1 m"),
+  prefix: "rl:ip",
+});
+
+/**
+ * Daily AI cost tracker: max 500 AI calls per day (global).
+ * When exceeded, AI responses are paused and owner is notified.
+ */
+export const dailyAiCostLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(500, "1 d"),
+  prefix: "rl:cost",
+});
+
+/**
  * Helper to check rate limit and return result.
  */
 export async function checkRateLimit(
