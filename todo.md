@@ -698,4 +698,4 @@
 - [x] Refund.tsx の安定化確認
 - [x] AI Chatbot ページ（/admin/ai-chatbot）を最新状況に更新・無駄なコピー削除
 - [x] RAG Documents に言語別フィルターボタン追加
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: ee5b3be7)
