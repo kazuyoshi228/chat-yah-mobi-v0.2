@@ -7,6 +7,7 @@ import { operatorRouter } from "./routers/operator";
 import { adminRouter } from "./routers/admin";
 import { uploadRouter } from "./routers/upload";
 import { improvementsRouter } from "./routers/improvements";
+import { plansRouter } from "./routers/plans";
 
 export const appRouter = router({
   system: systemRouter,
@@ -23,6 +24,7 @@ export const appRouter = router({
   admin: adminRouter,
   upload: uploadRouter,
   improvements: improvementsRouter,
+  plans: plansRouter,
 });
 
 export type AppRouter = typeof appRouter;

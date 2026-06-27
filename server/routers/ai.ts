@@ -3,7 +3,15 @@ import {
   createMessage,
   listActiveRagDocuments,
   scheduleSessionDeletion,
+  getDb,
 } from "../db";
+import {
+  plans,
+  customerProfiles,
+  purchases,
+  esimStatuses,
+} from "../../drizzle/schema";
+import { eq, desc } from "drizzle-orm";
 
 const ESCALATION_KEYWORDS = {
   ja: ["人間", "オペレーター", "担当者", "スタッフ", "つないで", "繋いで", "怒", "最悪", "ひどい", "解決しない"],
@@ -362,13 +370,134 @@ export function detectEscalation(message: string, language: string): boolean {
   return keywords.some((kw) => lower.includes(kw));
 }
 
+// Fetch dynamic context from DB (plans + customer data by email)
+async function fetchDynamicContext(visitorEmail?: string | null): Promise<{
+  plansSection: string;
+  customerSection: string;
+}> {
+  const db = await getDb();
+  if (!db) return { plansSection: "", customerSection: "" };
+
+  // ── Active plans ──────────────────────────────────────────────────────────
+  let plansSection = "";
+  try {
+    const activePlans = await db
+      .select()
+      .from(plans)
+      .where(eq(plans.isActive, 1))
+      .orderBy(plans.sortOrder);
+    if (activePlans.length > 0) {
+      const rows = activePlans.map(
+        (p) =>
+          `| ${p.name} | ${p.dataGb}GB | ${p.durationDays}日間 | ¥${p.priceYen.toLocaleString()} | ${p.bestFor ?? ""} |`
+      );
+      plansSection =
+        `\n## Current Plans (Live from yah.mobi/app DB)\n` +
+        `| プラン | データ | 有効期間 | 価格 | おすすめ用途 |\n` +
+        `|--------|--------|----------|------|------------|\n` +
+        rows.join("\n");
+    }
+  } catch (e) {
+    console.warn("[AI] Failed to fetch plans:", e);
+  }
+
+  // ── Customer data (by email) ───────────────────────────────────────────────
+  let customerSection = "";
+  if (visitorEmail) {
+    try {
+      const [profile] = await db
+        .select()
+        .from(customerProfiles)
+        .where(eq(customerProfiles.email, visitorEmail))
+        .limit(1);
+      if (profile) {
+        const userPurchases = await db
+          .select()
+          .from(purchases)
+          .where(eq(purchases.externalUserId, profile.externalUserId))
+          .orderBy(desc(purchases.purchasedAt))
+          .limit(5);
+        const userEsim = await db
+          .select()
+          .from(esimStatuses)
+          .where(eq(esimStatuses.externalUserId, profile.externalUserId))
+          .orderBy(desc(esimStatuses.syncedAt))
+          .limit(5);
+
+        const lines: string[] = [
+          `\n## Customer Profile (matched by email: ${visitorEmail})`,
+          `- Name: ${profile.name ?? "Unknown"}`,
+          `- Language: ${profile.language ?? "ja"}`,
+          `- Registered: ${profile.registeredAt ? new Date(profile.registeredAt).toLocaleDateString("ja-JP") : "—"}`,
+        ];
+
+        if (userPurchases.length > 0) {
+          lines.push("");
+          lines.push("### Purchase History (most recent 5)");
+          for (const p of userPurchases) {
+            const statusLabel = {
+              active: "有効",
+              expired: "期限切れ",
+              refunded: "返金済",
+              cancelled: "キャンセル",
+              pending: "処理中",
+            }[p.status] ?? p.status;
+            lines.push(
+              `- [${statusLabel}] ${p.planName} ¥${p.priceYen.toLocaleString()} 購入日:${new Date(p.purchasedAt).toLocaleDateString("ja-JP")}${
+                p.expiresAt ? ` 期限:${new Date(p.expiresAt).toLocaleDateString("ja-JP")}` : ""
+              }`
+            );
+          }
+        } else {
+          lines.push("- No purchase history found");
+        }
+
+        if (userEsim.length > 0) {
+          lines.push("");
+          lines.push("### eSIM Status (most recent 5)");
+          for (const e of userEsim) {
+            const statusLabel = {
+              active: "接続中",
+              installed: "インストール済",
+              not_installed: "未インストール",
+              expired: "期限切れ",
+              error: "エラー",
+            }[e.status] ?? e.status;
+            const usage =
+              e.dataUsedMb != null && e.dataTotalMb != null
+                ? ` データ使用量:${e.dataUsedMb}/${e.dataTotalMb}MB`
+                : "";
+            lines.push(
+              `- [${statusLabel}]${e.iccid ? ` ICCID:${e.iccid}` : ""}${usage}${
+                e.expiresAt ? ` 期限:${new Date(e.expiresAt).toLocaleDateString("ja-JP")}` : ""
+              }`
+            );
+          }
+        }
+
+        lines.push("");
+        lines.push(
+          "Use this customer data to personalize your response. Address the customer by name if available. " +
+          "When handling complaints or refund requests, reference their actual purchase history."
+        );
+        customerSection = lines.join("\n");
+      }
+    } catch (e) {
+      console.warn("[AI] Failed to fetch customer data:", e);
+    }
+  }
+
+  return { plansSection, customerSection };
+}
+
 // Generate AI response
 export async function generateAIResponse(
   sessionId: number,
   userMessage: string,
   history: Array<{ role: string; content: string }>,
   language: string,
-  flowContext?: { category?: string; device?: string; stage?: string; issue?: string }
+  flowContext?: { category?: string; device?: string; stage?: string; issue?: string },
+  visitorEmail?: string | null
 ): Promise<{ content: string; shouldEscalate: boolean; shouldRedirectToForm: boolean; detectedLanguage: string }> {
   // Count how many AI responses have already been sent in this session
   const aiMessageCount = history.filter((m) => m.role === "ai").length;
@@ -382,6 +511,9 @@ export async function generateAIResponse(
   // Build flow context section for system prompt
   const flowContextSection = flowContext ? buildFlowContextPrompt(flowContext, langName) : "";
 
+  // Fetch dynamic context from DB (live plans + customer data)
+  const { plansSection, customerSection } = await fetchDynamicContext(visitorEmail);
+
   const systemPrompt = `You are a helpful customer support assistant for yah.mobile, a Japan-only eSIM service for international travelers.
 Always respond in ${langName}.
 
@@ -389,9 +521,10 @@ Always respond in ${langName}.
 - Japan-only eSIM service for international travelers visiting Japan
 - Industry-lowest price per GB for Japan travel eSIM
 - 24/7 support in 6 languages (Japanese, English, Chinese, Korean, Thai, Vietnamese)
-- Plans: Light 3GB/7days ¥1,078, Standard 5GB/15days ¥1,848, Value 10GB/30days ¥3,278, Premium 20GB/30days ¥5,478, Ultra 50GB/30days ¥11,000, Unlimited/30days ¥16,500
+- Plans: Light 3GB/7days ¥1,078, Standard 5GB/15days ¥1,848, Value 10GB/30days ¥3,278, Premium 20GB/30days ¥5,478, Ultra 50GB/30days ¥11,000, Unlimited/30days ¥16,500 (fallback if DB unavailable)
 - Payment: Credit card (Visa/Mastercard/AMEX/JCB), Apple Pay, Google Pay
 - eSIM compatible devices: iPhone XS or later, Google Pixel 3 or later, Samsung Galaxy S20 or later
+${plansSection}${customerSection}
 
 ## Response Style & Hospitality Standards
 

@@ -610,3 +610,28 @@
 - [x] 出発当日の設定タイミングガイド EN/ZH/KO — 6件追加（計33件追加、合計128件）
 - [x] OONASシミュレーション結果: CONNECTION 0.932 | PRICING 0.936 | REFUND 0.920 | GENERAL 0.938 | 全体 0.930
 - [x] チェックポイント保存 (version: 8de89da2)
+
+## Phase 65: Price DB連動実装（自社プラン + 競合価格 + AI連動 + 外部API）
+- [ ] plansテーブル作成（id, name, dataGb, durationDays, priceYen, bestFor, isActive, sortOrder）
+- [ ] competitor_plansテーブル作成（id, competitorName, planName, dataGb, durationDays, priceYen, sourceUrl, updatedAt）
+- [ ] マイグレーション実行・初期データ投入（現行6プラン + 競合3社）
+- [ ] tRPC plansRouter実装（listPlans, upsertPlan, deletePlan, listCompetitors, upsertCompetitor, deleteCompetitor）
+- [ ] 管理画面Pricingページ実装（自社プラン編集テーブル + 競合価格管理テーブル）
+- [ ] ai.tsのsystem promptをDB連動に変更（静的ハードコードを廃止）
+- [ ] yah.mobi/app向け公開API実装（chat.listPlans: publicProcedure）
+- [ ] チェックポイント保存
+
+## Phase 65: yah.mobi/app Webhook連動実装（全データ統合）
+- [x] plansテーブル作成（id, externalId, name, dataGb, durationDays, priceYen, bestFor, isActive, sortOrder, syncedAt）
+- [x] competitor_plansテーブル作成（id, competitorName, planName, dataGb, durationDays, priceYen, sourceUrl, syncedAt）
+- [x] customer_profilesテーブル作成（id, externalUserId, email, name, language, registeredAt, syncedAt）
+- [x] purchasesテーブル作成（id, externalOrderId, externalUserId, planName, priceYen, purchasedAt, expiresAt, status, syncedAt）
+- [x] esim_statusesテーブル作成（id, externalUserId, externalOrderId, iccid, status, activatedAt, expiresAt, dataUsedMb, dataTotalMb, syncedAt）
+- [x] マイグレーション実行
+- [x] Webhook受信エンドポイント実装（/api/webhooks/plans-updated, /competitor-plans-updated, /customer-profile, /purchase-created, /esim-status）
+- [x] WEBHOOK_SECRET環境変数設定・認証ミドルウェア実装
+- [x] 管理画面Pricingページ実装（プラン一覧・競合価格テーブル）
+- [x] 管理画面Customersページ実装（顧客プロファイル・購入履歴・eSIM状態）
+- [x] ai.tsのsystem promptをDB連動に変更（チャット開始時に顧客情報・購入履歴を自動注入）
+- [x] yah.mobi/app向けWebhook指示書作成（構文サンプル・シークレットキー付き）
+- [ ] チェックポイント保存

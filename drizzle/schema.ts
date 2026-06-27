@@ -236,3 +236,96 @@ export const improvementCards = mysqlTable("improvement_cards", {
 });
 export type ImprovementCard = typeof improvementCards.$inferSelect;
 export type InsertImprovementCard = typeof improvementCards.$inferInsert;
+
+
+/**
+ * Plans - yah.mobi/app からWebhookで同期される自社eSIMプラン一覧
+ */
+export const plans = mysqlTable("plans", {
+  id: int("id").autoincrement().primaryKey(),
+  externalId: varchar("externalId", { length: 128 }).unique(), // yah.mobi側のプランID
+  name: varchar("name", { length: 128 }).notNull(),
+  dataGb: float("dataGb").notNull(),
+  durationDays: int("durationDays").notNull(),
+  priceYen: int("priceYen").notNull(),
+  bestFor: text("bestFor"), // 推奨用途の説明
+  isActive: tinyint("isActive").default(1).notNull(),
+  sortOrder: int("sortOrder").default(0),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Plan = typeof plans.$inferSelect;
+export type InsertPlan = typeof plans.$inferInsert;
+
+/**
+ * Competitor Plans - yah.mobi/app からWebhookで同期される競合他社プラン
+ */
+export const competitorPlans = mysqlTable("competitor_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  externalId: varchar("externalId", { length: 128 }).unique(),
+  competitorName: varchar("competitorName", { length: 128 }).notNull(),
+  planName: varchar("planName", { length: 128 }).notNull(),
+  dataGb: float("dataGb").notNull(),
+  durationDays: int("durationDays").notNull(),
+  priceYen: int("priceYen").notNull(),
+  sourceUrl: text("sourceUrl"),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CompetitorPlan = typeof competitorPlans.$inferSelect;
+export type InsertCompetitorPlan = typeof competitorPlans.$inferInsert;
+
+/**
+ * Customer Profiles - yah.mobi/app からWebhookで同期される顧客プロファイル
+ */
+export const customerProfiles = mysqlTable("customer_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  externalUserId: varchar("externalUserId", { length: 128 }).notNull().unique(),
+  email: varchar("email", { length: 320 }),
+  name: varchar("name", { length: 256 }),
+  language: varchar("language", { length: 8 }).default("ja"),
+  registeredAt: timestamp("registeredAt"),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CustomerProfile = typeof customerProfiles.$inferSelect;
+export type InsertCustomerProfile = typeof customerProfiles.$inferInsert;
+
+/**
+ * Purchases - yah.mobi/app からWebhookで同期される購入履歴
+ */
+export const purchases = mysqlTable("purchases", {
+  id: int("id").autoincrement().primaryKey(),
+  externalOrderId: varchar("externalOrderId", { length: 128 }).notNull().unique(),
+  externalUserId: varchar("externalUserId", { length: 128 }).notNull(),
+  planName: varchar("planName", { length: 128 }).notNull(),
+  dataGb: float("dataGb"),
+  durationDays: int("durationDays"),
+  priceYen: int("priceYen").notNull(),
+  purchasedAt: timestamp("purchasedAt").notNull(),
+  expiresAt: timestamp("expiresAt"),
+  status: mysqlEnum("status", ["pending", "active", "expired", "refunded", "cancelled"]).default("pending").notNull(),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Purchase = typeof purchases.$inferSelect;
+export type InsertPurchase = typeof purchases.$inferInsert;
+
+/**
+ * eSIM Statuses - yah.mobi/app からWebhookで同期されるeSIM状態
+ */
+export const esimStatuses = mysqlTable("esim_statuses", {
+  id: int("id").autoincrement().primaryKey(),
+  externalUserId: varchar("externalUserId", { length: 128 }).notNull(),
+  externalOrderId: varchar("externalOrderId", { length: 128 }).notNull().unique(),
+  iccid: varchar("iccid", { length: 64 }),
+  status: mysqlEnum("status", ["not_installed", "installed", "active", "expired", "error"]).default("not_installed").notNull(),
+  activatedAt: timestamp("activatedAt"),
+  expiresAt: timestamp("expiresAt"),
+  dataUsedMb: int("dataUsedMb").default(0),
+  dataTotalMb: int("dataTotalMb"),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type EsimStatus = typeof esimStatuses.$inferSelect;
+export type InsertEsimStatus = typeof esimStatuses.$inferInsert;

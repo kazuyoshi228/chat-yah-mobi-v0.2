@@ -22,6 +22,7 @@ import HistoricalDocs from "@/pages/admin/HistoricalDocs";
 import Refund from "@/pages/admin/Refund";
 import Hospitality from "@/pages/admin/Hospitality";
 import Improvements from "@/pages/admin/Improvements";
+import Pricing from "@/pages/admin/Pricing";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import Portal from "@/pages/Portal";
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/admin/refund" component={Refund} />
         <Route path="/admin/hospitality" component={Hospitality} />
         <Route path="/admin/improvements" component={Improvements} />
+        <Route path="/admin/pricing" component={Pricing} />
         {/* Embeddable widget */}
         <Route path="/widget-chat" component={WidgetChat} />
         <Route path="/widget-auth-success" component={WidgetAuthSuccess} />

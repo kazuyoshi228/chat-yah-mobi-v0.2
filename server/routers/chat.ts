@@ -87,7 +87,8 @@ export const chatRouter = router({
         input.initialMessage,
         [],
         input.language,
-        input.flowContext
+        input.flowContext,
+        input.visitorEmail
       );
 
       // Translate AI response to Japanese for operator display (skip if already Japanese)
@@ -278,7 +279,8 @@ export const chatRouter = router({
         input.content,
         history.map((m) => ({ role: m.role, content: m.content })),
         effectiveLang,
-        input.flowContext
+        input.flowContext,
+        session.visitorEmail
       );
 
       // Translate AI response to Japanese for operator display (skip if already Japanese)

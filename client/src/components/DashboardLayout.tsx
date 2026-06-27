@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, Archive, RotateCcw, Heart, TrendingUp } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, Archive, RotateCcw, Heart, TrendingUp, DollarSign } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -53,6 +53,7 @@ const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "Refund", href: "/admin/refund", icon: RotateCcw },
   { title: "Hospitality", href: "/admin/hospitality", icon: Heart },
   { title: "定期的な改善", href: "/admin/improvements", icon: TrendingUp },
+  { title: "Pricing", href: "/admin/pricing", icon: DollarSign },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
