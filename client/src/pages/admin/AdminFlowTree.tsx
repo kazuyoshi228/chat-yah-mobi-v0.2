@@ -243,11 +243,7 @@ function NodeRow({
                 フォーム
               </Badge>
             )}
-            {(node.aiTrigger ?? 0) === 1 && (
-              <Badge className="text-[10px] px-1.5 py-0 bg-purple-50 text-purple-600 border-purple-200" variant="outline">
-                AI
-              </Badge>
-            )}
+
             {hasChildren && (
               <span className="text-[10px] text-muted-foreground">({children.length})</span>
             )}
@@ -357,7 +353,7 @@ export default function AdminFlowTree() {
     upsertMutation.mutate({
       id: form.id.trim(), parentId: form.parentId.trim() || null, type: form.type,
       label, content, icon: form.icon.trim() || null,
-      formTrigger: form.formTrigger ? 1 : 0, aiTrigger: form.aiTrigger ? 1 : 0,
+      formTrigger: form.formTrigger ? 1 : 0, aiTrigger: 1,
       sortOrder: form.sortOrder, isActive: form.isActive ? 1 : 0,
     });
   }
@@ -580,14 +576,10 @@ export default function AdminFlowTree() {
             )}
 
             {/* Flags */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
                 <Switch checked={form.formTrigger} onCheckedChange={(v) => setForm({ ...form, formTrigger: v })} />
                 <Label className="text-sm">フォーム誘導</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={form.aiTrigger} onCheckedChange={(v) => setForm({ ...form, aiTrigger: v })} />
-                <Label className="text-sm">AIチャット誘導</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} />
