@@ -7,6 +7,7 @@ import OperatorChats from "@/pages/operator/OperatorChats";
 import OperatorChatDetail from "@/pages/operator/OperatorChatDetail";
 import OperatorQuickReplies from "@/pages/operator/OperatorQuickReplies";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import BigKPIs from "@/pages/admin/BigKPIs";
 import AdminOperators from "@/pages/admin/AdminOperators";
 import AdminQuickReplies from "@/pages/admin/AdminQuickReplies";
 import AdminRag from "@/pages/admin/AdminRag";
@@ -50,7 +51,8 @@ export default function App() {
         <Route path="/ops/chats/:id" component={OperatorChatDetail} />
         <Route path="/ops/quick-replies" component={OperatorQuickReplies} />
         {/* Admin portal */}
-        <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin" component={BigKPIs} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/admin/operators" component={AdminOperators} />
         <Route path="/admin/quick-replies" component={AdminQuickReplies} />
         <Route path="/admin/rag" component={AdminRag} />

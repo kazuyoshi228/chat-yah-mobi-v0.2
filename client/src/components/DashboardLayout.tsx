@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, Archive, RotateCcw, Heart, TrendingUp, DollarSign, UserCircle, Activity } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, Archive, RotateCcw, Heart, TrendingUp, DollarSign, UserCircle, Activity, Target } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -38,7 +38,7 @@ const DEFAULT_OPERATOR_ITEMS: SidebarItem[] = [
 ];
 
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
-  { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { title: "Big KPIs", href: "/admin", icon: Target },
   { title: "Chat List", href: "/admin/chats", icon: MessageCircle },
   { title: "Operators", href: "/admin/operators", icon: Users },
   { title: "AI Chatbot", href: "/admin/ai-chatbot", icon: Bot },
