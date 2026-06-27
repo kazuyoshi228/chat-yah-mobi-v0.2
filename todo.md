@@ -634,4 +634,11 @@
 - [x] 管理画面Customersページ実装（顧客プロファイル・購入履歴・eSIM状態）
 - [x] ai.tsのsystem promptをDB連動に変更（チャット開始時に顧客情報・購入履歴を自動注入）
 - [x] yah.mobi/app向けWebhook指示書作成（構文サンプル・シークレットキー付き）
+- [x] チェックポイント保存 (version: 446495e2)
+
+## Phase 66: Pricing・Customersページ分離とサイドバー修正
+- [x] Pricing.tsxをプラン・競合価格のみに絞り、DashboardLayoutでラップ（サイドバー表示修正）
+- [x] Customers.tsxを新規作成（顧客プロファイル・購入履歴・eSIM状態）、DashboardLayoutでラップ
+- [x] DashboardLayoutサイドバーにPricing（$アイコン）とCustomers（人物アイコン）を独立項目として追加
+- [x] App.tsxに/admin/customersルートを追加
 - [ ] チェックポイント保存
