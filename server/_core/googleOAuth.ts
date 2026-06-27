@@ -146,12 +146,12 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
     if (error) {
       console.error("[GoogleOAuth] Error from Google:", error);
-      res.redirect("/portal?error=google_auth_failed");
+      res.redirect("/admin?error=google_auth_failed");
       return;
     }
 
     if (!code || !stateParam) {
-      res.redirect("/portal?error=missing_params");
+      res.redirect("/admin?error=missing_params");
       return;
     }
 
@@ -180,7 +180,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       if (!tokenRes.ok) {
         const errText = await tokenRes.text();
         console.error("[GoogleOAuth] Token exchange failed:", errText);
-        res.redirect("/portal?error=token_exchange_failed");
+        res.redirect("/admin?error=token_exchange_failed");
         return;
       }
 
@@ -192,7 +192,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       });
 
       if (!userInfoRes.ok) {
-        res.redirect("/portal?error=userinfo_failed");
+        res.redirect("/admin?error=userinfo_failed");
         return;
       }
 
@@ -206,7 +206,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       };
 
       if (!googleUser.email) {
-        res.redirect("/portal?error=no_email");
+        res.redirect("/admin?error=no_email");
         return;
       }
 
@@ -237,13 +237,13 @@ export function registerGoogleOAuthRoutes(app: Express) {
       }
 
       if (!user) {
-        res.redirect("/portal?error=user_not_found");
+        res.redirect("/admin?error=user_not_found");
         return;
       }
 
-      // Only allow admin and operator roles
-      if (user.role !== "admin" && user.role !== "operator") {
-        res.redirect("/portal?error=access_denied");
+      // Only allow admin role
+      if (user.role !== "admin") {
+        res.redirect("/admin?error=access_denied");
         return;
       }
 
@@ -256,15 +256,11 @@ export function registerGoogleOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // Redirect based on role
-      if (user.role === "admin") {
-        res.redirect("/admin");
-      } else {
-        res.redirect("/ops/chats");
-      }
+      // Redirect to admin dashboard
+      res.redirect("/admin");
     } catch (err) {
       console.error("[GoogleOAuth] Callback error:", err);
-      res.redirect("/portal?error=internal_error");
+      res.redirect("/admin?error=internal_error");
     }
   });
 }

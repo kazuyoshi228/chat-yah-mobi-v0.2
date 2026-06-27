@@ -44,15 +44,13 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      // ロール別リダイレクト
+      // ロール別リダイレクト（Adminのみアクセス可能）
       const savedUser = await db.getUserByOpenId(userInfo.openId);
       const role = savedUser?.role ?? "user";
       if (role === "admin") {
         res.redirect(302, "/admin");
-      } else if (role === "operator") {
-        res.redirect(302, "/ops/chats");
       } else {
-        res.redirect(302, "/portal");
+        res.redirect(302, "/admin?error=access_denied");
       }
     } catch (error) {
       console.error("[OAuth] Callback failed", error);

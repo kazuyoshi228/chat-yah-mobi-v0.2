@@ -13,7 +13,7 @@ import { relations } from "drizzle-orm";
 
 /**
  * Core user table backing auth flow.
- * Extended with 'operator' role for live chat support.
+ * Roles: user (default) | admin (backoffice access).
  */
 export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
@@ -23,7 +23,7 @@ export const users = mysqlTable("users", {
   lastName: varchar("lastName", { length: 128 }),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin", "operator"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -58,14 +58,14 @@ export type InsertChatSession = typeof chatSessions.$inferInsert;
 
 /**
  * Messages table - stores all chat messages.
- * role: visitor | operator | ai
- * senderId: FK to users.id — NULL for visitor/AI messages, set for operator/admin messages.
+ * role: visitor | admin | ai
+ * senderId: FK to users.id — NULL for visitor/AI messages, set for admin messages.
  *           Allows tracking which staff member sent each message.
  */
 export const messages = mysqlTable("messages", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
-  role: mysqlEnum("role", ["visitor", "operator", "ai"]).notNull(),
+  role: mysqlEnum("role", ["visitor", "admin", "ai"]).notNull(),
   senderId: int("senderId").references(() => users.id, { onDelete: "set null" }), // FK to users.id (nullable)
   content: text("content").notNull(),
   translation: text("translation"), // DeepL translated text (nullable)

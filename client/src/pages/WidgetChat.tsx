@@ -25,7 +25,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 interface ChatMessage {
   id?: number;
   sessionId: number;
-  role: "visitor" | "operator" | "ai";
+  role: "visitor" | "admin" | "ai";
   content: string;
   fileUrl?: string | null;
   createdAt: Date | string;

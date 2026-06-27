@@ -153,10 +153,9 @@ export const uploadRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Chat session not found." });
       }
 
-      const isOperatorOrAdmin =
-        ctx.user && (ctx.user.role === "operator" || ctx.user.role === "admin");
+      const isAdmin = ctx.user && ctx.user.role === "admin";
 
-      if (!isOperatorOrAdmin) {
+      if (!isAdmin) {
         // Visitor upload: visitorId must match the session
         if (!input.visitorId || session.visitorId !== input.visitorId) {
           throw new TRPCError({
@@ -166,16 +165,16 @@ export const uploadRouter = router({
         }
       }
 
-      // ── 4. Upload ────────────────────────────────────────────────────────────
+      // ── 4. Upload ────────────────────────────────────────────────────────────────────────────
       const ext = input.fileName.split(".").pop()?.toLowerCase() ?? "bin";
       const key = `chat/${input.sessionId}/${nanoid()}.${ext}`;
       const buffer = Buffer.from(input.base64Data, "base64");
       const { url } = await storagePut(key, buffer, normalizedMime);
 
-      // ── 5. Async Vision AI analysis (non-blocking) ───────────────────────────
-      // Only analyze images from visitors (not operator/admin uploads)
+      // ── 5. Async Vision AI analysis (non-blocking) ───────────────────────────────────────
+      // Only analyze images from visitors (not admin uploads)
       // to focus on understanding customer issues.
-      if (!isOperatorOrAdmin) {
+      if (!isAdmin) {
         setImmediate(() => {
           analyzeImageWithVisionAI(url, input.sessionId, input.messageId).catch(() => {});
         });

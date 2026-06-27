@@ -180,7 +180,7 @@ export const chatRouter = router({
       // For visitors: remap operator messages so they see translated content
       if (!isAdmin) {
         return msgs.map((m) => {
-          if (m.role === "operator" && m.translation) {
+          if (m.role === "admin" && m.translation) {
             return { ...m, content: m.translation, translation: null };
           }
           return m;

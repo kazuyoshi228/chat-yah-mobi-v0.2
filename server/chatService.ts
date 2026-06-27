@@ -1,7 +1,7 @@
 /**
  * chatService.ts
- * Shared business logic for sending operator/admin messages.
- * Used by both operator.ts and admin.ts to avoid duplication.
+ * Shared business logic for sending admin messages.
+ * Used by admin.ts for admin-to-visitor replies.
  */
 import { createMessage, updateSessionLastMessageAt } from "./db";
 import { toTranslationLabel, translateFromJapaneseWithResult } from "./_core/deepl";
@@ -23,7 +23,7 @@ export interface SendMessageResult {
 }
 
 /**
- * Translate, save, and broadcast an operator/admin message.
+ * Translate, save, and broadcast an admin message.
  * Returns the saved message ID and translation metadata.
  */
 export async function sendOperatorMessage(opts: SendMessageOptions): Promise<SendMessageResult> {
@@ -39,7 +39,7 @@ export async function sendOperatorMessage(opts: SendMessageOptions): Promise<Sen
 
   const msgId = await createMessage({
     sessionId: session.id,
-    role: "operator",
+    role: "admin",
     senderId,
     content,
     translation: translationLabel ?? undefined,
@@ -52,13 +52,13 @@ export async function sendOperatorMessage(opts: SendMessageOptions): Promise<Sen
     io.to(`session:${session.id}`).emit("new_message", {
       id: msgId,
       sessionId: session.id,
-      role: "operator",
+      role: "admin",
       // Visitor sees translated text (or original if translation failed/skipped)
       content: translatedContent ?? content,
       originalContent: content,
       translation: translationLabel,
       fileUrl,
-      operatorName: senderName,
+      adminName: senderName,
       createdAt: new Date(),
     });
   }
