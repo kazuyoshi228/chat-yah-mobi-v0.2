@@ -115,6 +115,7 @@ interface NodeFormState {
   icon: string;
   formTrigger: boolean;
   aiTrigger: boolean;
+  qrResend: boolean;
   sortOrder: number;
   isActive: boolean;
 }
@@ -137,7 +138,7 @@ const NODE_TYPE_COLORS: Record<NodeType, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function parseLabel(labelJson: string): { ja?: string; en?: string } {
+function parseLabel(labelJson: string): { ja?: string; en?: string; qr_resend?: boolean } {
   try { return JSON.parse(labelJson); }
   catch { return { ja: labelJson, en: labelJson }; }
 }
@@ -146,7 +147,7 @@ function buildNodeForm(node?: FlowNode): NodeFormState {
   if (!node) {
     return { id: "", parentId: "", type: "question", label_ja: "", label_en: "",
       content_ja: "", content_en: "", icon: "", formTrigger: false, aiTrigger: false,
-      sortOrder: 0, isActive: true };
+      qrResend: false, sortOrder: 0, isActive: true };
   }
   const label = parseLabel(node.label);
   let content_ja = "", content_en = "";
@@ -160,6 +161,7 @@ function buildNodeForm(node?: FlowNode): NodeFormState {
     content_ja, content_en, icon: node.icon ?? "",
     formTrigger: (node.formTrigger ?? 0) === 1,
     aiTrigger: (node.aiTrigger ?? 0) === 1,
+    qrResend: label.qr_resend === true,
     sortOrder: node.sortOrder ?? 0,
     isActive: (node.isActive ?? 1) === 1,
   };
@@ -241,6 +243,11 @@ function NodeRow({
             {(node.formTrigger ?? 0) === 1 && (
               <Badge className="text-[10px] px-1.5 py-0 bg-orange-50 text-orange-600 border-orange-200" variant="outline">
                 フォーム
+              </Badge>
+            )}
+            {label.qr_resend && (
+              <Badge className="text-[10px] px-1.5 py-0 bg-cyan-50 text-cyan-700 border-cyan-200" variant="outline">
+                QR再送
               </Badge>
             )}
 
@@ -344,8 +351,10 @@ export default function AdminFlowTree() {
     if (!form.label_ja.trim() && !form.label_en.trim()) {
       toast.error("日本語または英語のラベルを入力してください"); return;
     }
-    const label = JSON.stringify({ ja: form.label_ja, en: form.label_en,
-      ko: form.label_ja, zh: form.label_ja, th: form.label_ja, vi: form.label_ja });
+    const labelObj: Record<string, unknown> = { ja: form.label_ja, en: form.label_en,
+      ko: form.label_ja, zh: form.label_ja, th: form.label_ja, vi: form.label_ja };
+    if (form.qrResend) labelObj["qr_resend"] = true;
+    const label = JSON.stringify(labelObj);
     const content = form.content_ja || form.content_en
       ? JSON.stringify({ ja: form.content_ja, en: form.content_en,
           ko: form.content_ja, zh: form.content_ja, th: form.content_ja, vi: form.content_ja })
@@ -578,13 +587,23 @@ export default function AdminFlowTree() {
             {/* Flags */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
-                <Switch checked={form.formTrigger} onCheckedChange={(v) => setForm({ ...form, formTrigger: v })} />
+                <Switch
+                  checked={form.formTrigger}
+                  onCheckedChange={(v) => setForm({ ...form, formTrigger: v, qrResend: v ? false : form.qrResend })}
+                />
                 <Label className="text-sm">フォーム誘導</Label>
               </div>
               <div className="flex items-center gap-2">
-                <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} />
-                <Label className="text-sm">有効</Label>
+                <Switch
+                  checked={form.qrResend}
+                  onCheckedChange={(v) => setForm({ ...form, qrResend: v, formTrigger: v ? false : form.formTrigger })}
+                />
+                <Label className="text-sm text-cyan-700">QR再送トリガー</Label>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} />
+              <Label className="text-sm">有効</Label>
             </div>
 
             {/* Sort Order */}

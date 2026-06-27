@@ -714,4 +714,6 @@
 - [x] purchases テーブルに qrCodeUrl カラム追加（スキーマ・マイグレーション）
 - [x] Webhook受信処理に qrCodeUrl 保存を追加
 - [x] QR再送ロジック実装（checkQrResend mutation + sendQrResendEmail + ChatWidget UI）
-- [ ] チェックポイント保存
+- [x] デシジョンツリー更新（cancel_no_qr_correct_email・refund_no_qr → QR再送トリガー）
+- [x] AdminFlowTree.tsx に QR再送トリガーバッジ・トグル追加
+- [x] チェックポイント保存
