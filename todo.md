@@ -690,4 +690,4 @@
 - [x] purchases Webhook受信処理にstripePaymentIntentId・emailフィールドを追加
 - [x] refundJob.tsの動作確認（Heartbeat認証保護・エンドポイント登録確認）
 - [x] yah.mobi/app開発チーム向け指示書作成（purchases-webhook-update-guide.md）
-- [ ] チェックポイント保存
+- [x] チェックポイント保存 (version: 092c5662)
