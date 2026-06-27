@@ -191,45 +191,52 @@ webhookRouter.post("/purchase-created", async (req: Request, res: Response) => {
     const db = await getDb();
     if (!db) { res.status(503).json({ error: "DB unavailable" }); return; }
     const item: {
-      externalOrderId: string;
+      orderId: string;              // ← 旧: externalOrderId
       externalUserId: string;
-      planName: string;
+      planId: string;               // ← 旧: planName
       dataGb?: number;
       durationDays?: number;
-      priceYen: number;
+      amount: number;               // ← 旧: priceYen
       purchasedAt: string;
       expiresAt?: string;
       status?: "pending" | "active" | "expired" | "refunded" | "cancelled";
-      stripePaymentIntentId?: string;
-      email?: string;
+      stripePaymentIntentId: string; // 必須
+      email: string;                 // 必須
     } = req.body;
+
+    // Validate required fields
+    if (!item.orderId || !item.externalUserId || !item.planId || item.amount == null ||
+        !item.purchasedAt || !item.stripePaymentIntentId || !item.email) {
+      res.status(400).json({ error: "Missing required fields: orderId, externalUserId, planId, amount, purchasedAt, stripePaymentIntentId, email" });
+      return;
+    }
 
     await db
       .insert(purchases)
       .values({
-        externalOrderId: item.externalOrderId,
+        externalOrderId: item.orderId,
         externalUserId: item.externalUserId,
-        planName: item.planName,
+        planName: item.planId,
         dataGb: item.dataGb ?? null,
         durationDays: item.durationDays ?? null,
-        priceYen: item.priceYen,
+        priceYen: item.amount,
         purchasedAt: new Date(item.purchasedAt),
         expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
         status: item.status ?? "pending",
-        stripePaymentIntentId: item.stripePaymentIntentId ?? null,
-        email: item.email ?? null,
+        stripePaymentIntentId: item.stripePaymentIntentId,
+        email: item.email,
         syncedAt: new Date(),
       })
       .onDuplicateKeyUpdate({
         set: {
-          planName: item.planName,
+          planName: item.planId,
           dataGb: item.dataGb ?? null,
           durationDays: item.durationDays ?? null,
-          priceYen: item.priceYen,
+          priceYen: item.amount,
           expiresAt: item.expiresAt ? new Date(item.expiresAt) : null,
           status: item.status ?? "pending",
-          stripePaymentIntentId: item.stripePaymentIntentId ?? null,
-          email: item.email ?? null,
+          stripePaymentIntentId: item.stripePaymentIntentId,
+          email: item.email,
           syncedAt: new Date(),
         },
       });
