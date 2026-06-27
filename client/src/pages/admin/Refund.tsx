@@ -2,7 +2,6 @@ import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -30,6 +29,7 @@ import {
   CreditCard,
   Database,
   Activity,
+  ArrowRight,
 } from "lucide-react";
 
 // ── Status badge ──────────────────────────────────────────────────────────────
@@ -49,36 +49,33 @@ function IncidentStatusBadge({ status }: { status: string }) {
   );
 }
 
-// ── Flow steps ────────────────────────────────────────────────────────────────
+// ── Flow diagram ──────────────────────────────────────────────────────────────
 const flowSteps = [
-  { icon: Activity,    label: "OMAX eSIM",      sub: "プロビジョニング",  color: "text-indigo-500", bg: "bg-indigo-50 border-indigo-200" },
-  { icon: Clock,       label: "Heartbeat",       sub: "15分ポーリング",    color: "text-purple-500", bg: "bg-purple-50 border-purple-200" },
-  { icon: Zap,         label: "OMAX API",        sub: "ステータス確認",    color: "text-violet-500", bg: "bg-violet-50 border-violet-200" },
-  { icon: Database,    label: "DB記録",          sub: "esim_incidents",   color: "text-amber-500",  bg: "bg-amber-50 border-amber-200" },
-  { icon: CreditCard,  label: "Stripe返金",      sub: "refunds.create()", color: "text-emerald-500",bg: "bg-emerald-50 border-emerald-200" },
-  { icon: Mail,        label: "メール通知",       sub: "Resend（日英）",   color: "text-blue-500",   bg: "bg-blue-50 border-blue-200" },
+  { icon: Activity,   label: "OMAX eSIM",   sub: "プロビジョニング",  colorIcon: "text-indigo-500", colorBg: "bg-indigo-50",  colorBorder: "border-indigo-200" },
+  { icon: Clock,      label: "Heartbeat",   sub: "15分ポーリング",    colorIcon: "text-purple-500", colorBg: "bg-purple-50",  colorBorder: "border-purple-200" },
+  { icon: Zap,        label: "OMAX API",    sub: "ステータス確認",    colorIcon: "text-violet-500", colorBg: "bg-violet-50",  colorBorder: "border-violet-200" },
+  { icon: Database,   label: "DB記録",      sub: "esim_incidents",   colorIcon: "text-amber-500",  colorBg: "bg-amber-50",   colorBorder: "border-amber-200" },
+  { icon: CreditCard, label: "Stripe返金",  sub: "refunds.create()", colorIcon: "text-emerald-500",colorBg: "bg-emerald-50", colorBorder: "border-emerald-200" },
+  { icon: Mail,       label: "メール通知",  sub: "Resend（日英）",   colorIcon: "text-blue-500",   colorBg: "bg-blue-50",    colorBorder: "border-blue-200" },
 ];
 
 function FlowDiagram() {
   return (
-    <div className="overflow-x-auto">
-      <div className="flex items-center gap-0 min-w-max py-2">
+    <div className="w-full overflow-x-auto">
+      <div className="flex items-stretch gap-0 min-w-max">
         {flowSteps.map((step, i) => {
           const Icon = step.icon;
           return (
             <div key={step.label} className="flex items-center">
-              <div className={`flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl border ${step.bg} w-[120px]`}>
-                <Icon className={`w-5 h-5 ${step.color}`} />
-                <span className="text-xs font-semibold text-foreground leading-tight text-center">{step.label}</span>
-                <span className="text-[10px] text-muted-foreground leading-tight text-center">{step.sub}</span>
+              {/* Step card */}
+              <div className={`flex flex-col items-center justify-center gap-2 px-5 py-4 rounded-xl border ${step.colorBg} ${step.colorBorder} w-[130px] min-h-[90px]`}>
+                <Icon className={`w-5 h-5 flex-shrink-0 ${step.colorIcon}`} />
+                <span className="text-xs font-semibold text-foreground text-center leading-tight">{step.label}</span>
+                <span className="text-[10px] text-muted-foreground text-center leading-tight">{step.sub}</span>
               </div>
+              {/* Arrow */}
               {i < flowSteps.length - 1 && (
-                <div className="flex items-center px-1">
-                  <div className="w-6 h-px bg-border" />
-                  <svg width="8" height="12" viewBox="0 0 8 12" className="text-muted-foreground/50">
-                    <path d="M0 0 L8 6 L0 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
+                <ArrowRight className="w-4 h-4 text-muted-foreground/40 mx-1 flex-shrink-0" />
               )}
             </div>
           );
@@ -91,19 +88,19 @@ function FlowDiagram() {
 // ── Score badge ───────────────────────────────────────────────────────────────
 function ScoreBadge({ score, isPercent = false }: { score: number; isPercent?: boolean }) {
   const val = isPercent ? score : score * 100;
-  const className = val >= 90
+  const cls = val >= 90
     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
     : val >= 80
     ? "bg-amber-50 text-amber-700 border-amber-200"
     : "bg-red-50 text-red-700 border-red-200";
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${cls}`}>
       {isPercent ? score.toFixed(1) + "%" : score.toFixed(3)}
     </span>
   );
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Static data ───────────────────────────────────────────────────────────────
 const refundEligibleCases = [
   {
     id: 1,
@@ -171,9 +168,9 @@ const refundIneligibleCases = [
 ];
 
 const scoreData = [
-  { category: "返金（REFUND）全体", current: 0.920, projected: 0.965, change: "+0.045" },
-  { category: "セッション解決率（返金）", current: 55.6, projected: 92.0, change: "+36.4pt", isPercent: true },
-  { category: "全体平均スコア", current: 0.930, projected: 0.948, change: "+0.018" },
+  { category: "返金（REFUND）全体",      current: 0.920, projected: 0.965, change: "+0.045", isPercent: false },
+  { category: "セッション解決率（返金）", current: 55.6,  projected: 92.0,  change: "+36.4pt", isPercent: true },
+  { category: "全体平均スコア",           current: 0.930, projected: 0.948, change: "+0.018", isPercent: false },
 ];
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -188,26 +185,26 @@ export default function Refund() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col gap-8 p-6 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-8 p-6 max-w-5xl mx-auto">
 
         {/* ── Header ── */}
-        <div className="flex flex-col gap-1">
+        <div>
           <h1 className="text-2xl font-semibold tracking-tight">返金管理 / Refund Management</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-1">
             自動返金対応フロー・対象ケース・AIスコア予測・インシデント一覧
           </p>
         </div>
 
         {/* ── Flow diagram ── */}
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               自動返金フロー
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-5">
             <FlowDiagram />
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
               Heartbeatジョブが15分ごとにeSIM状態を確認し、異常を検知すると自動でStripe返金とメール通知を実行します。
             </p>
           </CardContent>
@@ -215,61 +212,64 @@ export default function Refund() {
 
         {/* ── Score prediction ── */}
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               自動返金実装後のスコア予測
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50%]">カテゴリ</TableHead>
-                  <TableHead className="text-center">現在</TableHead>
-                  <TableHead className="text-center">実装後（予測）</TableHead>
-                  <TableHead className="text-center">変化</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {scoreData.map((row) => (
-                  <TableRow key={row.category}>
-                    <TableCell className="font-medium">{row.category}</TableCell>
-                    <TableCell className="text-center">
-                      <ScoreBadge score={row.current} isPercent={row.isPercent} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <ScoreBadge score={row.projected} isPercent={row.isPercent} />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span className="text-emerald-600 font-semibold text-xs">{row.change}</span>
-                    </TableCell>
+          <CardContent className="pb-5">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[200px]">カテゴリ</TableHead>
+                    <TableHead className="text-center w-28">現在</TableHead>
+                    <TableHead className="text-center w-28">実装後（予測）</TableHead>
+                    <TableHead className="text-center w-24">変化</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {scoreData.map((row) => (
+                    <TableRow key={row.category}>
+                      <TableCell className="font-medium text-sm">{row.category}</TableCell>
+                      <TableCell className="text-center">
+                        <ScoreBadge score={row.current} isPercent={row.isPercent} />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <ScoreBadge score={row.projected} isPercent={row.isPercent} />
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <span className="text-emerald-600 font-semibold text-xs">{row.change}</span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
         {/* ── Eligible cases ── */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
             <h2 className="text-base font-semibold">返金対象ケース</h2>
-            <Badge className="bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-50 text-xs">
+            <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-50 text-xs font-medium">
               自動対応予定
             </Badge>
           </div>
-          <div className="grid gap-3">
+          <div className="flex flex-col gap-3">
             {refundEligibleCases.map((c) => (
               <Card key={c.id} className="border-l-4 border-l-emerald-400">
                 <CardContent className="pt-5 pb-5">
-                  <div className="flex items-start justify-between gap-6">
-                    <div className="flex-1 min-w-0 space-y-2">
+                  {/* Title row */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="flex-1 min-w-0 space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-semibold text-sm">{c.title}</span>
                         <span className="text-xs text-muted-foreground">/ {c.titleEn}</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{c.description}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{c.description}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {c.examples.map((ex, i) => (
                           <span key={i} className="text-xs bg-muted/60 text-muted-foreground px-2.5 py-1 rounded-full border">
@@ -278,16 +278,17 @@ export default function Refund() {
                         ))}
                       </div>
                       <div className="flex items-start gap-1.5 text-xs">
-                        <span className="font-medium text-blue-600 shrink-0 mt-px">対応フロー:</span>
+                        <span className="font-medium text-blue-600 flex-shrink-0">対応フロー:</span>
                         <span className="text-muted-foreground">{c.action}</span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2 shrink-0 min-w-[80px]">
-                      <div className="flex flex-col items-end gap-1">
+                    {/* Score badges */}
+                    <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-2 flex-shrink-0">
+                      <div className="flex sm:flex-col items-center sm:items-end gap-1">
                         <span className="text-[10px] text-muted-foreground">現在</span>
                         <ScoreBadge score={c.currentScore} />
                       </div>
-                      <div className="flex flex-col items-end gap-1">
+                      <div className="flex sm:flex-col items-center sm:items-end gap-1">
                         <span className="text-[10px] text-muted-foreground">実装後</span>
                         <ScoreBadge score={c.projectedScore} />
                       </div>
@@ -299,14 +300,12 @@ export default function Refund() {
           </div>
         </div>
 
-        <Separator />
-
         {/* ── Ineligible cases ── */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <XCircle className="w-4 h-4 text-red-400" />
+            <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
             <h2 className="text-base font-semibold">返金対象外ケース</h2>
-            <Badge className="bg-red-50 text-red-600 border-red-200 hover:bg-red-50 text-xs">
+            <Badge className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-50 text-xs font-medium">
               現状維持
             </Badge>
           </div>
@@ -315,10 +314,10 @@ export default function Refund() {
               <Card key={i} className="border-l-4 border-l-red-300">
                 <CardContent className="pt-5 pb-5 space-y-2">
                   <div className="font-semibold text-sm">{c.title}</div>
-                  <p className="text-sm text-muted-foreground">{c.description}</p>
-                  <div className="flex items-start gap-1.5 text-xs">
-                    <span className="font-medium text-red-500 shrink-0 mt-px">理由:</span>
-                    <span className="text-muted-foreground">{c.reason}</span>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{c.description}</p>
+                  <div className="flex items-start gap-1.5 text-xs pt-1">
+                    <span className="font-medium text-red-500 flex-shrink-0">理由:</span>
+                    <span className="text-muted-foreground leading-relaxed">{c.reason}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -327,8 +326,8 @@ export default function Refund() {
         </div>
 
         {/* ── Legal basis ── */}
-        <div className="flex items-start gap-3 rounded-xl border bg-muted/30 p-4">
-          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-3 rounded-xl border bg-amber-50/50 border-amber-200 p-4">
+          <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-muted-foreground leading-relaxed">
             <span className="font-semibold text-foreground">法的根拠：</span>
             特定商取引法第15条の3に基づき、デジタルコンテンツ（eSIM）は提供開始後の返金は原則不可。
@@ -336,8 +335,6 @@ export default function Refund() {
             自動返金対応の実装により、例外ケースの検知・対応を迅速化し、顧客満足度とAIスコアの向上を図る。
           </p>
         </div>
-
-        <Separator />
 
         {/* ── Implementation overview ── */}
         <div className="flex flex-col gap-4">
@@ -347,17 +344,17 @@ export default function Refund() {
               <CardHeader className="pb-2 pt-5">
                 <CardTitle className="text-sm">自動返金トリガー条件</CardTitle>
               </CardHeader>
-              <CardContent className="pb-5 space-y-3">
+              <CardContent className="pb-5 space-y-4">
                 {[
                   { color: "bg-amber-400",  label: "provisioning_failed",  desc: "OMAXステータスが error" },
                   { color: "bg-orange-400", label: "activation_timeout",   desc: "not_installed かつ購入から1時間経過" },
                   { color: "bg-red-400",    label: "esim_expired_early",   desc: "期待使用期間の80%未満で失効" },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-start gap-2.5">
-                    <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${item.color}`} />
+                  <div key={item.label} className="flex items-start gap-3">
+                    <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${item.color}`} />
                     <div>
                       <code className="text-xs font-mono font-semibold">{item.label}</code>
-                      <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -367,19 +364,19 @@ export default function Refund() {
               <CardHeader className="pb-2 pt-5">
                 <CardTitle className="text-sm">処理フロー</CardTitle>
               </CardHeader>
-              <CardContent className="pb-5 space-y-3">
+              <CardContent className="pb-5 space-y-4">
                 {[
                   { num: "①", color: "text-indigo-500", text: "Heartbeat (15分間隔) でeSIM状態をOMAX APIに問い合わせ" },
                   { num: "②", color: "text-purple-500", text: "異常検知 → esim_incidents テーブルに記録" },
                   { num: "③", color: "text-emerald-500", text: "Stripe refunds.create() で小売価格を全額返金" },
                   { num: "④", color: "text-blue-500", text: "Resend でユーザーに返金完了メール（日英）を送信" },
                 ].map((item) => (
-                  <div key={item.num} className="flex items-start gap-2.5">
-                    <span className={`text-sm font-bold shrink-0 ${item.color}`}>{item.num}</span>
+                  <div key={item.num} className="flex items-start gap-3">
+                    <span className={`text-sm font-bold flex-shrink-0 ${item.color}`}>{item.num}</span>
                     <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
                   </div>
                 ))}
-                <div className="rounded-lg bg-muted/50 border px-3 py-2 text-xs text-muted-foreground">
+                <div className="rounded-lg bg-muted/50 border px-3 py-2.5 text-xs text-muted-foreground leading-relaxed">
                   OMAX卸値はOMAX側で自動返金。chat.yah.mobi はStripe経由の小売価格返金のみ担当。
                 </div>
               </CardContent>
@@ -423,14 +420,14 @@ export default function Refund() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-16">ID</TableHead>
-                      <TableHead>ICCID</TableHead>
-                      <TableHead>種別</TableHead>
-                      <TableHead>OMAXステータス</TableHead>
-                      <TableHead className="text-right">返金額</TableHead>
-                      <TableHead>ステータス</TableHead>
-                      <TableHead>検知日時</TableHead>
-                      <TableHead>解決日時</TableHead>
+                      <TableHead className="w-14">ID</TableHead>
+                      <TableHead className="min-w-[140px]">ICCID</TableHead>
+                      <TableHead className="min-w-[160px]">種別</TableHead>
+                      <TableHead className="min-w-[120px]">OMAXステータス</TableHead>
+                      <TableHead className="text-right w-24">返金額</TableHead>
+                      <TableHead className="w-24">ステータス</TableHead>
+                      <TableHead className="min-w-[160px]">検知日時</TableHead>
+                      <TableHead className="min-w-[160px]">解決日時</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -441,12 +438,12 @@ export default function Refund() {
                           {inc.iccid ?? "—"}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs bg-muted px-2 py-0.5 rounded-full font-mono">
+                          <span className="text-xs bg-muted px-2 py-0.5 rounded-full font-mono whitespace-nowrap">
                             {inc.incidentType.replace(/_/g, " ")}
                           </span>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">{inc.omaxStatus ?? "—"}</TableCell>
-                        <TableCell className="text-xs text-right font-medium">
+                        <TableCell className="text-xs text-right font-medium whitespace-nowrap">
                           {inc.refundAmountYen != null ? `¥${inc.refundAmountYen.toLocaleString()}` : "—"}
                         </TableCell>
                         <TableCell><IncidentStatusBadge status={inc.refundStatus} /></TableCell>
