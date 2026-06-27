@@ -16,10 +16,16 @@ import {
 } from "./routers/ai";
 
 // ─── Mock external dependencies ───────────────────────────────────────────────
+// Ensure ANTHROPIC_API_KEY is not set so tests use invokeLLM (mocked) instead of direct Anthropic fetch
+beforeEach(() => {
+  delete process.env.ANTHROPIC_API_KEY;
+});
+
 vi.mock("./db", () => ({
   listActiveRagDocuments: vi.fn().mockResolvedValue([]),
   createMessage: vi.fn().mockResolvedValue({ id: 1 }),
   scheduleSessionDeletion: vi.fn().mockResolvedValue(undefined),
+  getDb: vi.fn().mockResolvedValue(null),
 }));
 
 const mockInvokeLLM = vi.fn().mockResolvedValue({
@@ -30,10 +36,11 @@ vi.mock("./_core/llm", () => ({
   invokeLLM: (...args: unknown[]) => mockInvokeLLM(...args),
 }));
 
-// Mock fetch for embedding API (returns error → fallback path used)
+// Mock fetch for embedding API and Anthropic API (returns error → fallback path used)
 global.fetch = vi.fn().mockResolvedValue({
   ok: false,
   status: 500,
+  text: async () => "mocked error",
   json: async () => ({}),
 }) as unknown as typeof fetch;
 
