@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Clock, User, Loader2, Bell, AlertCircle, Headphones, Zap } from "lucide-react";
+import { MessageCircle, Clock, User, Loader2, Bell, AlertCircle, Headphones, Zap, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -35,12 +35,12 @@ const STATUS_COLORS: Record<SessionStatus, string> = {
 };
 
 const LANG_LABELS: Record<string, string> = {
-  ja: "🇯🇵",
-  en: "🇺🇸",
-  zh: "🇨🇳",
-  ko: "🇰🇷",
-  th: "🇹🇭",
-  vi: "🇻🇳",
+  ja: "JA",
+  en: "EN",
+  zh: "ZH",
+  ko: "KO",
+  th: "TH",
+  vi: "VI",
 };
 
 interface Props {
@@ -270,8 +270,8 @@ export default function ChatListBase({ mode, sidebarItems }: Props) {
                               ログイン済み
                             </span>
                           )}
-                          <span className="text-base">
-                            {LANG_LABELS[session.language ?? "en"] ?? "🌐"}
+                          <span className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            {LANG_LABELS[session.language ?? "en"] ?? "--"}
                           </span>
                         </div>
                         {session.visitorEmail && (

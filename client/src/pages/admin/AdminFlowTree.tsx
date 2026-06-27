@@ -10,7 +10,80 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { ChevronRight, Plus, Pencil, Trash2, GitBranch, RefreshCw, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import {
+  ChevronRight, Plus, Pencil, Trash2, GitBranch, RefreshCw, ChevronsDownUp, ChevronsUpDown,
+  Wifi, Smartphone, CreditCard, MessageSquare, Package, Wrench, AlertTriangle,
+  CheckCircle, HelpCircle, Clock, ShoppingCart, Bot, FileText, Bookmark,
+  Globe, Settings, Zap, Shield, Star, Home, Map, Phone, Mail, Info,
+  type LucideIcon,
+} from "lucide-react";
+
+// ─── Icon Key → Lucide mapping ────────────────────────────────────────────────
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  wifi:           Wifi,
+  smartphone:     Smartphone,
+  credit_card:    CreditCard,
+  message:        MessageSquare,
+  package:        Package,
+  wrench:         Wrench,
+  alert:          AlertTriangle,
+  check:          CheckCircle,
+  help:           HelpCircle,
+  clock:          Clock,
+  cart:           ShoppingCart,
+  bot:            Bot,
+  file:           FileText,
+  bookmark:       Bookmark,
+  globe:          Globe,
+  settings:       Settings,
+  zap:            Zap,
+  shield:         Shield,
+  star:           Star,
+  home:           Home,
+  map:            Map,
+  phone:          Phone,
+  mail:           Mail,
+  info:           Info,
+  git_branch:     GitBranch,
+};
+
+// Legacy emoji → icon key migration
+const EMOJI_TO_KEY: Record<string, string> = {
+  "🔌": "wifi",
+  "📱": "smartphone",
+  "💳": "credit_card",
+  "💬": "message",
+  "📦": "package",
+  "🔧": "wrench",
+  "⚠️": "alert",
+  "✅": "check",
+  "❓": "help",
+  "⏱️": "clock",
+  "🛒": "cart",
+  "🤖": "bot",
+  "📋": "file",
+  "📝": "file",
+  "📌": "bookmark",
+  "🔴": "alert",
+  "📡": "wifi",
+  "⚙️": "settings",
+  "💰": "credit_card",
+};
+
+const ICON_OPTIONS = Object.keys(ICON_MAP);
+
+function resolveIcon(iconKey: string | null): LucideIcon {
+  if (!iconKey) return Bookmark;
+  // If it's an emoji, map to key first
+  const key = EMOJI_TO_KEY[iconKey] ?? iconKey;
+  return ICON_MAP[key] ?? Bookmark;
+}
+
+function NodeIcon({ iconKey, className = "h-4 w-4" }: { iconKey: string | null; className?: string }) {
+  const Icon = resolveIcon(iconKey);
+  return <Icon className={className} />;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,7 +222,9 @@ function NodeRow({
         )}
 
         {/* Icon */}
-        <span className="text-base leading-none flex-shrink-0">{node.icon ?? "📌"}</span>
+        <span className="flex-shrink-0 text-muted-foreground">
+          <NodeIcon iconKey={node.icon} className="h-4 w-4" />
+        </span>
 
         {/* Label + meta */}
         <div className="flex-1 min-w-0">
@@ -432,13 +507,33 @@ export default function AdminFlowTree() {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>アイコン（絵文字）</Label>
-                <Input
-                  value={form.icon}
-                  onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                  placeholder="例: 🔌"
-                  maxLength={4}
-                />
+                <Label>アイコン</Label>
+                <Select
+                  value={form.icon || "bookmark"}
+                  onValueChange={(v) => setForm({ ...form, icon: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      <span className="flex items-center gap-2">
+                        <NodeIcon iconKey={form.icon || "bookmark"} className="h-4 w-4" />
+                        <span className="text-sm">{form.icon || "bookmark"}</span>
+                      </span>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {ICON_OPTIONS.map((key) => {
+                      const Icon = ICON_MAP[key];
+                      return (
+                        <SelectItem key={key} value={key}>
+                          <span className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            <span>{key}</span>
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

@@ -40,7 +40,7 @@ export default function HistoricalDocs() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇯🇵</span> 日本（Japan）
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-100 text-slate-700 text-xs font-bold">JP</span> 日本（Japan）
                   <Badge variant="default" className="ml-2">SIMロック原則禁止（2021年10月〜）</Badge>
                 </CardTitle>
               </CardHeader>
@@ -100,7 +100,7 @@ export default function HistoricalDocs() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇺🇸</span> 米国（United States）
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-100 text-slate-700 text-xs font-bold">US</span> 米国（United States）
                   <Badge variant="secondary" className="ml-2">SIMロック一般的（解除は容易）</Badge>
                 </CardTitle>
               </CardHeader>
@@ -150,7 +150,7 @@ export default function HistoricalDocs() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇨🇳</span> 中国（China）
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-100 text-slate-700 text-xs font-bold">CN</span> 中国（China）
                   <Badge variant="default" className="ml-2 bg-green-600">SIMロック禁止（法律）</Badge>
                 </CardTitle>
               </CardHeader>
@@ -174,7 +174,7 @@ export default function HistoricalDocs() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇰🇷</span> 韓国（South Korea）
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-100 text-slate-700 text-xs font-bold">KR</span> 韓国（South Korea）
                   <Badge variant="default" className="ml-2 bg-green-600">SIMロックなし</Badge>
                 </CardTitle>
               </CardHeader>
@@ -198,7 +198,7 @@ export default function HistoricalDocs() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇹🇭</span> タイ（Thailand）
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-100 text-slate-700 text-xs font-bold">TH</span> タイ（Thailand）
                   <Badge variant="default" className="ml-2 bg-green-600">SIMロックなし</Badge>
                 </CardTitle>
               </CardHeader>
@@ -213,7 +213,7 @@ export default function HistoricalDocs() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">🇻🇳</span> ベトナム（Vietnam）
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded bg-slate-100 text-slate-700 text-xs font-bold">VN</span> ベトナム（Vietnam）
                   <Badge variant="default" className="ml-2 bg-green-600">SIMロックなし</Badge>
                 </CardTitle>
               </CardHeader>
@@ -242,42 +242,42 @@ export default function HistoricalDocs() {
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell className="font-medium">🇯🇵 日本</TableCell>
+                      <TableCell className="font-medium"><span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 text-[10px] font-bold mr-1.5">JP</span>日本</TableCell>
                       <TableCell>3,300万台</TableCell>
                       <TableCell><Badge variant="default" className="bg-green-600">0%</Badge></TableCell>
                       <TableCell>約2,000-3,000万台</TableCell>
                       <TableCell>中古市場（ゲオ、メルカリ等）</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">🇺🇸 米国</TableCell>
+                      <TableCell className="font-medium"><span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 text-[10px] font-bold mr-1.5">US</span>米国</TableCell>
                       <TableCell>1.5億台</TableCell>
                       <TableCell><Badge variant="destructive">約88%</Badge></TableCell>
                       <TableCell>約2-3億台</TableCell>
                       <TableCell>キャリア直販、中古市場</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">🇨🇳 中国</TableCell>
+                      <TableCell className="font-medium"><span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 text-[10px] font-bold mr-1.5">CN</span>中国</TableCell>
                       <TableCell>2.7億台</TableCell>
                       <TableCell><Badge variant="default" className="bg-green-600">0%</Badge></TableCell>
                       <TableCell>0台</TableCell>
                       <TableCell>—</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">🇰🇷 韓国</TableCell>
+                      <TableCell className="font-medium"><span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 text-[10px] font-bold mr-1.5">KR</span>韓国</TableCell>
                       <TableCell>1,500万台</TableCell>
                       <TableCell><Badge variant="default" className="bg-green-600">0%</Badge></TableCell>
                       <TableCell>0台</TableCell>
                       <TableCell>—</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">🇹🇭 タイ</TableCell>
+                      <TableCell className="font-medium"><span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 text-[10px] font-bold mr-1.5">TH</span>タイ</TableCell>
                       <TableCell>2,000万台</TableCell>
                       <TableCell><Badge variant="default" className="bg-green-600">0%</Badge></TableCell>
                       <TableCell>ごく少数</TableCell>
                       <TableCell>中古輸入品</TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">🇻🇳 ベトナム</TableCell>
+                      <TableCell className="font-medium"><span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-slate-700 text-[10px] font-bold mr-1.5">VN</span>ベトナム</TableCell>
                       <TableCell>1,500万台</TableCell>
                       <TableCell><Badge variant="default" className="bg-green-600">0%</Badge></TableCell>
                       <TableCell>ごく少数</TableCell>

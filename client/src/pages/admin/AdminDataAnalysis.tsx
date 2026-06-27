@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import { AlertTriangle } from "lucide-react";
 import { YahLogo } from "@/components/YahLogo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -820,7 +821,7 @@ export default function AdminDataAnalysis() {
                                 <td className="px-4 py-2 text-right">{(maxRag * 100).toFixed(1)}%</td>
                                 <td className="px-4 py-2 text-center">
                                   {s.formRedirectTriggered
-                                    ? <span className="text-red-500 font-bold">🔴</span>
+                                    ? <AlertTriangle className="h-4 w-4 text-red-500 mx-auto" />
                                     : <span className="text-gray-300">—</span>}
                                 </td>
                                 <td className="px-4 py-2 text-center">

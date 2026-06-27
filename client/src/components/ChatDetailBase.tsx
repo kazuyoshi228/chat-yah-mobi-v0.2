@@ -38,6 +38,8 @@ import {
   XCircle,
   Search,
   Users,
+  Globe,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Select,
@@ -70,12 +72,12 @@ interface SurveyResult {
 }
 
 const LANG_LABELS: Record<string, string> = {
-  ja: "🇯🇵 日本語",
-  en: "🇺🇸 English",
-  zh: "🇨🇳 中文",
-  ko: "🇰🇷 한국어",
-  th: "🇹🇭 ภาษาไทย",
-  vi: "🇻🇳 Tiếng Việt",
+  ja: "JA 日本語",
+  en: "EN English",
+  zh: "ZH 中文",
+  ko: "KO 한국어",
+  th: "TH ภาษาไทย",
+  vi: "VI Tiếng Việt",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -508,8 +510,9 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
                           return (
                             <div className={`px-3 pb-2 border-t mt-0.5 ${isFailed ? "border-amber-100 bg-amber-50/50" : "border-gray-100"}`}>
-                              <p className={`text-[11px] leading-relaxed ${isFailed ? "text-amber-600" : "text-gray-400"}`}>
-                                <span className="font-medium">{isFailed ? "⚠ " : "🌐 "}</span>{msg.translation}
+                              <p className={`text-[11px] leading-relaxed flex items-start gap-1 ${isFailed ? "text-amber-600" : "text-gray-400"}`}>
+                                {isFailed ? <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> : <Globe className="h-3 w-3 mt-0.5 flex-shrink-0" />}
+                                <span>{msg.translation}</span>
                               </p>
                             </div>
                           );
@@ -519,8 +522,9 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
                           return (
                             <div className={`px-3 pb-2 border-t mt-0.5 ${isFailed ? "border-amber-200 bg-amber-50/50" : "border-blue-100"}`}>
-                              <p className={`text-[11px] leading-relaxed ${isFailed ? "text-amber-600" : "text-blue-400"}`}>
-                                <span className="font-medium">{isFailed ? "⚠ " : "🌐 "}</span>{msg.translation}
+                              <p className={`text-[11px] leading-relaxed flex items-start gap-1 ${isFailed ? "text-amber-600" : "text-blue-400"}`}>
+                                {isFailed ? <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> : <Globe className="h-3 w-3 mt-0.5 flex-shrink-0" />}
+                                <span>{msg.translation}</span>
                               </p>
                             </div>
                           );
@@ -530,8 +534,9 @@ export default function ChatDetailBase({ sessionId, mode, backPath, sidebarItems
                           const isFailed = msg.translation === "[翻訳できませんでした]" || msg.translation === "[翻訳上限に達しました]";
                           return (
                             <div className={`px-3 pb-2 border-t mt-0.5 ${isFailed ? "border-amber-400/40 bg-amber-500/20" : "border-white/20"}`}>
-                              <p className={`text-[11px] leading-relaxed ${isFailed ? "text-amber-200" : "text-white/60"}`}>
-                                <span className="font-medium">{isFailed ? "⚠ " : "→ "}</span>{msg.translation}
+                              <p className={`text-[11px] leading-relaxed flex items-start gap-1 ${isFailed ? "text-amber-200" : "text-white/60"}`}>
+                                {isFailed ? <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" /> : <Globe className="h-3 w-3 mt-0.5 flex-shrink-0" />}
+                                <span>{msg.translation}</span>
                               </p>
                             </div>
                           );
