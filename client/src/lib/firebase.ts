@@ -40,8 +40,8 @@ const googleProvider = new GoogleAuthProvider();
 // Firestore データベース
 const db: Firestore = getFirestore(app);
 
-// Cloud Functions
-const functions = getFunctions(app);
+// Cloud Functions（asia-northeast1 = 東京リージョン）
+const functions = getFunctions(app, "asia-northeast1");
 
 // 開発モード時はエミュレータに接続
 if (import.meta.env.DEV) {
