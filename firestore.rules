@@ -1,0 +1,196 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ══════════════════════════════════════════════
+    // ヘルパー関数
+    // ══════════════════════════════════════════════
+
+    function isAuth() { return request.auth != null; }
+
+    function isAnonymous() {
+      return request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isVerified() { return isAuth() && !isAnonymous(); }
+
+    function isAdmin() {
+      return isVerified() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+
+    function isSessionOwner(sid) {
+      return isAuth() &&
+        get(/databases/$(database)/documents/chatSessions/$(sid)).data.visitorId == request.auth.uid;
+    }
+
+    function isRecent() { return request.resource.data.createdAt == request.time; }
+
+
+    // ══════════════════════════════════════════════
+    // ユーザー (/users/{uid})
+    // ══════════════════════════════════════════════
+
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // 新規作成: 自分自身のみ、role は "visitor" 固定
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['role', 'createdAt'])
+        && request.resource.data.role == 'visitor'
+        && isRecent();
+
+      // role 変更は Admin SDK（サーバー側）のみ
+      allow update, delete: if false;
+    }
+
+
+    // ══════════════════════════════════════════════
+    // チャットセッション (/chatSessions/{sid})
+    // ══════════════════════════════════════════════
+
+    match /chatSessions/{sid} {
+      // 作成: 認証済みユーザーのみ、必須フィールドの厳密スキーマ強制
+      allow create: if isAuth()
+        && request.resource.data.keys().hasAll(['visitorId', 'status', 'language', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['visitorId', 'status', 'language', 'createdAt', 'deviceInfo'])
+        && request.resource.data.visitorId == request.auth.uid
+        && request.resource.data.status == 'active'
+        && request.resource.data.language is string
+        && request.resource.data.language.size() >= 2
+        && request.resource.data.language.size() <= 10
+        && isRecent();
+
+      // 読取: セッションオーナー or Admin
+      allow read: if isAdmin() || isOwner(resource.data.visitorId);
+
+      // 更新: セッションオーナーは status を "ended" にのみ変更可能
+      allow update: if isOwner(resource.data.visitorId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['ended'];
+
+      // 削除: Cloud Functions (Admin SDK) のみ（dataRetentionPurge）
+      allow delete: if false;
+
+
+      // ── メッセージ (/chatSessions/{sid}/messages/{mid}) ──
+      match /messages/{mid} {
+        // 読取: セッションオーナー or Admin
+        allow read: if isAdmin() || isSessionOwner(sid);
+
+        // 作成: セッションオーナーのみ、role は "visitor" 固定
+        // 文字数制限: 1〜2000文字（DoS対策）
+        allow create: if isSessionOwner(sid)
+          && request.resource.data.keys().hasAll(['role', 'content', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['role', 'content', 'createdAt'])
+          && request.resource.data.role == 'visitor'
+          && request.resource.data.content is string
+          && request.resource.data.content.size() >= 1
+          && request.resource.data.content.size() <= 2000
+          && isRecent();
+
+        // メッセージは不変（改ざん防止）
+        allow update, delete: if false;
+      }
+    }
+
+
+    // ══════════════════════════════════════════════
+    // アンケート (/surveys/{sid})
+    // ══════════════════════════════════════════════
+
+    match /surveys/{sid} {
+      // 作成: 認証済み、評価は 1〜5 の整数のみ
+      allow create: if isAuth()
+        && request.resource.data.keys().hasAll(['rating', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['rating', 'comment', 'sessionId', 'createdAt'])
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && (!('comment' in request.resource.data) || (
+          request.resource.data.comment is string
+          && request.resource.data.comment.size() <= 1000
+        ))
+        && isRecent();
+
+      // Admin のみ読取
+      allow read: if isAdmin();
+
+      // アンケートは不変
+      allow update, delete: if false;
+    }
+
+
+    // ══════════════════════════════════════════════
+    // 公開読取コレクション（認証要）
+    // ══════════════════════════════════════════════
+
+    // チャットフロー（デシジョンツリー）
+    match /chatFlowNodes/{id} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // eSIMプラン一覧（公開）
+    match /plans/{id} {
+      allow read: if true;
+      allow write: if false;  // Admin SDK のみ
+    }
+
+    // 競合他社プラン（公開）
+    match /competitorPlans/{id} {
+      allow read: if true;
+      allow write: if false;  // Admin SDK のみ
+    }
+
+
+    // ══════════════════════════════════════════════
+    // Admin 専用コレクション
+    // ══════════════════════════════════════════════
+
+    // RAG ドキュメント（AI応答の知識ベース）
+    match /ragDocuments/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // ホスピタリティ基準（AI応答品質基準）
+    match /hospitalityGuidelines/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // 顧客プロファイル（yah.mobi が書込、チャット側は読取のみ）
+    match /customerProfiles/{uid} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow write: if false;  // Admin SDK (webhookSync) のみ
+    }
+
+    // 購入履歴（yah.mobi が書込）
+    match /purchases/{id} {
+      allow read: if isAdmin();
+      allow write: if false;  // Admin SDK (webhookSync) のみ
+    }
+
+    // eSIM状態（yah.mobi が書込）
+    match /esimStatuses/{id} {
+      allow read: if isAdmin();
+      allow write: if false;  // Admin SDK (webhookSync) のみ
+    }
+
+    // eSIMインシデント（yah.mobi が書込）
+    match /esimIncidents/{id} {
+      allow read: if isAdmin();
+      allow write: if false;  // Admin SDK のみ
+    }
+
+
+    // ══════════════════════════════════════════════
+    // デフォルト拒否（未定義コレクションへのアクセスを遮断）
+    // ══════════════════════════════════════════════
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
