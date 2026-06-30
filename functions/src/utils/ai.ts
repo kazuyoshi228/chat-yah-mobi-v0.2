@@ -90,14 +90,16 @@ export async function searchRAG(
     .findNearest("embedding", queryEmbedding, {
       limit: RAG_TOP_K,
       distanceMeasure: "COSINE",
-      distanceThreshold: RAG_DISTANCE_THRESHOLD,
     })
     .get();
 
-  return vectorResults.docs.map((doc) => ({
-    content: doc.data().content as string,
-    score: doc.data().distance as number,
-  }));
+  // distanceThreshold フィルタリングは取得後に実施
+  return vectorResults.docs
+    .map((doc) => ({
+      content: doc.data().content as string,
+      score: doc.data().distance as number ?? 0,
+    }))
+    .filter((r) => r.score <= RAG_DISTANCE_THRESHOLD);
 }
 
 /**

@@ -7,6 +7,9 @@
  * Google サービス依存: 4つのみ (Gemini, Firestore Vector, Gmail, Sheets)
  */
 
+import * as admin from "firebase-admin";
+admin.initializeApp();
+
 // ── Firestore トリガー (3関数) ──
 export { onVisitorMessageCreated } from "./triggers/onVisitorMessageCreated";
 export { onSessionEnded } from "./triggers/onSessionEnded";
