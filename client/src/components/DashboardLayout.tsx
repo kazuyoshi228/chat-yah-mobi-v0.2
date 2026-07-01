@@ -18,14 +18,14 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
+
 import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, RotateCcw, Heart, DollarSign, UserCircle, Activity, Target, Database, ShieldCheck } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useAdminAuth } from "@/contexts/AuthContext";
 
 export type SidebarItem = {
   title: string;
@@ -73,7 +73,7 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const { loading, user, login } = useAdminAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -96,7 +96,7 @@ export default function DashboardLayout({
             </p>
           </div>
           <Button
-            onClick={() => { window.location.href = getLoginUrl(); }}
+            onClick={() => { login(); }}
             size="lg"
             className="w-full bg-black hover:bg-gray-800 text-white"
           >
@@ -138,7 +138,7 @@ function DashboardLayoutContent({
   sidebarItems,
   title,
 }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAdminAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -237,8 +237,8 @@ function DashboardLayoutContent({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-xs font-medium truncate">{user?.name ?? "-"}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user?.role}</p>
+                    <p className="text-xs font-medium truncate">{user?.displayName ?? user?.email ?? "-"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>

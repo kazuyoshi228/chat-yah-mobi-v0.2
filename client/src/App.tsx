@@ -1,30 +1,42 @@
+/**
+ * App.tsx — ルーティング定義
+ * Admin画面は AdminAuthGuard で保護
+ * tRPC 完全排除版
+ */
 import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import ChatStart from "@/pages/ChatStart";
-import ChatRoom from "@/pages/ChatRoom";
-// AdminDashboard removed — merged into BigKPIs
-import BigKPIs from "@/pages/admin/BigKPIsFirebase";
-import AdminQuickReplies from "@/pages/admin/AdminQuickReplies";
-import AdminRag from "@/pages/admin/AdminRagFirebase";
-import AdminFeedback from "@/pages/admin/AdminFeedback";
-import AdminDataAnalysis from "@/pages/admin/AdminDataAnalysis";
-import AdminChatList from "@/pages/admin/AdminChatListFirebase";
-import AdminChatReply from "@/pages/admin/AdminChatReply";
-import AIChatbot from "@/pages/admin/AIChatbot";
-import UserManuals from "@/pages/admin/UserManuals";
-import AdminTesting from "@/pages/admin/AdminTesting";
-import AdminFlowTree from "@/pages/admin/AdminFlowTree";
-import Refund from "@/pages/admin/Refund";
-import Hospitality from "@/pages/admin/HospitalityFirebase";
-import Pricing from "@/pages/admin/Pricing";
-import Customers from "@/pages/admin/Customers";
-import SystemHealth from "@/pages/admin/SystemHealth";
-import SSoT from "@/pages/admin/SSoT";
+import AdminAuthGuard from "@/components/AdminAuthGuard";
+
+// Visitor pages
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import RootRedirect from "@/pages/RootRedirect";
-import WidgetAuthSuccess from "@/pages/WidgetAuthSuccess";
+
+// Admin pages (Firebase版)
+import BigKPIs from "@/pages/admin/BigKPIsFirebase";
+import AdminRag from "@/pages/admin/AdminRagFirebase";
+import AdminChatList from "@/pages/admin/AdminChatListFirebase";
+import Hospitality from "@/pages/admin/HospitalityFirebase";
+import AdminFlowTree from "@/pages/admin/AdminFlowTreeFirebase";
+import AdminQuickReplies from "@/pages/admin/AdminQuickRepliesFirebase";
+import Customers from "@/pages/admin/CustomersFirebase";
+import Pricing from "@/pages/admin/PricingFirebase";
+import AdminFeedback from "@/pages/admin/AdminFeedbackFirebase";
+import Refund from "@/pages/admin/RefundFirebase";
+import SystemHealth from "@/pages/admin/SystemHealthFirebase";
+import SSoT from "@/pages/admin/SSoT";
+import AIChatbot from "@/pages/admin/AIChatbot";
+import UserManuals from "@/pages/admin/UserManuals";
+
+/** Admin画面ラッパー — Google認証ガード付き */
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  return (
+    <AdminAuthGuard>
+      <Component />
+    </AdminAuthGuard>
+  );
+}
 
 export default function App() {
   return (
@@ -33,32 +45,25 @@ export default function App() {
         {/* Root */}
         <Route path="/" component={RootRedirect} />
 
-        {/* Visitor chat */}
-        <Route path="/chat" component={ChatStart} />
-        <Route path="/chat/:sessionId" component={ChatRoom} />
-
-        {/* Admin portal */}
-        <Route path="/admin" component={BigKPIs} />
-        <Route path="/admin/dashboard" component={BigKPIs} />
-        <Route path="/admin/quick-replies" component={AdminQuickReplies} />
-        <Route path="/admin/rag" component={AdminRag} />
-        <Route path="/admin/feedback" component={AdminFeedback} />
-        <Route path="/admin/data-analysis" component={AdminDataAnalysis} />
-        <Route path="/admin/chats" component={AdminChatList} />
-        <Route path="/admin/chats/:id/reply" component={AdminChatReply} />
-        <Route path="/admin/ai-chatbot" component={AIChatbot} />
-        <Route path="/admin/user-manuals" component={UserManuals} />
-        <Route path="/admin/testing" component={AdminTesting} />
-        <Route path="/admin/flow-tree" component={AdminFlowTree} />
-        <Route path="/admin/refund" component={Refund} />
-        <Route path="/admin/hospitality" component={Hospitality} />
-        <Route path="/admin/pricing" component={Pricing} />
-        <Route path="/admin/customers" component={Customers} />
-        <Route path="/admin/system-health" component={SystemHealth} />
-        <Route path="/admin/ssot" component={SSoT} />
-        {/* Embeddable widget */}
+        {/* Embeddable widget (認証不要) */}
         <Route path="/widget-chat" component={WidgetChat} />
-        <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
+
+        {/* Admin portal (Google認証必須) */}
+        <Route path="/admin">{() => <AdminRoute component={BigKPIs} />}</Route>
+        <Route path="/admin/dashboard">{() => <AdminRoute component={BigKPIs} />}</Route>
+        <Route path="/admin/quick-replies">{() => <AdminRoute component={AdminQuickReplies} />}</Route>
+        <Route path="/admin/rag">{() => <AdminRoute component={AdminRag} />}</Route>
+        <Route path="/admin/feedback">{() => <AdminRoute component={AdminFeedback} />}</Route>
+        <Route path="/admin/chats">{() => <AdminRoute component={AdminChatList} />}</Route>
+        <Route path="/admin/ai-chatbot">{() => <AdminRoute component={AIChatbot} />}</Route>
+        <Route path="/admin/user-manuals">{() => <AdminRoute component={UserManuals} />}</Route>
+        <Route path="/admin/flow-tree">{() => <AdminRoute component={AdminFlowTree} />}</Route>
+        <Route path="/admin/refund">{() => <AdminRoute component={Refund} />}</Route>
+        <Route path="/admin/hospitality">{() => <AdminRoute component={Hospitality} />}</Route>
+        <Route path="/admin/pricing">{() => <AdminRoute component={Pricing} />}</Route>
+        <Route path="/admin/customers">{() => <AdminRoute component={Customers} />}</Route>
+        <Route path="/admin/system-health">{() => <AdminRoute component={SystemHealth} />}</Route>
+        <Route path="/admin/ssot">{() => <AdminRoute component={SSoT} />}</Route>
 
         <Route component={NotFound} />
       </Switch>
