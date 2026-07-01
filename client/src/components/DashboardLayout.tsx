@@ -73,7 +73,7 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user, login } = useAdminAuth();
+  const { loading, user, login, isAdmin, logout } = useAdminAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -101,6 +101,31 @@ export default function DashboardLayout({
             className="w-full bg-black hover:bg-gray-800 text-white"
           >
             Sign In with Google
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
+          <div className="flex flex-col items-center gap-6">
+            <h1 className="text-2xl font-semibold tracking-tight text-center">
+              アクセス権限がありません
+            </h1>
+            <p className="text-sm text-muted-foreground text-center max-w-sm">
+              {user.email} は管理者として登録されていません。
+            </p>
+          </div>
+          <Button
+            onClick={() => { logout(); }}
+            size="lg"
+            variant="outline"
+            className="w-full"
+          >
+            別のアカウントでログイン
           </Button>
         </div>
       </div>
