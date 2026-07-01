@@ -1,4 +1,15 @@
 {
+  "apphosting": {
+    "backendId": "chat-yah-mobi",
+    "rootDir": "/",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "functions"
+    ]
+  },
   "hosting": {
     "site": "chat-yah-mobi-v2",
     "public": "dist/public",
