@@ -1,7 +1,7 @@
 {
   "indexes": [
     {
-      "collectionGroup": "chatSessions",
+      "collectionGroup": "chat_sessions",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "visitorId", "order": "ASCENDING" },
@@ -9,7 +9,7 @@
       ]
     },
     {
-      "collectionGroup": "chatSessions",
+      "collectionGroup": "chat_sessions",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "status", "order": "ASCENDING" },
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "collectionGroup": "chatSessions",
+      "collectionGroup": "chat_sessions",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "escalated", "order": "ASCENDING" },
