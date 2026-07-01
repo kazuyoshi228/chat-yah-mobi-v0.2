@@ -41,7 +41,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.seedFirestore = exports.dataRetentionPurge = exports.webhookSync = exports.checkQrResend = exports.onRagDocumentWritten = exports.onSessionEnded = exports.onVisitorMessageCreated = void 0;
+exports.seedRagDocs = exports.dataRetentionPurge = exports.webhookSync = exports.checkQrResend = exports.onRagDocumentWritten = exports.onSessionEnded = exports.onVisitorMessageCreated = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 // ── Firestore トリガー (3関数) ──
@@ -60,7 +60,7 @@ Object.defineProperty(exports, "webhookSync", { enumerable: true, get: function 
 // ── Scheduled 関数 (1関数) ──
 var dataRetention_1 = require("./scheduled/dataRetention");
 Object.defineProperty(exports, "dataRetentionPurge", { enumerable: true, get: function () { return dataRetention_1.dataRetentionPurge; } });
-// ── 一時: シードデータ投入 (使用後に削除) ──
-var seed_1 = require("./seed");
-Object.defineProperty(exports, "seedFirestore", { enumerable: true, get: function () { return seed_1.seedFirestore; } });
+// ── 一時: RAGデータ移行用 ──
+var seedRagDocs_1 = require("./seedRagDocs");
+Object.defineProperty(exports, "seedRagDocs", { enumerable: true, get: function () { return seedRagDocs_1.seedRagDocs; } });
 //# sourceMappingURL=index.js.map
