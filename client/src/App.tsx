@@ -26,6 +26,7 @@ import SystemHealth from "@/pages/admin/SystemHealthFirebase";
 import SSoT from "@/pages/admin/SSoT";
 import AIChatbot from "@/pages/admin/AIChatbot";
 import UserManuals from "@/pages/admin/UserManuals";
+import CheckIn from "@/pages/CheckIn";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
       <Switch>
         {/* Root */}
         <Route path="/" component={RootRedirect} />
+        <Route path="/checkin" component={CheckIn} />
 
         {/* Embeddable widget (認証不要) */}
         <Route path="/widget-chat" component={WidgetChat} />
