@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 
 export default function CheckIn() {
-  const { user, loading, signIn } = useAdminAuth();
+  const { user, loading, login } = useAdminAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export default function CheckIn() {
           </div>
 
           <button
-            onClick={signIn}
+            onClick={login}
             style={{
               width: "100%",
               display: "grid",
