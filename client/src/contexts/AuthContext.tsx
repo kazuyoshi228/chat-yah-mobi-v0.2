@@ -29,7 +29,7 @@ const AuthContext = createContext<AuthState>({
 });
 
 /** Admin 許可メールドメイン（必要に応じて拡張） */
-const ADMIN_DOMAINS = ["yah.mobi"];
+const ADMIN_DOMAINS = ["yah.mobi", "bonfire.co.jp"];
 
 function isAdminUser(user: User | null): boolean {
   if (!user || !user.email) return false;
