@@ -25,6 +25,7 @@ import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import RootRedirect from "@/pages/RootRedirect";
 import WidgetAuthSuccess from "@/pages/WidgetAuthSuccess";
+import CheckIn from "@/pages/CheckIn";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
       <Switch>
         {/* Root */}
         <Route path="/" component={RootRedirect} />
+        <Route path="/checkin" component={CheckIn} />
 
         {/* Visitor chat */}
         <Route path="/chat" component={ChatStart} />
