@@ -16,7 +16,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isVerified() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        (request.auth.token.email.matches('.*@yah[.]mobi$') ||
+         request.auth.token.email.matches('.*@bonfire[.]co[.]jp$'));
     }
 
     function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
