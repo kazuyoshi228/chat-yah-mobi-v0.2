@@ -79,7 +79,7 @@ exports.dataRetentionPurge = (0, scheduler_1.onSchedule)({
             const sessionId = sessionDoc.id;
             try {
                 // 1. messages サブコレクションを一括削除
-                await deleteSubcollection(`chat_sessions/${sessionId}/messages`);
+                await deleteSubcollection(`chat_sessions/${sessionId}/chat_messages`);
                 // 2. 関連する chat_surveys ドキュメントを削除
                 await deleteSurveys(sessionId);
                 // 3. セッション本体を削除

@@ -54,7 +54,7 @@ export const dataRetentionPurge = onSchedule(
         try {
           // 1. messages サブコレクションを一括削除
           await deleteSubcollection(
-            `chat_sessions/${sessionId}/messages`
+            `chat_sessions/${sessionId}/chat_messages`
           );
 
           // 2. 関連する chat_surveys ドキュメントを削除

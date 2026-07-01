@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2, BookOpen, Globe } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, BookOpen, Globe, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +52,7 @@ interface RagDoc {
 }
 
 export default function AdminRagFirebase() {
-  const { docs, loading } = useCollection("chat_rag_documents", [orderBy("createdAt", "desc")]);
+  const { docs, loading, error } = useCollection("chat_rag_documents", [orderBy("createdAt", "desc")]);
   const { addDocument, loading: adding } = useAddDoc("chat_rag_documents");
   const { updateDocument, loading: updating } = useUpdateDoc("chat_rag_documents");
   const { deleteDocument } = useDeleteDoc("chat_rag_documents");
@@ -178,6 +178,12 @@ export default function AdminRagFirebase() {
         {loading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-500 border border-red-200 rounded-lg bg-red-50">
+            <AlertTriangle className="w-10 h-10 mx-auto mb-3" />
+            <p className="font-semibold">読み込みエラーが発生しました</p>
+            <p className="text-xs mt-1">{error}</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

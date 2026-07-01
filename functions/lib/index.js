@@ -41,7 +41,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.migratePrefixes = exports.dataRetentionPurge = exports.webhookSync = exports.checkQrResend = exports.onRagDocumentWritten = exports.onSessionEnded = exports.onVisitorMessageCreated = void 0;
+exports.dataRetentionPurge = exports.webhookSync = exports.checkQrResend = exports.onRagDocumentWritten = exports.onSessionEnded = exports.onVisitorMessageCreated = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 // ── Firestore トリガー (3関数) ──
@@ -60,6 +60,4 @@ Object.defineProperty(exports, "webhookSync", { enumerable: true, get: function 
 // ── Scheduled 関数 (1関数) ──
 var dataRetention_1 = require("./scheduled/dataRetention");
 Object.defineProperty(exports, "dataRetentionPurge", { enumerable: true, get: function () { return dataRetention_1.dataRetentionPurge; } });
-var migratePrefixes_1 = require("./migratePrefixes");
-Object.defineProperty(exports, "migratePrefixes", { enumerable: true, get: function () { return migratePrefixes_1.migratePrefixes; } });
 //# sourceMappingURL=index.js.map

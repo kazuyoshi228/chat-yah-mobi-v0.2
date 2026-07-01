@@ -35,7 +35,7 @@ const db = admin.firestore();
 
 export const onVisitorMessageCreated = onDocumentCreated(
   {
-    document: "chat_sessions/{sessionId}/messages/{messageId}",
+    document: "chat_sessions/{sessionId}/chat_messages/{messageId}",
     region: REGION,
     // Cloud Functions v2: メモリ・タイムアウト設定
     memory: "512MiB",
@@ -78,7 +78,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
 
       // ── Step 4: 会話履歴取得 ──
       const historySnap = await db
-        .collection(`chat_sessions/${sessionId}/messages`)
+        .collection(`chat_sessions/${sessionId}/chat_messages`)
         .orderBy("createdAt", "asc")
         .limit(MAX_MESSAGES_PER_SESSION)
         .get();
@@ -99,7 +99,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       });
 
       // ── Step 6: AI回答をメッセージに追加 ──
-      await db.collection(`chat_sessions/${sessionId}/messages`).add({
+      await db.collection(`chat_sessions/${sessionId}/chat_messages`).add({
         role: "ai",
         content: aiResponse.answer,
         resolved: aiResponse.resolved,
@@ -120,7 +120,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       console.error("AI応答生成エラー:", error);
 
       // エラー時もユーザーにメッセージを返す
-      await db.collection(`chat_sessions/${sessionId}/messages`).add({
+      await db.collection(`chat_sessions/${sessionId}/chat_messages`).add({
         role: "ai",
         content:
           "申し訳ございません。一時的なエラーが発生しました。しばらくしてからもう一度お試しください。",

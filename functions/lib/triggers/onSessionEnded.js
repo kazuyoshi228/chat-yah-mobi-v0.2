@@ -68,7 +68,7 @@ exports.onSessionEnded = (0, firestore_1.onDocumentUpdated)({
     try {
         // ── Step 1: 全メッセージ取得 ──
         const messagesSnap = await db
-            .collection(`chat_sessions/${sessionId}/messages`)
+            .collection(`chat_sessions/${sessionId}/chat_messages`)
             .orderBy("createdAt", "asc")
             .get();
         const messages = messagesSnap.docs.map((doc) => ({
