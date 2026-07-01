@@ -1,5 +1,5 @@
 import { getDb } from "../server/db";
-import { quickReplies } from "../drizzle/schema";
+import { chat_quick_replies } from "../drizzle/schema";
 import { asc } from "drizzle-orm";
 
 async function main() {
@@ -8,8 +8,8 @@ async function main() {
   // 全クイック返信を作成日昇順で取得
   const all = await db
     .select()
-    .from(quickReplies)
-    .orderBy(asc(quickReplies.createdAt));
+    .from(chat_quick_replies)
+    .orderBy(asc(chat_quick_replies.createdAt));
 
   console.log("全クイック返信一覧:");
   all.forEach((r) => console.log(`  id=${r.id}: ${r.title}`));
@@ -28,10 +28,10 @@ async function main() {
     const newTitle = tagMap[reply.title ?? ""];
     if (newTitle) {
       await db
-        .update(quickReplies)
+        .update(chat_quick_replies)
         .set({ title: newTitle })
         .where(
-          (await import("drizzle-orm")).eq(quickReplies.id, reply.id)
+          (await import("drizzle-orm")).eq(chat_quick_replies.id, reply.id)
         );
       console.log(`✓ 更新: "${reply.title}" → "${newTitle}"`);
       updatedCount++;

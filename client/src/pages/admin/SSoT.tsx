@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Bot, Languages, Check, BookOpen } from "lucide-react";
-import { trpc } from "@/lib/trpc";
+import { useCollection, useUpdateDoc } from "@/hooks/useFirestoreAdmin";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -408,13 +410,26 @@ function ImprovementCard({
     }
   }, [initialData]);
 
-  const update = trpc.improvements.update.useMutation({
-    onSuccess: () => {
+  const { updateDocument, loading: updateLoading } = useUpdateDoc("improvements");
+  const [isPending, setIsPending] = useState(false);
+
+  const handleSave = async () => {
+    setIsPending(true);
+    try {
+      await setDoc(doc(db, "improvements", cardKey), {
+        cardKey,
+        nextDate: form.nextDate || null,
+        lastDate: form.lastDate || null,
+        notes: form.notes || null,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
       setSaved(true);
       toast.success("保存しました");
       setTimeout(() => setSaved(false), 2000);
-    },
-  });
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
     <Card>
@@ -458,17 +473,10 @@ function ImprovementCard({
         <Button
           size="sm"
           className="w-full"
-          disabled={update.isPending || saved}
-          onClick={() =>
-            update.mutate({
-              cardKey,
-              nextDate: form.nextDate || null,
-              lastDate: form.lastDate || null,
-              notes: form.notes || null,
-            })
-          }
+          disabled={isPending || saved}
+          onClick={handleSave}
         >
-          {saved ? <><Check className="w-3.5 h-3.5 mr-1" />保存済み</> : update.isPending ? "保存中..." : "保存"}
+          {saved ? <><Check className="w-3.5 h-3.5 mr-1" />保存済み</> : isPending ? "保存中..." : "保存"}
         </Button>
       </CardContent>
     </Card>
@@ -478,7 +486,7 @@ function ImprovementCard({
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export default function SSoT() {
-  const { data: cards } = trpc.improvements.getAll.useQuery();
+  const { docs: cards } = useCollection("improvements");
   const getCard = (key: string) => cards?.find((c) => c.cardKey === key);
 
   return (

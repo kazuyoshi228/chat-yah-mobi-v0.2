@@ -2,14 +2,14 @@ import { and, avg, count, desc, eq, gte, inArray, isNull, lte, or, sql } from "d
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
-  chatSessions,
-  chatFlowNodes,
+  chat_sessions,
+  chat_flow_nodes,
   imageAnalyses,
   messages,
-  quickReplies,
-  ragDocuments,
+  chat_quick_replies,
+  chat_rag_documents,
   sessionReads,
-  surveys,
+  chat_surveys,
   testRunLogs,
   simulationRunResults,
   users,
@@ -142,12 +142,12 @@ export async function getAllOperatorsWithChatCount() {
   const ids = admins.map((u) => u.id);
   const counts = await db
     .select({
-      operatorId: chatSessions.operatorId,
+      operatorId: chat_sessions.operatorId,
       count: sql<number>`count(*)`,
     })
-    .from(chatSessions)
-    .where(inArray(chatSessions.operatorId, ids))
-    .groupBy(chatSessions.operatorId);
+    .from(chat_sessions)
+    .where(inArray(chat_sessions.operatorId, ids))
+    .groupBy(chat_sessions.operatorId);
 
   const countMap = new Map(counts.map((c) => [c.operatorId, Number(c.count)]));
   return admins.map((op) => ({ ...op, chatCount: countMap.get(op.id) ?? 0 }));
@@ -161,8 +161,8 @@ export async function getOperatorChatCount(operatorId: number): Promise<number> 
   if (!db) return 0;
   const result = await db
     .select({ count: sql<number>`count(*)` })
-    .from(chatSessions)
-    .where(eq(chatSessions.operatorId, operatorId));
+    .from(chat_sessions)
+    .where(eq(chat_sessions.operatorId, operatorId));
   return Number(result[0]?.count ?? 0);
 }
 
@@ -171,14 +171,14 @@ export async function getOperatorChatCount(operatorId: number): Promise<number> 
 export async function createChatSession(data: InsertChatSession): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(chatSessions).values(data);
+  const result = await db.insert(chat_sessions).values(data);
   return (result[0] as any).insertId as number;
 }
 
 export async function getChatSession(id: number): Promise<ChatSession | undefined> {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(chatSessions).where(eq(chatSessions.id, id)).limit(1);
+  const result = await db.select().from(chat_sessions).where(eq(chat_sessions.id, id)).limit(1);
   return result[0];
 }
 
@@ -187,9 +187,9 @@ export async function getChatSessionByVisitorId(visitorId: string): Promise<Chat
   if (!db) return undefined;
   const result = await db
     .select()
-    .from(chatSessions)
-    .where(and(eq(chatSessions.visitorId, visitorId)))
-    .orderBy(desc(chatSessions.createdAt))
+    .from(chat_sessions)
+    .where(and(eq(chat_sessions.visitorId, visitorId)))
+    .orderBy(desc(chat_sessions.createdAt))
     .limit(1);
   return result[0];
 }
@@ -197,13 +197,13 @@ export async function getChatSessionByVisitorId(visitorId: string): Promise<Chat
 export async function listChatSessions(status?: "waiting" | "active" | "ended") {
   const db = await getDb();
   if (!db) return [];
-  const query = db.select().from(chatSessions).orderBy(desc(chatSessions.updatedAt));
+  const query = db.select().from(chat_sessions).orderBy(desc(chat_sessions.updatedAt));
   if (status) {
     return db
       .select()
-      .from(chatSessions)
-      .where(eq(chatSessions.status, status))
-      .orderBy(desc(chatSessions.updatedAt));
+      .from(chat_sessions)
+      .where(eq(chat_sessions.status, status))
+      .orderBy(desc(chat_sessions.updatedAt));
   }
   return query;
 }
@@ -214,7 +214,7 @@ export async function updateChatSession(
 ) {
   const db = await getDb();
   if (!db) return;
-  await db.update(chatSessions).set(data).where(eq(chatSessions.id, id));
+  await db.update(chat_sessions).set(data).where(eq(chat_sessions.id, id));
 }
 
 /**
@@ -229,9 +229,9 @@ export async function scheduleSessionDeletion(sessionId: number): Promise<void> 
   const deleteAt = new Date(session.createdAt);
   deleteAt.setFullYear(deleteAt.getFullYear() + 2);
   await db
-    .update(chatSessions)
+    .update(chat_sessions)
     .set({ scheduledDeleteAt: deleteAt })
-    .where(eq(chatSessions.id, sessionId));
+    .where(eq(chat_sessions.id, sessionId));
 }
 
 /**
@@ -243,16 +243,16 @@ export async function purgeExpiredSessions(): Promise<number> {
   if (!db) return 0;
   const now = new Date();
   const expired = await db
-    .select({ id: chatSessions.id })
-    .from(chatSessions)
-    .where(and(sql`${chatSessions.scheduledDeleteAt} IS NOT NULL`, lte(chatSessions.scheduledDeleteAt, now)));
+    .select({ id: chat_sessions.id })
+    .from(chat_sessions)
+    .where(and(sql`${chat_sessions.scheduledDeleteAt} IS NOT NULL`, lte(chat_sessions.scheduledDeleteAt, now)));
   if (expired.length === 0) return 0;
   const ids = expired.map((s) => s.id);
   // Delete messages first (FK dependency)
   for (const id of ids) {
     await db.delete(messages).where(eq(messages.sessionId, id));
   }
-  await db.delete(chatSessions).where(inArray(chatSessions.id, ids));
+  await db.delete(chat_sessions).where(inArray(chat_sessions.id, ids));
   console.log(`[DataRetention] Purged ${ids.length} expired sessions`);
   return ids.length;
 }
@@ -281,26 +281,26 @@ export async function getMessagesBySessionId(sessionId: number): Promise<Message
 export async function listQuickReplies() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(quickReplies).orderBy(quickReplies.createdAt);
+  return db.select().from(chat_quick_replies).orderBy(chat_quick_replies.createdAt);
 }
 
 export async function createQuickReply(data: InsertQuickReply) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(quickReplies).values(data);
+  const result = await db.insert(chat_quick_replies).values(data);
   return (result[0] as any).insertId as number;
 }
 
 export async function updateQuickReply(id: number, data: Partial<InsertQuickReply>) {
   const db = await getDb();
   if (!db) return;
-  await db.update(quickReplies).set(data).where(eq(quickReplies.id, id));
+  await db.update(chat_quick_replies).set(data).where(eq(chat_quick_replies.id, id));
 }
 
 export async function deleteQuickReply(id: number) {
   const db = await getDb();
   if (!db) return;
-  await db.delete(quickReplies).where(eq(quickReplies.id, id));
+  await db.delete(chat_quick_replies).where(eq(chat_quick_replies.id, id));
 }
 
 // ─── RAG Documents ────────────────────────────────────────────────────────────
@@ -309,7 +309,7 @@ export async function deleteQuickReply(id: number) {
 export async function listRagDocuments() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(ragDocuments).orderBy(desc(ragDocuments.createdAt));
+  return db.select().from(chat_rag_documents).orderBy(desc(chat_rag_documents.createdAt));
 }
 
 /** List only non-expired RAG documents (used for AI search). */
@@ -319,34 +319,34 @@ export async function listActiveRagDocuments() {
   const now = new Date();
   return db
     .select()
-    .from(ragDocuments)
-    .where(or(isNull(ragDocuments.expiresAt), sql`${ragDocuments.expiresAt} > ${now}`))
-    .orderBy(desc(ragDocuments.createdAt));
+    .from(chat_rag_documents)
+    .where(or(isNull(chat_rag_documents.expiresAt), sql`${chat_rag_documents.expiresAt} > ${now}`))
+    .orderBy(desc(chat_rag_documents.createdAt));
 }
 
 export async function createRagDocument(data: InsertRagDocument) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(ragDocuments).values(data);
+  const result = await db.insert(chat_rag_documents).values(data);
   return (result[0] as any).insertId as number;
 }
 
 export async function updateRagDocument(id: number, data: Partial<InsertRagDocument>) {
   const db = await getDb();
   if (!db) return;
-  await db.update(ragDocuments).set(data).where(eq(ragDocuments.id, id));
+  await db.update(chat_rag_documents).set(data).where(eq(chat_rag_documents.id, id));
 }
 
 export async function deleteRagDocument(id: number) {
   const db = await getDb();
   if (!db) return;
-  await db.delete(ragDocuments).where(eq(ragDocuments.id, id));
+  await db.delete(chat_rag_documents).where(eq(chat_rag_documents.id, id));
 }
 
 export async function getRagDocumentsWithEmbeddings() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(ragDocuments).where(eq(ragDocuments.embedding, ragDocuments.embedding));
+  return db.select().from(chat_rag_documents).where(eq(chat_rag_documents.embedding, chat_rag_documents.embedding));
 }
 
 // ─── Surveys ──────────────────────────────────────────────────────────────────
@@ -354,37 +354,37 @@ export async function getRagDocumentsWithEmbeddings() {
 export async function createSurvey(data: InsertSurvey) {
   const db = await getDb();
   if (!db) throw new Error("DB not available");
-  const result = await db.insert(surveys).values(data);
+  const result = await db.insert(chat_surveys).values(data);
   return (result[0] as any).insertId as number;
 }
 
 export async function getSurveyBySessionId(sessionId: number) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(surveys).where(eq(surveys.sessionId, sessionId)).limit(1);
+  const result = await db.select().from(chat_surveys).where(eq(chat_surveys.sessionId, sessionId)).limit(1);
   return result[0];
 }
 
-/** List all surveys with their associated session info (for admin feedback view). */
+/** List all chat_surveys with their associated session info (for admin feedback view). */
 export async function listSurveys(limit = 100) {
   const db = await getDb();
   if (!db) return [];
   const rows = await db
     .select({
-      id: surveys.id,
-      sessionId: surveys.sessionId,
-      rating: surveys.rating,
-      resolved: surveys.resolved,
-      comment: surveys.comment,
-      freeComment: surveys.freeComment,
-      createdAt: surveys.createdAt,
-      visitorName: chatSessions.visitorName,
-      language: chatSessions.language,
-      operatorId: chatSessions.operatorId,
+      id: chat_surveys.id,
+      sessionId: chat_surveys.sessionId,
+      rating: chat_surveys.rating,
+      resolved: chat_surveys.resolved,
+      comment: chat_surveys.comment,
+      freeComment: chat_surveys.freeComment,
+      createdAt: chat_surveys.createdAt,
+      visitorName: chat_sessions.visitorName,
+      language: chat_sessions.language,
+      operatorId: chat_sessions.operatorId,
     })
-    .from(surveys)
-    .leftJoin(chatSessions, eq(surveys.sessionId, chatSessions.id))
-    .orderBy(desc(surveys.createdAt))
+    .from(chat_surveys)
+    .leftJoin(chat_sessions, eq(chat_surveys.sessionId, chat_sessions.id))
+    .orderBy(desc(chat_surveys.createdAt))
     .limit(limit);
   return rows;
 }
@@ -395,8 +395,8 @@ export async function getAnalysisData(since?: Date) {
   if (!db) return { sessions: [], messages: [] };
 
   const sessionsQuery = since
-    ? db.select().from(chatSessions).where(gte(chatSessions.createdAt, since))
-    : db.select().from(chatSessions);
+    ? db.select().from(chat_sessions).where(gte(chat_sessions.createdAt, since))
+    : db.select().from(chat_sessions);
   const allSessions = await sessionsQuery;
 
   const messagesQuery = since
@@ -418,8 +418,8 @@ export async function getKpiStats(since?: Date) {
   };
 
   const allSessions = since
-    ? await db.select().from(chatSessions).where(gte(chatSessions.createdAt, since))
-    : await db.select().from(chatSessions);
+    ? await db.select().from(chat_sessions).where(gte(chat_sessions.createdAt, since))
+    : await db.select().from(chat_sessions);
   const total = allSessions.length;
   const endedSessions = allSessions.filter((s) => s.status === "ended");
   // AI resolved = sessions that ended without admin intervention
@@ -430,8 +430,8 @@ export async function getKpiStats(since?: Date) {
   const operatorResolved = operatorHandledSessions.filter((s) => s.status === "ended").length;
 
   const allSurveys = since
-    ? await db.select().from(surveys).where(gte(surveys.createdAt, since))
-    : await db.select().from(surveys);
+    ? await db.select().from(chat_surveys).where(gte(chat_surveys.createdAt, since))
+    : await db.select().from(chat_surveys);
   const surveyCount = allSurveys.length;
   const avgRating =
     surveyCount > 0
@@ -439,21 +439,21 @@ export async function getKpiStats(since?: Date) {
       : 0;
 
   // Resolution rate from survey answers
-  const surveysWithResolved = allSurveys.filter((s) => s.resolved !== null && s.resolved !== undefined);
-  const resolvedCount = surveysWithResolved.filter((s) => s.resolved === "yes").length;
-  const unresolvedCount = surveysWithResolved.filter((s) => s.resolved === "no").length;
-  const resolvedRate = surveysWithResolved.length > 0
-    ? Math.round((resolvedCount / surveysWithResolved.length) * 100)
+  const chat_surveysWithResolved = allSurveys.filter((s) => s.resolved !== null && s.resolved !== undefined);
+  const resolvedCount = chat_surveysWithResolved.filter((s) => s.resolved === "yes").length;
+  const unresolvedCount = chat_surveysWithResolved.filter((s) => s.resolved === "no").length;
+  const resolvedRate = chat_surveysWithResolved.length > 0
+    ? Math.round((resolvedCount / chat_surveysWithResolved.length) * 100)
     : null;
 
   // AI vs Admin resolved rate
   // Admin Resolution Rate = (admin-ended sessions) / (all admin-handled sessions) * 100
   const sessionMap = new Map(allSessions.map((s) => [s.id, s]));
-  const aiSurveys = surveysWithResolved.filter((sv) => {
+  const aiSurveys = chat_surveysWithResolved.filter((sv) => {
     const sess = sessionMap.get(sv.sessionId);
     return sess && !sess.operatorId;
   });
-  const opSurveys = surveysWithResolved.filter((sv) => {
+  const opSurveys = chat_surveysWithResolved.filter((sv) => {
     const sess = sessionMap.get(sv.sessionId);
     return sess && !!sess.operatorId;
   });
@@ -642,24 +642,24 @@ export async function getUnreadSessionIds(userId: number): Promise<Set<number>> 
 
   // Sessions with messages newer than last read
   const unreadRows = await db
-    .select({ sessionId: chatSessions.id })
-    .from(chatSessions)
+    .select({ sessionId: chat_sessions.id })
+    .from(chat_sessions)
     .leftJoin(
       sessionReads,
-      and(eq(sessionReads.sessionId, chatSessions.id), eq(sessionReads.userId, userId))
+      and(eq(sessionReads.sessionId, chat_sessions.id), eq(sessionReads.userId, userId))
     )
     .where(
       and(
         // Only active/waiting sessions (ended sessions don't need badge)
-        or(eq(chatSessions.status, "waiting"), eq(chatSessions.status, "active")),
+        or(eq(chat_sessions.status, "waiting"), eq(chat_sessions.status, "active")),
         or(
           // Never read
           isNull(sessionReads.readAt),
           // Last message is newer than last read
-          sql`${chatSessions.lastMessageAt} > ${sessionReads.readAt}`
+          sql`${chat_sessions.lastMessageAt} > ${sessionReads.readAt}`
         ),
         // Must have at least one message (lastMessageAt is not null)
-        sql`${chatSessions.lastMessageAt} IS NOT NULL`
+        sql`${chat_sessions.lastMessageAt} IS NOT NULL`
       )
     );
 
@@ -674,9 +674,9 @@ export async function updateSessionLastMessageAt(sessionId: number): Promise<voi
   if (!db) return;
 
   await db
-    .update(chatSessions)
+    .update(chat_sessions)
     .set({ lastMessageAt: sql`now()` })
-    .where(eq(chatSessions.id, sessionId));
+    .where(eq(chat_sessions.id, sessionId));
 }
 
 /**
@@ -710,17 +710,17 @@ export async function getTeamScorecard(since?: number, until?: number): Promise<
   const untilDate = until ? new Date(until) : undefined;
 
   const sessionWhere = and(
-    sinceDate ? gte(chatSessions.createdAt, sinceDate) : undefined,
-    untilDate ? lte(chatSessions.createdAt, untilDate) : undefined,
+    sinceDate ? gte(chat_sessions.createdAt, sinceDate) : undefined,
+    untilDate ? lte(chat_sessions.createdAt, untilDate) : undefined,
   );
 
   // ── Total / AI / Operator handled ────────────────────────────────────────
   const [sessionStats] = await db
     .select({
-      total: count(chatSessions.id),
-      operatorHandled: sql<number>`SUM(CASE WHEN ${chatSessions.operatorId} IS NOT NULL THEN 1 ELSE 0 END)`,
+      total: count(chat_sessions.id),
+      operatorHandled: sql<number>`SUM(CASE WHEN ${chat_sessions.operatorId} IS NOT NULL THEN 1 ELSE 0 END)`,
     })
-    .from(chatSessions)
+    .from(chat_sessions)
     .where(sessionWhere);
 
   const total = Number(sessionStats?.total ?? 0);
@@ -732,13 +732,13 @@ export async function getTeamScorecard(since?: number, until?: number): Promise<
   const surveyWhere = and(
     sinceDate
       ? gte(
-          sql`(SELECT cs.createdAt FROM chat_sessions cs WHERE cs.id = ${surveys.sessionId})`,
+          sql`(SELECT cs.createdAt FROM chat_sessions cs WHERE cs.id = ${chat_surveys.sessionId})`,
           sinceDate
         )
       : undefined,
     untilDate
       ? lte(
-          sql`(SELECT cs.createdAt FROM chat_sessions cs WHERE cs.id = ${surveys.sessionId})`,
+          sql`(SELECT cs.createdAt FROM chat_sessions cs WHERE cs.id = ${chat_surveys.sessionId})`,
           untilDate
         )
       : undefined,
@@ -746,11 +746,11 @@ export async function getTeamScorecard(since?: number, until?: number): Promise<
 
   const [surveyStats] = await db
     .select({
-      avgRating: avg(surveys.rating),
-      totalSurveys: count(surveys.id),
-      resolvedYes: sql<number>`SUM(CASE WHEN ${surveys.resolved} = 'yes' THEN 1 ELSE 0 END)`,
+      avgRating: avg(chat_surveys.rating),
+      totalSurveys: count(chat_surveys.id),
+      resolvedYes: sql<number>`SUM(CASE WHEN ${chat_surveys.resolved} = 'yes' THEN 1 ELSE 0 END)`,
     })
-    .from(surveys)
+    .from(chat_surveys)
     .where(surveyWhere);
 
   const avgCsat = surveyStats?.avgRating ? Number(surveyStats.avgRating) : null;
@@ -883,9 +883,9 @@ export async function getChatFlowNodes(): Promise<ChatFlowNode[]> {
   if (!db) return [];
   return db
     .select()
-    .from(chatFlowNodes)
-    .where(eq(chatFlowNodes.isActive, 1))
-    .orderBy(chatFlowNodes.sortOrder);
+    .from(chat_flow_nodes)
+    .where(eq(chat_flow_nodes.isActive, 1))
+    .orderBy(chat_flow_nodes.sortOrder);
 }
 
 /** Get a single chat flow node by ID. */
@@ -894,8 +894,8 @@ export async function getChatFlowNode(id: string): Promise<ChatFlowNode | null> 
   if (!db) return null;
   const rows = await db
     .select()
-    .from(chatFlowNodes)
-    .where(eq(chatFlowNodes.id, id))
+    .from(chat_flow_nodes)
+    .where(eq(chat_flow_nodes.id, id))
     .limit(1);
   return rows[0] ?? null;
 }
@@ -906,8 +906,8 @@ export async function listAllChatFlowNodes(): Promise<ChatFlowNode[]> {
   if (!db) return [];
   return db
     .select()
-    .from(chatFlowNodes)
-    .orderBy(chatFlowNodes.sortOrder, chatFlowNodes.id);
+    .from(chat_flow_nodes)
+    .orderBy(chat_flow_nodes.sortOrder, chat_flow_nodes.id);
 }
 
 /** Upsert (insert or update) a chat flow node. */
@@ -917,7 +917,7 @@ export async function upsertChatFlowNode(
   const db = await getDb();
   if (!db) return;
   await db
-    .insert(chatFlowNodes)
+    .insert(chat_flow_nodes)
     .values(node)
     .onDuplicateKeyUpdate({
       set: {
@@ -940,7 +940,7 @@ export async function deactivateChatFlowNode(id: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
-    .update(chatFlowNodes)
+    .update(chat_flow_nodes)
     .set({ isActive: 0 })
-    .where(eq(chatFlowNodes.id, id));
+    .where(eq(chat_flow_nodes.id, id));
 }

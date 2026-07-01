@@ -149,8 +149,8 @@ export default function AdminDataAnalysis() {
 
   // ── Survey Response Rate ────────────────────────────────────────────────────
   const totalSessions = kpi?.total ?? 0;
-  const surveysAnswered = kpi?.surveyCount ?? 0;
-  const surveyResponseRate = totalSessions > 0 ? Math.round((surveysAnswered / totalSessions) * 100) : null;
+  const chat_surveysAnswered = kpi?.surveyCount ?? 0;
+  const surveyResponseRate = totalSessions > 0 ? Math.round((chat_surveysAnswered / totalSessions) * 100) : null;
 
   // ── Bot-first KPIs ──────────────────────────────────────────────────────────
   const formRedirectRate = kpi?.formRedirectRate ?? null;
@@ -223,7 +223,7 @@ export default function AdminDataAnalysis() {
                   </>
                 )}
               </div>
-              <p className="text-xs text-white/40 mt-2">Sessions resolved by AI · based on post-chat surveys</p>
+              <p className="text-xs text-white/40 mt-2">Sessions resolved by AI · based on post-chat chat_surveys</p>
               <div className="mt-2 h-2 bg-white/10 rounded-full overflow-hidden w-full md:w-64">
                 <div
                   className="h-full rounded-full transition-all duration-700"
@@ -244,7 +244,7 @@ export default function AdminDataAnalysis() {
                   {surveyResponseRate !== null ? `${surveyResponseRate}%` : "—"}
                 </p>
                 <p className="text-[10px] text-white/30 mt-0.5">
-                  {surveysAnswered > 0 ? `${surveysAnswered} / ${totalSessions} sessions` : "No surveys yet"}
+                  {chat_surveysAnswered > 0 ? `${chat_surveysAnswered} / ${totalSessions} sessions` : "No chat_surveys yet"}
                 </p>
                 <p className="text-[10px] text-white/25 mt-0.5">Low (&lt;20%) reduces KPI reliability</p>
               </div>
@@ -275,7 +275,7 @@ export default function AdminDataAnalysis() {
             <StatCard
               label="CSAT Score"
               value={scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined ? `${scorecard.avgCsat.toFixed(1)} / 5` : "—"}
-              sub={`${surveysAnswered} survey responses`}
+              sub={`${chat_surveysAnswered} survey responses`}
               accent={scorecard?.avgCsat !== null && scorecard?.avgCsat !== undefined ? (scorecard.avgCsat >= 4 ? "green" : scorecard.avgCsat >= 3 ? "amber" : "red") : undefined}
             />
             <StatCard

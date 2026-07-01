@@ -1,11 +1,10 @@
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { useAdminAuth } from "@/contexts/AuthContext";
 import { YahLogo } from "@/components/YahLogo";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 
 export default function CheckIn() {
-  const { user, loading } = useAuth();
+  const { user, loading, login } = useAdminAuth();
   const [, setLocation] = useLocation();
 
   // ログイン済みなら /admin にリダイレクト
@@ -78,7 +77,7 @@ export default function CheckIn() {
           </div>
 
           <button
-            onClick={() => { window.location.href = getLoginUrl(); }}
+            onClick={() => { login(); }}
             className="group w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97]"
             style={{
               background: "oklch(1 0 0)",

@@ -1,0 +1,170 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ══════════════════════════════════════════════
+    // ヘルパー関数
+    // ══════════════════════════════════════════════
+
+    function isAuth() { return request.auth != null; }
+
+    function isAnonymous() {
+      return request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    function isVerified() { return isAuth() && !isAnonymous(); }
+
+    function isAdmin() {
+      return isVerified() &&
+        (request.auth.token.email.matches('.*@yah[.]mobi$') ||
+         request.auth.token.email.matches('.*@bonfire[.]co[.]jp$'));
+    }
+
+    function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+
+    function isSessionOwner(sid) {
+      return isAuth() &&
+        get(/databases/$(database)/documents/chat_sessions/$(sid)).data.visitorId == request.auth.uid;
+    }
+
+    function isRecent() { return request.resource.data.createdAt == request.time; }
+
+
+    // ─── Shared Collections ───────────────────────────────
+
+    // ユーザー (/users/{uid}) - 基本情報は販売サイト管轄
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      // 新規作成は匿名ログイン時の最低限のみ（販売情報の上書き防止）
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['role', 'createdAt'])
+        && request.resource.data.role == 'visitor'
+        && isRecent();
+      allow update, delete: if false;
+    }
+
+    // ─── Chat System Collections (chat_*) ───────────────────────────────
+
+    match /chat_sessions/{sid} {
+      // 作成: 認証済みユーザーのみ
+      allow create: if isAuth()
+        && request.resource.data.keys().hasAll(['visitorId', 'status', 'language', 'createdAt'])
+        && request.resource.data.visitorId == request.auth.uid
+        && request.resource.data.status == 'active'
+        && isRecent();
+
+      // 読取: セッションオーナー or Admin
+      allow read: if isAdmin() || isOwner(resource.data.visitorId);
+
+      // 更新: セッションオーナーは status を "ended" にのみ変更可能
+      allow update: if isOwner(resource.data.visitorId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['ended'];
+
+      allow delete: if false;
+
+      // ── メッセージ (/chat_sessions/{sid}/chat_messages/{mid}) ──
+      match /chat_messages/{mid} {
+        allow read: if isAdmin() || isSessionOwner(sid);
+        allow create: if isSessionOwner(sid)
+          && request.resource.data.keys().hasAll(['role', 'content', 'createdAt'])
+          && request.resource.data.role == 'visitor'
+          && request.resource.data.content is string
+          && request.resource.data.content.size() >= 1
+          && request.resource.data.content.size() <= 2000
+          && isRecent();
+        allow update, delete: if false;
+      }
+    }
+
+    // アンケート
+    match /chat_surveys/{sid} {
+      allow create: if isAuth()
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && isRecent();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // チャットフロー（デシジョンツリー）
+    match /chat_flow_nodes/{id} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // クイック返信
+    match /chat_quick_replies/{id} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // RAG ドキュメント（AI応答の知識ベース）
+    match /chat_rag_documents/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // ホスピタリティ基準
+    match /chat_hospitality_guidelines/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // エージェントログ
+    match /chat_agent_logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+
+    // ─── Sales Site Collections (Read-Only) ───────────────────────────────
+
+    // eSIMプラン一覧
+    match /plans/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /competitorPlans/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 購入履歴 (orders / purchases)
+    match /orders/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /purchases/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // eSIM情報
+    match /esim_links/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /esimStatuses/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    match /esimIncidents/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // 顧客プロファイル
+    match /customerProfiles/{uid} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow write: if false;
+    }
+
+    // ══════════════════════════════════════════════
+    // デフォルト拒否（未定義コレクションへのアクセスを遮断）
+    // ══════════════════════════════════════════════
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

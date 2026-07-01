@@ -112,7 +112,7 @@ export default function ChatDetailBase({ sessionId, backPath, sidebarItems }: Pr
     }
   );
 
-  const quickReplies = (adminDetail as any)?.quickReplies ?? [];
+  const chat_quick_replies = (adminDetail as any)?.chat_quick_replies ?? [];
 
   // ── Mutations ─────────────────────────────────────────────────────────────
   const adminSendMessage = trpc.admin.sendChatMessage.useMutation({
@@ -459,9 +459,9 @@ export default function ChatDetailBase({ sessionId, backPath, sidebarItems }: Pr
           </div>
 
           {/* Quick replies strip */}
-          {!isEnded && quickReplies.length > 0 && showQuickReplies && (
+          {!isEnded && chat_quick_replies.length > 0 && showQuickReplies && (
             <div className="px-4 py-2 border-t flex gap-2 overflow-x-auto shrink-0 bg-white">
-              {quickReplies.slice(0, 8).map((qr: { id: number; title: string; content: string }) => (
+              {chat_quick_replies.slice(0, 8).map((qr: { id: number; title: string; content: string }) => (
                 <button key={qr.id} onClick={() => { setInput(qr.content); setShowQuickReplies(false); }}
                   className="text-xs px-3 py-1.5 rounded-full border bg-white hover:bg-gray-50 whitespace-nowrap transition-colors">
                   {qr.title}
@@ -506,7 +506,7 @@ export default function ChatDetailBase({ sessionId, backPath, sidebarItems }: Pr
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
               <div className="flex items-end gap-2">
                 {/* Quick reply toggle */}
-                {quickReplies.length > 0 && (
+                {chat_quick_replies.length > 0 && (
                   <button onClick={() => setShowQuickReplies(!showQuickReplies)}
                     className={cn("p-2 transition-colors flex-shrink-0", showQuickReplies ? "text-black" : "text-gray-400 hover:text-gray-600")}>
                     <Zap className="w-4 h-4" />

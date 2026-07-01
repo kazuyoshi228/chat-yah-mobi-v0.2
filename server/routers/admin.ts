@@ -205,9 +205,9 @@ export const adminRouter = router({
       const session = await getChatSession(input.sessionId);
       if (!session) throw new TRPCError({ code: "NOT_FOUND" });
       const messages = await getMessagesBySessionId(input.sessionId);
-      const quickReplies = await listQuickReplies();
+      const chat_quick_replies = await listQuickReplies();
       const survey = await getSurveyBySessionId(input.sessionId);
-      return { session, messages, quickReplies, survey: survey ?? null };
+      return { session, messages, chat_quick_replies, survey: survey ?? null };
     }),
 
   sendChatMessage: adminProcedure

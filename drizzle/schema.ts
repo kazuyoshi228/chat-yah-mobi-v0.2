@@ -36,7 +36,7 @@ export type InsertUser = typeof users.$inferInsert;
  * Chat sessions table - tracks each visitor conversation.
  * Status: waiting (AI responding) | active (admin assigned) | ended (closed)
  */
-export const chatSessions = mysqlTable("chat_sessions", {
+export const chat_sessions = mysqlTable("chat_sessions", {
   id: int("id").autoincrement().primaryKey(),
   visitorId: varchar("visitorId", { length: 64 }).notNull(),
   visitorName: varchar("visitorName", { length: 128 }),
@@ -53,8 +53,8 @@ export const chatSessions = mysqlTable("chat_sessions", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
-export type ChatSession = typeof chatSessions.$inferSelect;
-export type InsertChatSession = typeof chatSessions.$inferInsert;
+export type ChatSession = typeof chat_sessions.$inferSelect;
+export type InsertChatSession = typeof chat_sessions.$inferInsert;
 
 /**
  * Messages table - stores all chat messages.
@@ -62,9 +62,9 @@ export type InsertChatSession = typeof chatSessions.$inferInsert;
  * senderId: FK to users.id — NULL for visitor/AI messages, set for admin messages.
  *           Allows tracking which staff member sent each message.
  */
-export const messages = mysqlTable("messages", {
+export const messages = mysqlTable("chat_messages", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  sessionId: int("sessionId").notNull().references(() => chat_sessions.id, { onDelete: "cascade" }),
   role: mysqlEnum("role", ["visitor", "admin", "ai"]).notNull(),
   senderId: int("senderId").references(() => users.id, { onDelete: "set null" }), // FK to users.id (nullable)
   content: text("content").notNull(),
@@ -79,22 +79,22 @@ export type InsertMessage = typeof messages.$inferInsert;
 /**
  * Quick replies - predefined admin response templates.
  */
-export const quickReplies = mysqlTable("quick_replies", {
+export const chat_quick_replies = mysqlTable("quick_replies", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 128 }).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type QuickReply = typeof quickReplies.$inferSelect;
-export type InsertQuickReply = typeof quickReplies.$inferInsert;
+export type QuickReply = typeof chat_quick_replies.$inferSelect;
+export type InsertQuickReply = typeof chat_quick_replies.$inferInsert;
 
 /**
  * RAG documents - knowledge base for AI responses.
  * embedding stored as JSON array of floats.
  * expiresAt: document expiry date; expired docs are excluded from RAG search.
  */
-export const ragDocuments = mysqlTable("rag_documents", {
+export const chat_rag_documents = mysqlTable("rag_documents", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),
   content: text("content").notNull(),
@@ -103,17 +103,17 @@ export const ragDocuments = mysqlTable("rag_documents", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type RagDocument = typeof ragDocuments.$inferSelect;
-export type InsertRagDocument = typeof ragDocuments.$inferInsert;
+export type RagDocument = typeof chat_rag_documents.$inferSelect;
+export type InsertRagDocument = typeof chat_rag_documents.$inferInsert;
 
 /**
- * Surveys - post-chat satisfaction surveys.
+ * Surveys - post-chat satisfaction chat_surveys.
  * resolved: whether the visitor's issue was resolved (yes/no)
  * freeComment: optional free-text feedback shown only for rating <= 3
  */
-export const surveys = mysqlTable("surveys", {
+export const chat_surveys = mysqlTable("chat_surveys", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  sessionId: int("sessionId").notNull().references(() => chat_sessions.id, { onDelete: "cascade" }),
   rating: int("rating").notNull(), // 1-5
   resolved: mysqlEnum("resolved", ["yes", "no"]),
   comment: text("comment"),
@@ -121,8 +121,8 @@ export const surveys = mysqlTable("surveys", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-export type Survey = typeof surveys.$inferSelect;
-export type InsertSurvey = typeof surveys.$inferInsert;
+export type Survey = typeof chat_surveys.$inferSelect;
+export type InsertSurvey = typeof chat_surveys.$inferInsert;
 
 /**
  * Image analyses - Vision AI analysis results for uploaded images.
@@ -133,7 +133,7 @@ export type InsertSurvey = typeof surveys.$inferInsert;
  */
 export const imageAnalyses = mysqlTable("image_analyses", {
   id: int("id").autoincrement().primaryKey(),
-  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  sessionId: int("sessionId").notNull().references(() => chat_sessions.id, { onDelete: "cascade" }),
   messageId: int("messageId"),
   fileUrl: varchar("fileUrl", { length: 1024 }).notNull(),
   category: varchar("category", { length: 128 }),
@@ -153,7 +153,7 @@ export type InsertImageAnalysis = typeof imageAnalyses.$inferInsert;
 export const sessionReads = mysqlTable("session_reads", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  sessionId: int("sessionId").notNull().references(() => chatSessions.id, { onDelete: "cascade" }),
+  sessionId: int("sessionId").notNull().references(() => chat_sessions.id, { onDelete: "cascade" }),
   readAt: timestamp("readAt").defaultNow().notNull(),
 });
 
@@ -205,7 +205,7 @@ export type InsertSimulationRunResult = typeof simulationRunResults.$inferInsert
  * Each node is a step in the decision tree (question, answer, or redirect).
  * label/content/options stored as JSON for multi-language support.
  */
-export const chatFlowNodes = mysqlTable("chat_flow_nodes", {
+export const chat_flow_nodes = mysqlTable("chat_flow_nodes", {
   id: varchar("id", { length: 64 }).primaryKey(), // e.g. "root", "connection", "connection_not_installed_iphone"
   parentId: varchar("parentId", { length: 64 }),
   type: varchar("type", { length: 32 }).notNull().default("question"), // "question" | "answer" | "redirect_form" | "redirect_ai"
@@ -219,8 +219,8 @@ export const chatFlowNodes = mysqlTable("chat_flow_nodes", {
   isActive: tinyint("isActive").default(1),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
-export type ChatFlowNode = typeof chatFlowNodes.$inferSelect;
-export type InsertChatFlowNode = typeof chatFlowNodes.$inferInsert;
+export type ChatFlowNode = typeof chat_flow_nodes.$inferSelect;
+export type InsertChatFlowNode = typeof chat_flow_nodes.$inferInsert;
 
 /**
  * Improvement cards - tracks periodic improvement tasks with scheduled dates.

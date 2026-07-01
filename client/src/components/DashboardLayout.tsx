@@ -25,8 +25,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { useAdminAuth } from "@/contexts/AuthContext";
 import { YahLogo } from "@/components/YahLogo";
 
 export type SidebarItem = {
@@ -75,9 +74,7 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user, logout } = useAuth();
-  const isAdmin = user?.role === "admin";
-  const login = () => { window.location.href = getLoginUrl(); };
+  const { loading, user, logout, isAdmin, login } = useAdminAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -241,7 +238,7 @@ function DashboardLayoutContent({
   sidebarItems,
   title,
 }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAdminAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -340,7 +337,7 @@ function DashboardLayoutContent({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-xs font-medium truncate">{user?.name ?? user?.email ?? "-"}</p>
+                    <p className="text-xs font-medium truncate">{user?.displayName ?? user?.email ?? "-"}</p>
                     <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   </div>
                 </button>
