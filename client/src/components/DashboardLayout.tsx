@@ -18,7 +18,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { getLoginUrl } from "@/const";
+
 import { useIsMobile } from "@/hooks/useMobile";
 import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, RotateCcw, Heart, DollarSign, UserCircle, Activity, Target, Database, ShieldCheck } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
@@ -26,6 +26,8 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
+import { YahLogo } from "@/components/YahLogo";
 
 export type SidebarItem = {
   title: string;
@@ -73,7 +75,9 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const { loading, user, logout } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const login = () => { window.location.href = getLoginUrl(); };
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -85,23 +89,122 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Sign in required
-            </h1>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Authentication is required to access this page.
+      <div className="relative flex min-h-screen overflow-hidden bg-black">
+        {/* Background grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+          }}
+        />
+        {/* Subtle radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,oklch(0.25_0_0),transparent)]" />
+
+        {/* Left panel — branding */}
+        <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative z-10">
+          <YahLogo className="text-white" height={36} />
+          <div className="space-y-4">
+            <p className="text-white/40 text-xs tracking-widest uppercase">yah.mobile</p>
+            <h2 className="text-white text-3xl font-semibold leading-snug tracking-tight">
+              Chat Support<br />Admin Portal
+            </h2>
+            <p className="text-white/50 text-sm leading-relaxed max-w-xs">
+              Manage conversations, monitor AI performance, and deliver world-class support.
             </p>
           </div>
-          <Button
-            onClick={() => { window.location.href = getLoginUrl(); }}
-            size="lg"
-            className="w-full bg-black hover:bg-gray-800 text-white"
+          <p className="text-white/20 text-xs">
+            © {new Date().getFullYear()} yah.mobile. All rights reserved.
+          </p>
+        </div>
+
+        {/* Right panel — sign in form */}
+        <div className="flex flex-1 items-center justify-center p-8 relative z-10">
+          <div
+            className="w-full max-w-sm rounded-2xl p-8 space-y-8"
+            style={{
+              background: "oklch(0.12 0 0)",
+              border: "1px solid oklch(0.22 0 0)",
+              boxShadow: "0 24px 64px oklch(0 0 0 / 0.6)",
+            }}
           >
-            Sign In with Google
-          </Button>
+            {/* Mobile logo */}
+            <div className="flex lg:hidden justify-center">
+              <YahLogo className="text-white" height={28} />
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-white text-xl font-semibold tracking-tight">
+                Admin Sign In
+              </h1>
+              <p className="text-white/40 text-sm">
+                yah.mobi または bonfire.co.jp アカウントでサインイン
+              </p>
+            </div>
+
+            <button
+              onClick={() => { login(); }}
+              className="group w-full flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97]"
+              style={{
+                background: "oklch(1 0 0)",
+                color: "oklch(0.1 0 0)",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "oklch(0.92 0 0)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "oklch(1 0 0)")}
+            >
+              {/* Google icon */}
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+                <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+              </svg>
+              Sign in with Google
+            </button>
+
+            <p className="text-white/20 text-xs text-center">
+              管理者権限のあるアカウントのみアクセス可能です
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)`,
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div
+          className="relative z-10 w-full max-w-sm rounded-2xl p-8 space-y-6 text-center"
+          style={{
+            background: "oklch(0.12 0 0)",
+            border: "1px solid oklch(0.22 0 0)",
+            boxShadow: "0 24px 64px oklch(0 0 0 / 0.6)",
+          }}
+        >
+          <YahLogo className="text-white mx-auto" height={28} />
+          <div className="space-y-2">
+            <h1 className="text-white text-lg font-semibold">アクセス権限がありません</h1>
+            <p className="text-white/40 text-sm">
+              {user?.email} は管理者として登録されていません。
+            </p>
+          </div>
+          <button
+            onClick={() => { logout(); }}
+            className="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all duration-150 active:scale-[0.97]"
+            style={{ background: "oklch(0.2 0 0)", color: "oklch(0.7 0 0)", border: "1px solid oklch(0.28 0 0)" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "oklch(0.25 0 0)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "oklch(0.2 0 0)")}
+          >
+            別のアカウントでサインイン
+          </button>
         </div>
       </div>
     );
@@ -233,12 +336,12 @@ function DashboardLayoutContent({
                 <button className="flex items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-accent/50 transition-colors w-full text-left focus:outline-none">
                   <Avatar className="h-8 w-8 border shrink-0">
                     <AvatarFallback className="text-xs font-medium bg-black text-white">
-                      {user?.name?.charAt(0).toUpperCase() ?? "?"}
+                      {user?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-xs font-medium truncate">{user?.name ?? "-"}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user?.role}</p>
+                    <p className="text-xs font-medium truncate">{user?.name ?? user?.email ?? "-"}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
