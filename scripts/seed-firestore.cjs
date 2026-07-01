@@ -12,8 +12,8 @@ const now = Timestamp.now();
 async function seed() {
   const batch = db.batch();
 
-  // 1. ragDocuments — RAG ナレッジベース
-  const rag1 = db.collection("ragDocuments").doc();
+  // 1. chat_rag_documents — RAG ナレッジベース
+  const rag1 = db.collection("chat_rag_documents").doc();
   batch.set(rag1, {
     title: "eSIMの設定方法",
     content: "eSIMを設定するには、まず端末の設定アプリを開き、モバイル通信 > eSIM追加を選択します。QRコードをスキャンするか、手動で設定情報を入力してください。",
@@ -21,7 +21,7 @@ async function seed() {
     createdAt: now,
     updatedAt: now,
   });
-  const rag2 = db.collection("ragDocuments").doc();
+  const rag2 = db.collection("chat_rag_documents").doc();
   batch.set(rag2, {
     title: "対応端末一覧",
     content: "iPhone XS以降、Google Pixel 3a以降、Samsung Galaxy S20以降のeSIM対応端末でご利用いただけます。",
@@ -29,7 +29,7 @@ async function seed() {
     createdAt: now,
     updatedAt: now,
   });
-  const rag3 = db.collection("ragDocuments").doc();
+  const rag3 = db.collection("chat_rag_documents").doc();
   batch.set(rag3, {
     title: "料金プランについて",
     content: "yah.mobileでは1GB〜無制限まで、渡航先に応じた最適なプランをご用意しております。詳細はyah.mobiをご確認ください。",
@@ -38,8 +38,8 @@ async function seed() {
     updatedAt: now,
   });
 
-  // 2. chatFlowNodes — デシジョンツリー
-  const flow1 = db.collection("chatFlowNodes").doc("root");
+  // 2. chat_flow_nodes — デシジョンツリー
+  const flow1 = db.collection("chat_flow_nodes").doc("root");
   batch.set(flow1, {
     nodeId: "root",
     label: "お問い合わせ内容を選択してください",
@@ -49,7 +49,7 @@ async function seed() {
     children: ["setup", "billing", "trouble"],
     createdAt: now,
   });
-  const flow2 = db.collection("chatFlowNodes").doc("setup");
+  const flow2 = db.collection("chat_flow_nodes").doc("setup");
   batch.set(flow2, {
     nodeId: "setup",
     label: "設定・接続について",
@@ -59,7 +59,7 @@ async function seed() {
     children: [],
     createdAt: now,
   });
-  const flow3 = db.collection("chatFlowNodes").doc("billing");
+  const flow3 = db.collection("chat_flow_nodes").doc("billing");
   batch.set(flow3, {
     nodeId: "billing",
     label: "料金・請求について",
@@ -69,7 +69,7 @@ async function seed() {
     children: [],
     createdAt: now,
   });
-  const flow4 = db.collection("chatFlowNodes").doc("trouble");
+  const flow4 = db.collection("chat_flow_nodes").doc("trouble");
   batch.set(flow4, {
     nodeId: "trouble",
     label: "トラブル・不具合",
@@ -80,8 +80,8 @@ async function seed() {
     createdAt: now,
   });
 
-  // 3. quickReplies — クイック返信テンプレート
-  const qr1 = db.collection("quickReplies").doc();
+  // 3. chat_quick_replies — クイック返信テンプレート
+  const qr1 = db.collection("chat_quick_replies").doc();
   batch.set(qr1, {
     title: "ご挨拶",
     content: "yah.mobileカスタマーサポートへようこそ。どのようなご質問でしょうか？",
@@ -89,7 +89,7 @@ async function seed() {
     createdAt: now,
     updatedAt: now,
   });
-  const qr2 = db.collection("quickReplies").doc();
+  const qr2 = db.collection("chat_quick_replies").doc();
   batch.set(qr2, {
     title: "設定案内",
     content: "eSIMの設定方法につきましては、購入時にお送りしたメールに記載のQRコードをスキャンしてください。",
@@ -166,9 +166,9 @@ async function seed() {
 
   await batch.commit();
   console.log("✅ 全コレクション作成完了！");
-  console.log("  - ragDocuments: 3件");
-  console.log("  - chatFlowNodes: 4件");
-  console.log("  - quickReplies: 2件");
+  console.log("  - chat_rag_documents: 3件");
+  console.log("  - chat_flow_nodes: 4件");
+  console.log("  - chat_quick_replies: 2件");
   console.log("  - plans: 2件");
   console.log("  - competitorPlans: 1件");
   console.log("  - hospitalityGuidelines: 1件");

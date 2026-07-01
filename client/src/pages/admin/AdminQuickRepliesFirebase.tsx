@@ -52,12 +52,12 @@ function getCategoryColor(cat: string): string {
 type QuickReply = { id: string; title: string; content: string };
 
 export default function AdminQuickRepliesFirebase() {
-  const { docs: rawDocs, loading: isLoading } = useCollection("quickReplies");
-  const { addDocument, loading: addLoading } = useAddDoc("quickReplies");
-  const { updateDocument, loading: updateLoading } = useUpdateDoc("quickReplies");
-  const { deleteDocument } = useDeleteDoc("quickReplies");
+  const { docs: rawDocs, loading: isLoading } = useCollection("chat_quick_replies");
+  const { addDocument, loading: addLoading } = useAddDoc("chat_quick_replies");
+  const { updateDocument, loading: updateLoading } = useUpdateDoc("chat_quick_replies");
+  const { deleteDocument } = useDeleteDoc("chat_quick_replies");
 
-  const quickReplies = rawDocs as unknown as QuickReply[];
+  const chat_quick_replies = rawDocs as unknown as QuickReply[];
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -119,22 +119,22 @@ export default function AdminQuickRepliesFirebase() {
 
   // カテゴリ一覧
   const categories = useMemo(() => {
-    if (!quickReplies) return [];
-    const cats = new Set(quickReplies.map((qr) => extractCategory(qr.title)));
+    if (!chat_quick_replies) return [];
+    const cats = new Set(chat_quick_replies.map((qr) => extractCategory(qr.title)));
     return Array.from(cats).sort();
-  }, [quickReplies]);
+  }, [chat_quick_replies]);
 
   // フィルタリング
   const filtered = useMemo(() => {
-    if (!quickReplies) return [];
-    return quickReplies.filter((qr) => {
+    if (!chat_quick_replies) return [];
+    return chat_quick_replies.filter((qr) => {
       const cat = extractCategory(qr.title);
       const matchCat = !selectedCategory || cat === selectedCategory;
       const q = search.toLowerCase();
       const matchSearch = !q || qr.title.toLowerCase().includes(q) || qr.content.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
-  }, [quickReplies, search, selectedCategory]);
+  }, [chat_quick_replies, search, selectedCategory]);
 
   // カテゴリ別グループ化
   const grouped = useMemo(() => {
@@ -148,8 +148,8 @@ export default function AdminQuickRepliesFirebase() {
   }, [filtered]);
 
   const selectedQR = useMemo(
-    () => quickReplies?.find((qr) => qr.id === selectedId) ?? null,
-    [quickReplies, selectedId]
+    () => chat_quick_replies?.find((qr) => qr.id === selectedId) ?? null,
+    [chat_quick_replies, selectedId]
   );
 
   // Cmd/Ctrl+K でサーチフォーカス
@@ -176,7 +176,7 @@ export default function AdminQuickRepliesFirebase() {
             <div>
               <h1 className="text-base font-semibold text-gray-900">Quick Replies</h1>
               <p className="text-xs text-gray-400">
-                {quickReplies?.length ?? 0}件の定型文
+                {chat_quick_replies?.length ?? 0}件の定型文
               </p>
             </div>
           </div>
@@ -238,7 +238,7 @@ export default function AdminQuickRepliesFirebase() {
             >
               {cat}
               <span className="ml-1 opacity-60">
-                {quickReplies?.filter((qr) => extractCategory(qr.title) === cat).length}
+                {chat_quick_replies?.filter((qr) => extractCategory(qr.title) === cat).length}
               </span>
             </button>
           ))}

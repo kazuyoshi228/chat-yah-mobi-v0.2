@@ -1,7 +1,7 @@
 /**
  * onVisitorMessageCreated — メインAI応答トリガー
  *
- * トリガー: /chatSessions/{sessionId}/messages/{messageId} の作成
+ * トリガー: /chat_sessions/{sessionId}/messages/{messageId} の作成
  * 処理:
  *   1. ホスピタリティ基準ロード
  *   2. RAG ハイブリッド検索
@@ -35,7 +35,7 @@ const db = admin.firestore();
 
 export const onVisitorMessageCreated = onDocumentCreated(
   {
-    document: "chatSessions/{sessionId}/messages/{messageId}",
+    document: "chat_sessions/{sessionId}/messages/{messageId}",
     region: REGION,
     // Cloud Functions v2: メモリ・タイムアウト設定
     memory: "512MiB",
@@ -57,7 +57,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
     if (data.role !== "visitor") return;
 
     // ── セッション確認: active のみ ──
-    const sessionRef = db.doc(`chatSessions/${sessionId}`);
+    const sessionRef = db.doc(`chat_sessions/${sessionId}`);
     const sessionSnap = await sessionRef.get();
     if (!sessionSnap.exists || sessionSnap.data()?.status !== "active") return;
 
@@ -78,7 +78,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
 
       // ── Step 4: 会話履歴取得 ──
       const historySnap = await db
-        .collection(`chatSessions/${sessionId}/messages`)
+        .collection(`chat_sessions/${sessionId}/messages`)
         .orderBy("createdAt", "asc")
         .limit(MAX_MESSAGES_PER_SESSION)
         .get();
@@ -99,7 +99,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       });
 
       // ── Step 6: AI回答をメッセージに追加 ──
-      await db.collection(`chatSessions/${sessionId}/messages`).add({
+      await db.collection(`chat_sessions/${sessionId}/messages`).add({
         role: "ai",
         content: aiResponse.answer,
         resolved: aiResponse.resolved,
@@ -120,7 +120,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       console.error("AI応答生成エラー:", error);
 
       // エラー時もユーザーにメッセージを返す
-      await db.collection(`chatSessions/${sessionId}/messages`).add({
+      await db.collection(`chat_sessions/${sessionId}/messages`).add({
         role: "ai",
         content:
           "申し訳ございません。一時的なエラーが発生しました。しばらくしてからもう一度お試しください。",

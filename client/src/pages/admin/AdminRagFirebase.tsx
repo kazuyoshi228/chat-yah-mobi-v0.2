@@ -52,10 +52,10 @@ interface RagDoc {
 }
 
 export default function AdminRagFirebase() {
-  const { docs, loading } = useCollection("ragDocuments", [orderBy("createdAt", "desc")]);
-  const { addDocument, loading: adding } = useAddDoc("ragDocuments");
-  const { updateDocument, loading: updating } = useUpdateDoc("ragDocuments");
-  const { deleteDocument } = useDeleteDoc("ragDocuments");
+  const { docs, loading } = useCollection("chat_rag_documents", [orderBy("createdAt", "desc")]);
+  const { addDocument, loading: adding } = useAddDoc("chat_rag_documents");
+  const { updateDocument, loading: updating } = useUpdateDoc("chat_rag_documents");
+  const { deleteDocument } = useDeleteDoc("chat_rag_documents");
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState<RagDoc | null>(null);

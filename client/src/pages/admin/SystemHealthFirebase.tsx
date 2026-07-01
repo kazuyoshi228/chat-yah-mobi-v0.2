@@ -123,7 +123,7 @@ export default function SystemHealthFirebase() {
 
     // 1. Firestore connectivity check
     try {
-      const snap = await getDocs(collection(db, "chatSessions"));
+      const snap = await getDocs(collection(db, "chat_sessions"));
       result.firestore = {
         status: "ok",
         message: `${snap.size} セッション取得成功`,

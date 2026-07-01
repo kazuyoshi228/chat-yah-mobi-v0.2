@@ -1,6 +1,6 @@
 /**
  * useChatMessages - Firestoreリアルタイムメッセージ同期フック
- * - onSnapshot で chatSessions/{sessionId}/messages をリアルタイム監視
+ * - onSnapshot で chat_sessions/{sessionId}/messages をリアルタイム監視
  * - sendMessage(): messages サブコレクションにドキュメントを追加
  * - タイピングインジケーター: 最新メッセージが visitor の場合に表示
  * - アンマウント時にリスナーをクリーンアップ
@@ -52,9 +52,9 @@ export function useChatMessages(
     // messages サブコレクションを createdAt 昇順で監視
     const messagesRef = collection(
       db,
-      "chatSessions",
+      "chat_sessions",
       sessionId,
-      "messages"
+      "chat_messages"
     );
     const q = query(messagesRef, orderBy("createdAt", "asc"));
 
@@ -97,9 +97,9 @@ export function useChatMessages(
 
       const messagesRef = collection(
         db,
-        "chatSessions",
+        "chat_sessions",
         sessionId,
-        "messages"
+        "chat_messages"
       );
       await addDoc(messagesRef, {
         role: "visitor" as const,

@@ -14,47 +14,47 @@ export const seedFirestore = onRequest(
     const now = admin.firestore.Timestamp.now();
     const batch = db.batch();
 
-    // ragDocuments
-    batch.set(db.collection("ragDocuments").doc(), {
+    // chat_rag_documents
+    batch.set(db.collection("chat_rag_documents").doc(), {
       title: "eSIMの設定方法",
       content: "eSIMを設定するには、まず端末の設定アプリを開き、モバイル通信 > eSIM追加を選択します。QRコードをスキャンするか、手動で設定情報を入力してください。",
       category: "setup", createdAt: now, updatedAt: now,
     });
-    batch.set(db.collection("ragDocuments").doc(), {
+    batch.set(db.collection("chat_rag_documents").doc(), {
       title: "対応端末一覧",
       content: "iPhone XS以降、Google Pixel 3a以降、Samsung Galaxy S20以降のeSIM対応端末でご利用いただけます。",
       category: "device", createdAt: now, updatedAt: now,
     });
-    batch.set(db.collection("ragDocuments").doc(), {
+    batch.set(db.collection("chat_rag_documents").doc(), {
       title: "料金プランについて",
       content: "yah.mobileでは1GB〜無制限まで、渡航先に応じた最適なプランをご用意しております。",
       category: "pricing", createdAt: now, updatedAt: now,
     });
 
-    // chatFlowNodes
-    batch.set(db.collection("chatFlowNodes").doc("root"), {
+    // chat_flow_nodes
+    batch.set(db.collection("chat_flow_nodes").doc("root"), {
       nodeId: "root", label: "お問い合わせ内容を選択してください", type: "menu",
       parentId: null, order: 0, children: ["setup", "billing", "trouble"], createdAt: now,
     });
-    batch.set(db.collection("chatFlowNodes").doc("setup"), {
+    batch.set(db.collection("chat_flow_nodes").doc("setup"), {
       nodeId: "setup", label: "設定・接続について", type: "menu",
       parentId: "root", order: 0, children: [], createdAt: now,
     });
-    batch.set(db.collection("chatFlowNodes").doc("billing"), {
+    batch.set(db.collection("chat_flow_nodes").doc("billing"), {
       nodeId: "billing", label: "料金・請求について", type: "menu",
       parentId: "root", order: 1, children: [], createdAt: now,
     });
-    batch.set(db.collection("chatFlowNodes").doc("trouble"), {
+    batch.set(db.collection("chat_flow_nodes").doc("trouble"), {
       nodeId: "trouble", label: "トラブル・不具合", type: "menu",
       parentId: "root", order: 2, children: [], createdAt: now,
     });
 
-    // quickReplies
-    batch.set(db.collection("quickReplies").doc(), {
+    // chat_quick_replies
+    batch.set(db.collection("chat_quick_replies").doc(), {
       title: "ご挨拶", content: "yah.mobileカスタマーサポートへようこそ。どのようなご質問でしょうか？",
       category: "greeting", createdAt: now, updatedAt: now,
     });
-    batch.set(db.collection("quickReplies").doc(), {
+    batch.set(db.collection("chat_quick_replies").doc(), {
       title: "設定案内", content: "eSIMの設定方法につきましては、購入時にお送りしたメールに記載のQRコードをスキャンしてください。",
       category: "setup", createdAt: now, updatedAt: now,
     });
@@ -110,7 +110,7 @@ export const seedFirestore = onRequest(
     res.json({
       success: true,
       collections: {
-        ragDocuments: 3, chatFlowNodes: 4, quickReplies: 2,
+        chat_rag_documents: 3, chat_flow_nodes: 4, chat_quick_replies: 2,
         plans: 3, competitorPlans: 2, hospitalityGuidelines: 2,
         improvements: 1, systemHealth: 1,
       },

@@ -42,7 +42,7 @@ export default function AdminChatListFirebase() {
     }
     setMessagesLoading(true);
 
-    const ref = collection(db, `chatSessions/${selectedId}/messages`);
+    const ref = collection(db, `chat_sessions/${selectedId}/messages`);
     const q = query(ref, orderBy("createdAt", "asc"));
 
     const unsubscribe = onSnapshot(q, (snap) => {

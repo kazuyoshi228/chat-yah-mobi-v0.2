@@ -159,8 +159,8 @@ export function useSessionStats() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const sessionsRef = collection(db, "chatSessions");
-    const surveysRef = collection(db, "surveys");
+    const sessionsRef = collection(db, "chat_sessions");
+    const chat_surveysRef = collection(db, "chat_surveys");
 
     const unsubscribe = onSnapshot(sessionsRef, async (sessionsSnap) => {
       const sessions = sessionsSnap.docs.map((d) => d.data());
@@ -179,10 +179,10 @@ export function useSessionStats() {
       }
 
       // アンケート集計
-      const surveysSnap = await getDocs(surveysRef);
+      const chat_surveysSnap = await getDocs(chat_surveysRef);
       let totalRating = 0;
       let ratingCount = 0;
-      for (const doc of surveysSnap.docs) {
+      for (const doc of chat_surveysSnap.docs) {
         const data = doc.data();
         if (data.rating) {
           totalRating += data.rating as number;
@@ -228,7 +228,7 @@ export function useChatSessions(statusFilter?: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const ref = collection(db, "chatSessions");
+    const ref = collection(db, "chat_sessions");
     const constraints: QueryConstraint[] = [
       orderBy("createdAt", "desc"),
       limit(100),

@@ -1,7 +1,7 @@
 /**
  * onSessionEnded — セッション終了時のサマリー生成 + ジャーナル記録
  *
- * トリガー: /chatSessions/{sessionId} の更新
+ * トリガー: /chat_sessions/{sessionId} の更新
  * ガード: status が 'ended' に変更された場合のみ処理
  * 処理:
  *   1. サブコレクションから全メッセージ取得
@@ -26,7 +26,7 @@ const db = admin.firestore();
 
 export const onSessionEnded = onDocumentUpdated(
   {
-    document: "chatSessions/{sessionId}",
+    document: "chat_sessions/{sessionId}",
     region: REGION,
   },
   async (
@@ -47,7 +47,7 @@ export const onSessionEnded = onDocumentUpdated(
     try {
       // ── Step 1: 全メッセージ取得 ──
       const messagesSnap = await db
-        .collection(`chatSessions/${sessionId}/messages`)
+        .collection(`chat_sessions/${sessionId}/messages`)
         .orderBy("createdAt", "asc")
         .get();
 
@@ -68,7 +68,7 @@ export const onSessionEnded = onDocumentUpdated(
         createdAt.toDate().getTime() + 2 * 365 * 24 * 60 * 60 * 1000
       );
 
-      const sessionRef = db.doc(`chatSessions/${sessionId}`);
+      const sessionRef = db.doc(`chat_sessions/${sessionId}`);
       await sessionRef.update({
         summary,
         scheduledDeleteAt: admin.firestore.Timestamp.fromDate(scheduledDeleteAt),

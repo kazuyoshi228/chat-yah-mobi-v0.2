@@ -24,44 +24,33 @@ service cloud.firestore {
 
     function isSessionOwner(sid) {
       return isAuth() &&
-        get(/databases/$(database)/documents/chatSessions/$(sid)).data.visitorId == request.auth.uid;
+        get(/databases/$(database)/documents/chat_sessions/$(sid)).data.visitorId == request.auth.uid;
     }
 
     function isRecent() { return request.resource.data.createdAt == request.time; }
 
 
-    // ══════════════════════════════════════════════
-    // ユーザー (/users/{uid})
-    // ══════════════════════════════════════════════
+    // ─── Shared Collections ───────────────────────────────
 
+    // ユーザー (/users/{uid}) - 基本情報は販売サイト管轄
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-
-      // 新規作成: 自分自身のみ、role は "visitor" 固定
+      // 新規作成は匿名ログイン時の最低限のみ（販売情報の上書き防止）
       allow create: if isOwner(uid)
         && request.resource.data.keys().hasOnly(['role', 'createdAt'])
         && request.resource.data.role == 'visitor'
         && isRecent();
-
-      // role 変更は Admin SDK（サーバー側）のみ
       allow update, delete: if false;
     }
 
+    // ─── Chat System Collections (chat_*) ───────────────────────────────
 
-    // ══════════════════════════════════════════════
-    // チャットセッション (/chatSessions/{sid})
-    // ══════════════════════════════════════════════
-
-    match /chatSessions/{sid} {
-      // 作成: 認証済みユーザーのみ、必須フィールドの厳密スキーマ強制
+    match /chat_sessions/{sid} {
+      // 作成: 認証済みユーザーのみ
       allow create: if isAuth()
         && request.resource.data.keys().hasAll(['visitorId', 'status', 'language', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['visitorId', 'status', 'language', 'createdAt', 'deviceInfo'])
         && request.resource.data.visitorId == request.auth.uid
         && request.resource.data.status == 'active'
-        && request.resource.data.language is string
-        && request.resource.data.language.size() >= 2
-        && request.resource.data.language.size() <= 10
         && isRecent();
 
       // 読取: セッションオーナー or Admin
@@ -72,119 +61,103 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
         && request.resource.data.status in ['ended'];
 
-      // 削除: Cloud Functions (Admin SDK) のみ（dataRetentionPurge）
       allow delete: if false;
 
-
-      // ── メッセージ (/chatSessions/{sid}/messages/{mid}) ──
-      match /messages/{mid} {
-        // 読取: セッションオーナー or Admin
+      // ── メッセージ (/chat_sessions/{sid}/chat_messages/{mid}) ──
+      match /chat_messages/{mid} {
         allow read: if isAdmin() || isSessionOwner(sid);
-
-        // 作成: セッションオーナーのみ、role は "visitor" 固定
-        // 文字数制限: 1〜2000文字（DoS対策）
         allow create: if isSessionOwner(sid)
           && request.resource.data.keys().hasAll(['role', 'content', 'createdAt'])
-          && request.resource.data.keys().hasOnly(['role', 'content', 'createdAt'])
           && request.resource.data.role == 'visitor'
           && request.resource.data.content is string
           && request.resource.data.content.size() >= 1
           && request.resource.data.content.size() <= 2000
           && isRecent();
-
-        // メッセージは不変（改ざん防止）
         allow update, delete: if false;
       }
     }
 
-
-    // ══════════════════════════════════════════════
-    // アンケート (/surveys/{sid})
-    // ══════════════════════════════════════════════
-
-    match /surveys/{sid} {
-      // 作成: 認証済み、評価は 1〜5 の整数のみ
+    // アンケート
+    match /chat_surveys/{sid} {
       allow create: if isAuth()
-        && request.resource.data.keys().hasAll(['rating', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['rating', 'comment', 'sessionId', 'createdAt'])
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
         && request.resource.data.rating <= 5
-        && (!('comment' in request.resource.data) || (
-          request.resource.data.comment is string
-          && request.resource.data.comment.size() <= 1000
-        ))
         && isRecent();
-
-      // Admin のみ読取
       allow read: if isAdmin();
-
-      // アンケートは不変
       allow update, delete: if false;
     }
 
-
-    // ══════════════════════════════════════════════
-    // 公開読取コレクション（認証要）
-    // ══════════════════════════════════════════════
-
     // チャットフロー（デシジョンツリー）
-    match /chatFlowNodes/{id} {
+    match /chat_flow_nodes/{id} {
       allow read: if isAuth();
       allow write: if isAdmin();
     }
 
-    // eSIMプラン一覧（公開）
-    match /plans/{id} {
-      allow read: if true;
-      allow write: if false;  // Admin SDK のみ
+    // クイック返信
+    match /chat_quick_replies/{id} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
     }
-
-    // 競合他社プラン（公開）
-    match /competitorPlans/{id} {
-      allow read: if true;
-      allow write: if false;  // Admin SDK のみ
-    }
-
-
-    // ══════════════════════════════════════════════
-    // Admin 専用コレクション
-    // ══════════════════════════════════════════════
 
     // RAG ドキュメント（AI応答の知識ベース）
-    match /ragDocuments/{id} {
+    match /chat_rag_documents/{id} {
       allow read, write: if isAdmin();
     }
 
-    // ホスピタリティ基準（AI応答品質基準）
-    match /hospitalityGuidelines/{id} {
+    // ホスピタリティ基準
+    match /chat_hospitality_guidelines/{id} {
       allow read, write: if isAdmin();
     }
 
-    // 顧客プロファイル（yah.mobi が書込、チャット側は読取のみ）
-    match /customerProfiles/{uid} {
-      allow read: if isAdmin() || isOwner(uid);
-      allow write: if false;  // Admin SDK (webhookSync) のみ
+    // エージェントログ
+    match /chat_agent_logs/{id} {
+      allow read, write: if isAdmin();
     }
 
-    // 購入履歴（yah.mobi が書込）
+
+    // ─── Sales Site Collections (Read-Only) ───────────────────────────────
+
+    // eSIMプラン一覧
+    match /plans/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /competitorPlans/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 購入履歴 (orders / purchases)
+    match /orders/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
     match /purchases/{id} {
       allow read: if isAdmin();
-      allow write: if false;  // Admin SDK (webhookSync) のみ
+      allow write: if false;
     }
 
-    // eSIM状態（yah.mobi が書込）
+    // eSIM情報
+    match /esim_links/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
     match /esimStatuses/{id} {
       allow read: if isAdmin();
-      allow write: if false;  // Admin SDK (webhookSync) のみ
+      allow write: if false;
     }
-
-    // eSIMインシデント（yah.mobi が書込）
     match /esimIncidents/{id} {
       allow read: if isAdmin();
-      allow write: if false;  // Admin SDK のみ
+      allow write: if false;
     }
 
+    // 顧客プロファイル
+    match /customerProfiles/{uid} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow write: if false;
+    }
 
     // ══════════════════════════════════════════════
     // デフォルト拒否（未定義コレクションへのアクセスを遮断）

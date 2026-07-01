@@ -13,7 +13,7 @@ export const seedRagDocs = onRequest(
       const now = admin.firestore.Timestamp.now();
       
       // Delete existing RAG docs to avoid duplicates
-      const existing = await db.collection("ragDocuments").get();
+      const existing = await db.collection("chat_rag_documents").get();
       if (!existing.empty) {
         const delBatch = db.batch();
         existing.forEach(doc => delBatch.delete(doc.ref));
@@ -34,7 +34,7 @@ export const seedRagDocs = onRequest(
       let count = 0;
 
       for (const doc of docs) {
-        const ref = db.collection("ragDocuments").doc();
+        const ref = db.collection("chat_rag_documents").doc();
         batch.set(ref, {
           title: doc.title,
           content: doc.content,

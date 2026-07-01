@@ -2,7 +2,7 @@
 /**
  * onVisitorMessageCreated — メインAI応答トリガー
  *
- * トリガー: /chatSessions/{sessionId}/messages/{messageId} の作成
+ * トリガー: /chat_sessions/{sessionId}/messages/{messageId} の作成
  * 処理:
  *   1. ホスピタリティ基準ロード
  *   2. RAG ハイブリッド検索
@@ -54,7 +54,7 @@ if (!admin.apps.length)
     admin.initializeApp();
 const db = admin.firestore();
 exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
-    document: "chatSessions/{sessionId}/messages/{messageId}",
+    document: "chat_sessions/{sessionId}/messages/{messageId}",
     region: config_1.REGION,
     // Cloud Functions v2: メモリ・タイムアウト設定
     memory: "512MiB",
@@ -69,7 +69,7 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
     if (data.role !== "visitor")
         return;
     // ── セッション確認: active のみ ──
-    const sessionRef = db.doc(`chatSessions/${sessionId}`);
+    const sessionRef = db.doc(`chat_sessions/${sessionId}`);
     const sessionSnap = await sessionRef.get();
     if (!sessionSnap.exists || sessionSnap.data()?.status !== "active")
         return;
@@ -86,7 +86,7 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
         const customerContext = await buildCustomerContext(visitorId);
         // ── Step 4: 会話履歴取得 ──
         const historySnap = await db
-            .collection(`chatSessions/${sessionId}/messages`)
+            .collection(`chat_sessions/${sessionId}/messages`)
             .orderBy("createdAt", "asc")
             .limit(config_1.MAX_MESSAGES_PER_SESSION)
             .get();
@@ -104,7 +104,7 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
             conversationHistory,
         });
         // ── Step 6: AI回答をメッセージに追加 ──
-        await db.collection(`chatSessions/${sessionId}/messages`).add({
+        await db.collection(`chat_sessions/${sessionId}/messages`).add({
             role: "ai",
             content: aiResponse.answer,
             resolved: aiResponse.resolved,
@@ -119,7 +119,7 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
     catch (error) {
         console.error("AI応答生成エラー:", error);
         // エラー時もユーザーにメッセージを返す
-        await db.collection(`chatSessions/${sessionId}/messages`).add({
+        await db.collection(`chat_sessions/${sessionId}/messages`).add({
             role: "ai",
             content: "申し訳ございません。一時的なエラーが発生しました。しばらくしてからもう一度お試しください。",
             resolved: false,

@@ -9,10 +9,10 @@
  *   GOOGLE_APPLICATION_CREDENTIALS — Firebase サービスアカウント JSON
  *
  * 対象コレクション:
- *   - chatSessions (+ messages サブコレクション)
- *   - surveys
- *   - ragDocuments
- *   - chatFlowNodes
+ *   - chat_sessions (+ messages サブコレクション)
+ *   - chat_surveys
+ *   - chat_rag_documents
+ *   - chat_flow_nodes
  *   - plans
  *   - competitorPlans
  *   - customerProfiles
@@ -67,7 +67,7 @@ async function batchWrite(
 // ── 各テーブルの移行 ──
 
 async function migrateSessions(conn: mysql.Connection) {
-  console.log("\n📋 chatSessions 移行開始...");
+  console.log("\n📋 chat_sessions 移行開始...");
   const [rows] = await conn.query("SELECT * FROM chat_sessions ORDER BY id");
   const sessions = rows as Record<string, unknown>[];
 
@@ -87,7 +87,7 @@ async function migrateSessions(conn: mysql.Connection) {
       ),
     };
 
-    await db.collection("chatSessions").doc(sessionId).set({
+    await db.collection("chat_sessions").doc(sessionId).set({
       ...sessionData,
       _migratedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -103,9 +103,9 @@ async function migrateSessions(conn: mysql.Connection) {
       const batch = db.batch();
       for (const msg of messages) {
         const ref = db
-          .collection("chatSessions")
+          .collection("chat_sessions")
           .doc(sessionId)
-          .collection("messages")
+          .collection("chat_messages")
           .doc(String(msg.id));
         batch.set(ref, {
           role: msg.role as string,
@@ -152,7 +152,7 @@ async function main() {
     await migrateSessions(conn);
 
     // 2. アンケート
-    await migrateTable(conn, "surveys", "surveys", (row) => ({
+    await migrateTable(conn, "chat_surveys", "chat_surveys", (row) => ({
       sessionId: String(row.session_id),
       rating: row.rating as number,
       comment: row.free_comment || null,
@@ -163,7 +163,7 @@ async function main() {
     }));
 
     // 3. RAG ドキュメント
-    await migrateTable(conn, "rag_documents", "ragDocuments", (row) => ({
+    await migrateTable(conn, "rag_documents", "chat_rag_documents", (row) => ({
       title: row.title as string,
       content: row.content as string,
       category: row.category || "",
@@ -172,7 +172,7 @@ async function main() {
     }));
 
     // 4. チャットフローノード
-    await migrateTable(conn, "chat_flow_nodes", "chatFlowNodes", (row) => ({
+    await migrateTable(conn, "chat_flow_nodes", "chat_flow_nodes", (row) => ({
       parentId: row.parent_id ? String(row.parent_id) : null,
       type: row.type as string,
       label: row.label as string,

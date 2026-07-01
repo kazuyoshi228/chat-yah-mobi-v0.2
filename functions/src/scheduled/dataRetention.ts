@@ -5,7 +5,7 @@
  * 処理:
  *   1. scheduledDeleteAt <= 現在時刻 のセッションを検索
  *   2. セッション配下の messages サブコレクションを一括削除
- *   3. 関連する surveys ドキュメントを削除
+ *   3. 関連する chat_surveys ドキュメントを削除
  *   4. セッション本体を削除
  *   5. バッチ処理で効率的に削除
  */
@@ -35,7 +35,7 @@ export const dataRetentionPurge = onSchedule(
     try {
       // ── 期限切れセッションを検索 ──
       const expiredSnap = await db
-        .collection("chatSessions")
+        .collection("chat_sessions")
         .where("scheduledDeleteAt", "<=", now)
         .limit(100) // 1回の実行で最大100セッション処理
         .get();
@@ -54,10 +54,10 @@ export const dataRetentionPurge = onSchedule(
         try {
           // 1. messages サブコレクションを一括削除
           await deleteSubcollection(
-            `chatSessions/${sessionId}/messages`
+            `chat_sessions/${sessionId}/messages`
           );
 
-          // 2. 関連する surveys ドキュメントを削除
+          // 2. 関連する chat_surveys ドキュメントを削除
           await deleteSurveys(sessionId);
 
           // 3. セッション本体を削除
@@ -101,18 +101,18 @@ async function deleteSubcollection(collectionPath: string): Promise<void> {
 }
 
 /**
- * セッションに関連する surveys ドキュメントを削除
+ * セッションに関連する chat_surveys ドキュメントを削除
  */
 async function deleteSurveys(sessionId: string): Promise<void> {
-  const surveysSnap = await db
-    .collection("surveys")
+  const chat_surveysSnap = await db
+    .collection("chat_surveys")
     .where("sessionId", "==", sessionId)
     .get();
 
-  if (surveysSnap.empty) return;
+  if (chat_surveysSnap.empty) return;
 
   const batch = db.batch();
-  for (const doc of surveysSnap.docs) {
+  for (const doc of chat_surveysSnap.docs) {
     batch.delete(doc.ref);
   }
   await batch.commit();

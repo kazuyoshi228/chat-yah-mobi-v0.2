@@ -85,7 +85,7 @@ export async function searchRAG(
   const queryEmbedding = await generateEmbedding(query);
 
   // 2. Firestore Vector Search (findNearest)
-  const ragRef = db.collection("ragDocuments");
+  const ragRef = db.collection("chat_rag_documents");
   const vectorResults = await ragRef
     .findNearest("embedding", queryEmbedding, {
       limit: RAG_TOP_K,

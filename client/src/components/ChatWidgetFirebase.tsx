@@ -124,7 +124,7 @@ export default function ChatWidgetFirebase() {
   useEffect(() => {
     const fetchFlowNodes = async () => {
       try {
-        const nodesRef = collection(db, "chatFlowNodes");
+        const nodesRef = collection(db, "chat_flow_nodes");
         const snapshot = await getDocs(nodesRef);
         const nodes: FlowNode[] = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -267,7 +267,7 @@ export default function ChatWidgetFirebase() {
     if (!sessionId || rating === 0 || !user) return;
     setSurveySubmitting(true);
     try {
-      const surveyRef = doc(db, "surveys", sessionId);
+      const surveyRef = doc(db, "chat_surveys", sessionId);
       await setDoc(surveyRef, {
         sessionId,
         visitorId: user.uid,

@@ -40,7 +40,7 @@ function ResolvedBadge({ resolved }: { resolved: string | null | undefined }) {
 const surveyConstraints = [orderBy("createdAt", "desc")];
 
 export default function AdminFeedbackFirebase() {
-  const { docs: rawData, loading: isLoading } = useCollection("surveys", surveyConstraints);
+  const { docs: rawData, loading: isLoading } = useCollection("chat_surveys", surveyConstraints);
 
   const data = rawData as any[];
 

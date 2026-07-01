@@ -50,7 +50,7 @@ type QuickReply = { id: number; title: string; content: string };
 
 export default function AdminQuickReplies() {
   const { user } = useAuth();
-  const { data: quickReplies, refetch, isLoading } = trpc.admin.listQuickReplies.useQuery(undefined, {
+  const { data: chat_quick_replies, refetch, isLoading } = trpc.admin.listQuickReplies.useQuery(undefined, {
     enabled: user?.role === "admin",
   });
 
@@ -109,22 +109,22 @@ export default function AdminQuickReplies() {
 
   // カテゴリ一覧
   const categories = useMemo(() => {
-    if (!quickReplies) return [];
-    const cats = new Set(quickReplies.map((qr) => extractCategory(qr.title)));
+    if (!chat_quick_replies) return [];
+    const cats = new Set(chat_quick_replies.map((qr) => extractCategory(qr.title)));
     return Array.from(cats).sort();
-  }, [quickReplies]);
+  }, [chat_quick_replies]);
 
   // フィルタリング
   const filtered = useMemo(() => {
-    if (!quickReplies) return [];
-    return quickReplies.filter((qr) => {
+    if (!chat_quick_replies) return [];
+    return chat_quick_replies.filter((qr) => {
       const cat = extractCategory(qr.title);
       const matchCat = !selectedCategory || cat === selectedCategory;
       const q = search.toLowerCase();
       const matchSearch = !q || qr.title.toLowerCase().includes(q) || qr.content.toLowerCase().includes(q);
       return matchCat && matchSearch;
     });
-  }, [quickReplies, search, selectedCategory]);
+  }, [chat_quick_replies, search, selectedCategory]);
 
   // カテゴリ別グループ化
   const grouped = useMemo(() => {
@@ -138,8 +138,8 @@ export default function AdminQuickReplies() {
   }, [filtered]);
 
   const selectedQR = useMemo(
-    () => quickReplies?.find((qr) => qr.id === selectedId) ?? null,
-    [quickReplies, selectedId]
+    () => chat_quick_replies?.find((qr) => qr.id === selectedId) ?? null,
+    [chat_quick_replies, selectedId]
   );
 
   // Cmd/Ctrl+K でサーチフォーカス
@@ -174,7 +174,7 @@ export default function AdminQuickReplies() {
             <div>
               <h1 className="text-base font-semibold text-gray-900">Quick Replies</h1>
               <p className="text-xs text-gray-400">
-                {quickReplies?.length ?? 0}件の定型文
+                {chat_quick_replies?.length ?? 0}件の定型文
               </p>
             </div>
           </div>
@@ -236,7 +236,7 @@ export default function AdminQuickReplies() {
             >
               {cat}
               <span className="ml-1 opacity-60">
-                {quickReplies?.filter((qr) => extractCategory(qr.title) === cat).length}
+                {chat_quick_replies?.filter((qr) => extractCategory(qr.title) === cat).length}
               </span>
             </button>
           ))}

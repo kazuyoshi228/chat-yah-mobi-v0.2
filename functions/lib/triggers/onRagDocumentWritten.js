@@ -2,7 +2,7 @@
 /**
  * onRagDocumentWritten — RAGドキュメントの Embedding 自動生成
  *
- * トリガー: /ragDocuments/{id} の作成・更新・削除
+ * トリガー: /chat_rag_documents/{id} の作成・更新・削除
  * 処理:
  *   - 作成/更新時: content から Gemini Embedding を生成し embedding フィールドに保存
  *   - 削除時: スキップ
@@ -51,7 +51,7 @@ if (!admin.apps.length)
     admin.initializeApp();
 const db = admin.firestore();
 exports.onRagDocumentWritten = (0, firestore_1.onDocumentWritten)({
-    document: "ragDocuments/{id}",
+    document: "chat_rag_documents/{id}",
     region: config_1.REGION,
 }, async (event) => {
     if (!event.data)
@@ -84,7 +84,7 @@ exports.onRagDocumentWritten = (0, firestore_1.onDocumentWritten)({
         // ── Embedding 生成 ──
         const embedding = await (0, ai_1.generateEmbedding)(afterContent);
         // ── Firestore に Embedding を保存 ──
-        await db.doc(`ragDocuments/${id}`).update({
+        await db.doc(`chat_rag_documents/${id}`).update({
             embedding: admin.firestore.FieldValue.vector(embedding),
             embeddingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });

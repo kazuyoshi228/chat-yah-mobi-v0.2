@@ -6,7 +6,7 @@
 
 import { readFileSync } from "fs";
 import { drizzle } from "drizzle-orm/mysql2";
-import { ragDocuments } from "../drizzle/schema";
+import { chat_rag_documents } from "../drizzle/schema";
 import * as dotenv from "dotenv";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -53,7 +53,7 @@ async function main() {
     const content = readFileSync(doc.file, "utf-8");
     console.log(`\n登録中: ${doc.title} (${content.length} 文字)...`);
 
-    const result = await db.insert(ragDocuments).values({
+    const result = await db.insert(chat_rag_documents).values({
       title: doc.title,
       content,
       embedding: null,

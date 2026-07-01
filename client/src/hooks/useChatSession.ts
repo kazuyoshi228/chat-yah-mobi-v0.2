@@ -1,6 +1,6 @@
 /**
  * useChatSession - Firestore チャットセッション管理フック
- * - createSession(): chatSessions コレクションにドキュメントを作成
+ * - createSession(): chat_sessions コレクションにドキュメントを作成
  * - endSession(): セッションのステータスを 'ended' に更新
  * - sessionId を返す
  */
@@ -38,7 +38,7 @@ export function useChatSession(): UseChatSessionReturn {
     }): Promise<string> => {
       setCreating(true);
       try {
-        const sessionsRef = collection(db, "chatSessions");
+        const sessionsRef = collection(db, "chat_sessions");
         const docRef = await addDoc(sessionsRef, {
           visitorId: params.visitorId,
           status: "active",
@@ -58,7 +58,7 @@ export function useChatSession(): UseChatSessionReturn {
   // セッションを終了
   const endSession = useCallback(async () => {
     if (!sessionId) return;
-    const sessionRef = doc(db, "chatSessions", sessionId);
+    const sessionRef = doc(db, "chat_sessions", sessionId);
     await updateDoc(sessionRef, {
       status: "ended",
       endedAt: serverTimestamp(),

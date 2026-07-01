@@ -305,8 +305,8 @@ function NodeRow({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function AdminFlowTreeFirebase() {
-  const { docs: rawNodes, loading: isLoading } = useCollection("chatFlowNodes");
-  const { updateDocument } = useUpdateDoc("chatFlowNodes");
+  const { docs: rawNodes, loading: isLoading } = useCollection("chat_flow_nodes");
+  const { updateDocument } = useUpdateDoc("chat_flow_nodes");
   const [saving, setSaving] = useState(false);
 
   const nodes = rawNodes as unknown as FlowNode[];
@@ -361,7 +361,7 @@ export default function AdminFlowTreeFirebase() {
     setSaving(true);
     try {
       // Use setDoc with merge to support upsert (custom ID)
-      const ref = doc(db, "chatFlowNodes", form.id.trim());
+      const ref = doc(db, "chat_flow_nodes", form.id.trim());
       await setDoc(ref, {
         parentId: form.parentId.trim() || null,
         type: form.type,
