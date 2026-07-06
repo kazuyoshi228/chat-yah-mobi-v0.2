@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, MessageCircle, Settings, BookOpen, Zap, Star, BarChart2, Bot, FileText, FlaskConical, GitBranch, RotateCcw, Heart, DollarSign, UserCircle, Activity, Target, Database, ShieldCheck } from "lucide-react";
+import { LogOut, PanelLeft, MessageCircle, BookOpen, Zap, Star, GitBranch, Target, ShieldCheck } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -37,20 +37,10 @@ export type SidebarItem = {
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "Big KPIs", href: "/admin", icon: Target },
   { title: "Chat List", href: "/admin/chats", icon: MessageCircle },
-  { title: "AI Chatbot", href: "/admin/ai-chatbot", icon: Bot },
   { title: "Quick Replies", href: "/admin/quick-replies", icon: Zap },
   { title: "RAG Documents", href: "/admin/rag", icon: BookOpen },
-  { title: "取扱説明書", href: "/admin/user-manuals", icon: FileText },
   { title: "Feedback", href: "/admin/feedback", icon: Star },
-  { title: "Data Analysis", href: "/admin/data-analysis", icon: BarChart2 },
-  { title: "Testing", href: "/admin/testing", icon: FlaskConical },
   { title: "Flow Tree", href: "/admin/flow-tree", icon: GitBranch },
-  { title: "Refund", href: "/admin/refund", icon: RotateCcw },
-  { title: "Hospitality", href: "/admin/hospitality", icon: Heart },
-  { title: "Pricing", href: "/admin/pricing", icon: DollarSign },
-  { title: "Customers", href: "/admin/customers", icon: UserCircle },
-  { title: "System Health", href: "/admin/system-health", icon: Activity },
-  { title: "SSoT", href: "/admin/ssot", icon: Database },
 ];
 
 const MASTER_ADMIN_EMAIL = "kazuyoshi.yamada@bonfire.co.jp";
@@ -333,7 +323,7 @@ function DashboardLayoutContent({
                 <button className="flex items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-accent/50 transition-colors w-full text-left focus:outline-none">
                   <Avatar className="h-8 w-8 border shrink-0">
                     <AvatarFallback className="text-xs font-medium bg-black text-white">
-                      {user?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? "?"}
+                      {user?.displayName?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">

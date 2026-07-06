@@ -1,1 +1,0 @@
-ALTER TABLE `purchases` ADD `qrCodeUrl` text;
