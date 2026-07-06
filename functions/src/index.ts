@@ -1,10 +1,10 @@
 /**
- * yah.mobile チャットサポート — Cloud Functions エントリポイント
+ * yah.mobile チャットサポート — Cloud Functions エントリポイント（codebase: chat）
  *
  * 設計思想: シンプル・モダン・ミニマル・堅牢・安全
- * Cloud Functions: 6関数のみ
- * 外部APIキー: ゼロ
- * Google サービス依存: 4つのみ (Gemini, Firestore Vector, Gmail, Sheets)
+ * Cloud Functions: 4関数のみ
+ * 外部APIキー: ゼロ / Google サービス依存: 4つのみ (Gemini, Firestore Vector, Gmail, Sheets)
+ * 返金・QR 再取得は販売側で完結（chat 非関与）。顧客データは (default) を read-only で直接参照。
  */
 
 import * as admin from "firebase-admin";
@@ -14,12 +14,6 @@ admin.initializeApp();
 export { onVisitorMessageCreated } from "./triggers/onVisitorMessageCreated";
 export { onSessionEnded } from "./triggers/onSessionEnded";
 export { onRagDocumentWritten } from "./triggers/onRagDocumentWritten";
-
-// ── Callable 関数 (1関数) ──
-export { checkQrResend } from "./callable/qrResend";
-
-// ── HTTPS エンドポイント (1関数 — 移行過渡期のみ) ──
-export { webhookSync } from "./webhook/sync";
 
 // ── Scheduled 関数 (1関数) ──
 export { dataRetentionPurge } from "./scheduled/dataRetention";
