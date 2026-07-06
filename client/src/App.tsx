@@ -20,6 +20,7 @@ import AdminChatList from "@/pages/admin/AdminChatListFirebase";
 import AdminFlowTree from "@/pages/admin/AdminFlowTreeFirebase";
 import AdminQuickReplies from "@/pages/admin/AdminQuickRepliesFirebase";
 import AdminFeedback from "@/pages/admin/AdminFeedbackFirebase";
+import Hospitality from "@/pages/admin/HospitalityFirebase";
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/admin/quick-replies" component={AdminQuickReplies} />
         <Route path="/admin/feedback" component={AdminFeedback} />
         <Route path="/admin/flow-tree" component={AdminFlowTree} />
+        <Route path="/admin/hospitality" component={Hospitality} />
 
         <Route component={NotFound} />
       </Switch>
