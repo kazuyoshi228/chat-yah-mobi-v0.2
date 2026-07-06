@@ -40,7 +40,7 @@ GitHub: `kazuyoshi228/chat-yah-mobi-v0.2`。
 
 ## Firestore（named DB「chat」）
 
-- コレクション: `chat_sessions`（＋サブ `chat_messages`）／`chat_surveys`／`chat_flow_nodes`／`chat_quick_replies`／`chat_rag_documents`（Vector768）／`hospitalityGuidelines`／`chat_agent_logs`／`chat_rate_limits`（Fn 専用）。
+- コレクション: `chat_sessions`（＋サブ `chat_messages`）／`chat_surveys`／`chat_flow_nodes`／`chat_quick_replies`／`chat_rag_documents`（Vector768）／`chat_hospitality_guidelines`／`chat_agent_logs`／`chat_rate_limits`（Fn 専用）。
 - ルール: `firestore.chat.rules`（create は `hasOnly`＋型/値検証。未定義コレクションは default deny）。
 - client の接続は `getFirestore(app, "chat")` 固定（`client/src/lib/firebase.ts`）。
 

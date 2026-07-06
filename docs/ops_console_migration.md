@@ -25,7 +25,7 @@ CLI 代替: `gcloud firestore databases create --database=chat --location=asia-n
 ## 2. データ移行（copy → 照合 → 切替 → 後日削除）
 
 `(default)` から chat DB へ **chat 自身のコレクションだけ** をコピーする:
-- 対象: `chat_sessions`（＋サブ `chat_messages`）／`chat_surveys`／`chat_flow_nodes`／`chat_quick_replies`／`chat_rag_documents`／`hospitalityGuidelines`（あれば）／`chat_agent_logs`（あれば）
+- 対象: `chat_sessions`（＋サブ `chat_messages`）／`chat_surveys`／`chat_flow_nodes`／`chat_quick_replies`／`chat_rag_documents`／`hospitalityGuidelines`→`chat_hospitality_guidelines`（改名）／`chat_agent_logs`（あれば）
 - **`plans`/`purchases`/`orders`/`users` など販売系はコピーしない**（chat は (default) を read-only 参照する設計）
 - 方法: GCP の Firestore export/import（コレクション指定）か、Admin SDK の小さな copy スクリプト。**(default) への書き込みは一切しない（読むだけ）**
 - 照合: 件数と代表ドキュメントの内容を chat DB 側で確認

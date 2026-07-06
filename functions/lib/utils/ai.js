@@ -48,7 +48,7 @@ const responseSchema = {
  */
 async function loadHospitalityGuidelines() {
     const snap = await db_1.chatDb
-        .collection("hospitalityGuidelines")
+        .collection("chat_hospitality_guidelines")
         .where("isActive", "==", true)
         .orderBy("priority", "asc")
         .get();

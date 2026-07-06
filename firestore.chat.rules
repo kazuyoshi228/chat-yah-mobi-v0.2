@@ -114,10 +114,7 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // ── ホスピタリティ基準（コード上のコレクション名は hospitalityGuidelines） ──
-    match /hospitalityGuidelines/{id} {
-      allow read, write: if isAdmin();
-    }
+    // ── ホスピタリティ基準 ──
     match /chat_hospitality_guidelines/{id} {
       allow read, write: if isAdmin();
     }

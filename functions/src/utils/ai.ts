@@ -59,7 +59,7 @@ export interface AIResponse {
  */
 export async function loadHospitalityGuidelines(): Promise<string> {
   const snap = await db
-    .collection("hospitalityGuidelines")
+    .collection("chat_hospitality_guidelines")
     .where("isActive", "==", true)
     .orderBy("priority", "asc")
     .get();

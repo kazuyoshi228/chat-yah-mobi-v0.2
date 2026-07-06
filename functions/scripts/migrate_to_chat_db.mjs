@@ -21,12 +21,13 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 const PROJECT_ID = "yah-mobile-v1-3ed24";
 const CHAT_DATABASE_ID = "chat";
 
-/** 移行対象（設定/知識のみ・過去ログは含めない） */
+/** 移行対象（設定/知識のみ・過去ログは含めない）。{ src, dst } で改名にも対応 */
 const COLLECTIONS = [
-  "chat_rag_documents",
-  "chat_flow_nodes",
-  "chat_quick_replies",
-  "hospitalityGuidelines",
+  { src: "chat_rag_documents", dst: "chat_rag_documents" },
+  { src: "chat_flow_nodes", dst: "chat_flow_nodes" },
+  { src: "chat_quick_replies", dst: "chat_quick_replies" },
+  // (default) の hospitalityGuidelines → chat DB では chat_hospitality_guidelines に改名
+  { src: "hospitalityGuidelines", dst: "chat_hospitality_guidelines" },
 ];
 
 const WRITE = process.argv.includes("--write");
@@ -63,10 +64,11 @@ function convertVectors(data) {
   return out;
 }
 
-async function copyCollection(name) {
-  const snap = await srcDb.collection(name).get();
+async function copyCollection({ src, dst }) {
+  const label = src === dst ? src : `${src} → ${dst}`;
+  const snap = await srcDb.collection(src).get();
   if (snap.empty) {
-    console.log(`- ${name}: 0 件（スキップ）`);
+    console.log(`- ${label}: 0 件（スキップ）`);
     return 0;
   }
 
@@ -77,7 +79,7 @@ async function copyCollection(name) {
   for (const doc of snap.docs) {
     const data = convertVectors(doc.data());
     if (WRITE) {
-      batch.set(dstDb.collection(name).doc(doc.id), data);
+      batch.set(dstDb.collection(dst).doc(doc.id), data);
       inBatch++;
       if (inBatch >= 400) {
         await batch.commit();
@@ -90,7 +92,7 @@ async function copyCollection(name) {
   if (WRITE && inBatch > 0) await batch.commit();
 
   console.log(
-    `- ${name}: ${count} 件${WRITE ? " → chat DB にコピー完了" : "（dry-run・書き込みなし）"}`
+    `- ${label}: ${count} 件${WRITE ? " → chat DB にコピー完了" : "（dry-run・書き込みなし）"}`
   );
   return count;
 }

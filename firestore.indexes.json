@@ -25,7 +25,7 @@
       ]
     },
     {
-      "collectionGroup": "hospitalityGuidelines",
+      "collectionGroup": "chat_hospitality_guidelines",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "isActive", "order": "ASCENDING" },
