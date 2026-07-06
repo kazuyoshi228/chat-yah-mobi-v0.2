@@ -11,6 +11,7 @@
     "test": "vitest run",
     "deploy": "echo '🚨 素の firebase deploy は禁止（yah.mobi 巻き込み防止）。deploy:hosting / deploy:functions / deploy:rules を使う' && exit 1",
     "deploy:hosting": "npm run build && firebase deploy --only hosting:chat-yah-mobi-v2",
+    "deploy:dev": "npm run build && firebase hosting:channel:deploy dev --expires 30d",
     "deploy:functions": "firebase deploy --only functions:chat",
     "deploy:rules": "firebase deploy --only firestore:chat"
   },
