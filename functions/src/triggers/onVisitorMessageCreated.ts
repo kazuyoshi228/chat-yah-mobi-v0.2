@@ -31,6 +31,7 @@ import {
   ADMIN_EMAIL,
   SHEETS_JOURNAL_ID,
   MAX_MESSAGES_PER_SESSION,
+  DAILY_AI_LIMIT_PER_VISITOR,
 } from "../config";
 
 export const onVisitorMessageCreated = onDocumentCreated(
@@ -67,6 +68,23 @@ export const onVisitorMessageCreated = onDocumentCreated(
     const visitorLanguage = (session.language as string) || "ja";
 
     try {
+      // ── Step 0: コスト保護（訪問者ごとの日次レート制限・Firestore カウンタ） ──
+      const withinLimit = await checkDailyRateLimit(visitorId);
+      if (!withinLimit) {
+        console.warn(`レート制限超過: visitor=${visitorId}`);
+        await chatDb
+          .collection(`chat_sessions/${sessionId}/chat_messages`)
+          .add({
+            role: "ai",
+            content:
+              "本日のご利用上限に達しました。お手数ですが、明日以降に再度お試しください。",
+            resolved: false,
+            language: visitorLanguage,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        return;
+      }
+
       // ── Step 1: ホスピタリティ基準ロード ──
       const hospitalityPrompt = await loadHospitalityGuidelines();
 
@@ -132,6 +150,30 @@ export const onVisitorMessageCreated = onDocumentCreated(
     }
   }
 );
+
+/**
+ * 日次レート制限 — chat DB の chat_rate_limits/{visitorId_yyyymmdd} をトランザクションで加算
+ * （client からは default deny で触れない。Fn のみが書く）
+ */
+async function checkDailyRateLimit(visitorId: string): Promise<boolean> {
+  const dateKey = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const ref = chatDb.doc(`chat_rate_limits/${visitorId}_${dateKey}`);
+
+  return chatDb.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const count = (snap.exists ? (snap.data()?.count as number) : 0) || 0;
+    if (count >= DAILY_AI_LIMIT_PER_VISITOR) return false;
+    tx.set(
+      ref,
+      {
+        count: count + 1,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return true;
+  });
+}
 
 /**
  * 顧客コンテキストを構築 — 販売 (default) DB を read-only で直接参照

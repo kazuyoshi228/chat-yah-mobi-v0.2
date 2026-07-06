@@ -1,8 +1,10 @@
 /**
  * Firebase クライアントSDK 初期化
- * - firebase/app, firebase/auth, firebase/firestore を設定
+ * - firebase/app, firebase/auth, firebase/firestore, firebase/app-check
  * - 環境変数から設定値を取得 (VITE_FIREBASE_*)
  * - 開発モード時はエミュレータに接続
+ *
+ * 🚨 client は named DB「chat」のみ。(default)（販売 yah.mobi）には接続しない。
  */
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import {
@@ -16,7 +18,10 @@ import {
   connectFirestoreEmulator,
   type Firestore,
 } from "firebase/firestore";
-import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
+import {
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+} from "firebase/app-check";
 
 // Firebase設定 - 環境変数から取得
 const firebaseConfig = {
@@ -31,6 +36,24 @@ const firebaseConfig = {
 // Firebase アプリ初期化
 const app: FirebaseApp = initializeApp(firebaseConfig);
 
+// ── App Check（reCAPTCHA Enterprise）──
+// 訪問者の Firestore 直書き入口を保護（bot によるコスト濫用・スパム防止）。
+// サイトキー未設定時は初期化しない（段階的ロールアウト可能・何も壊さない）。
+const appCheckSiteKey = import.meta.env.VITE_RECAPTCHA_ENTERPRISE_SITE_KEY as
+  | string
+  | undefined;
+if (import.meta.env.DEV) {
+  // ローカル/エミュレータ・CI は debug token を使用
+  (self as unknown as Record<string, unknown>).FIREBASE_APPCHECK_DEBUG_TOKEN =
+    true;
+}
+if (appCheckSiteKey) {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
+
 // Firebase Auth（匿名認証 + Google認証対応）
 const auth: Auth = getAuth(app);
 
@@ -38,11 +61,7 @@ const auth: Auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
 // Firestore データベース — chat 専用 named DB「chat」
-// 🚨 client は chat DB のみ。(default)（販売 yah.mobi）には接続しない。
 const db: Firestore = getFirestore(app, "chat");
-
-// Cloud Functions（asia-northeast1 = 東京リージョン）
-const functions = getFunctions(app, "asia-northeast1");
 
 // 開発モード時はエミュレータに接続
 if (import.meta.env.DEV) {
@@ -51,7 +70,6 @@ if (import.meta.env.DEV) {
       disableWarnings: true,
     });
     connectFirestoreEmulator(db, "localhost", 8080);
-    connectFunctionsEmulator(functions, "localhost", 5001);
     console.log("[Firebase] エミュレータに接続しました");
   } catch (e) {
     // 既に接続済みの場合はスキップ
@@ -59,4 +77,4 @@ if (import.meta.env.DEV) {
   }
 }
 
-export { app, auth, db, functions, googleProvider };
+export { app, auth, db, googleProvider };
