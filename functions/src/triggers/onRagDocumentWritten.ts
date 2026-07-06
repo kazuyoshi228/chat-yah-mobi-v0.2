@@ -52,12 +52,14 @@ export const onRagDocumentWritten = onDocumentWritten(
       return;
     }
 
-    // ── ガード: content 未変更の場合はスキップ（更新時のみ） ──
-    if (beforeSnap.exists) {
+    // ── ガード: content 未変更 かつ embedding 済み ならスキップ ──
+    // （embedding が欠けている場合は content 未変更でも生成する＝自己修復・backfill 対応）
+    const hasEmbedding = afterData.embedding != null;
+    if (beforeSnap.exists && hasEmbedding) {
       const beforeData = beforeSnap.data()!;
       const beforeContent = beforeData.content as string | undefined;
       if (beforeContent === afterContent) {
-        console.log(`RAGドキュメント ${id}: content 未変更 — Embedding 再生成不要`);
+        console.log(`RAGドキュメント ${id}: content 未変更・embedding 済み — 再生成不要`);
         return;
       }
     }
