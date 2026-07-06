@@ -32,3 +32,10 @@ export const SHEETS_JOURNAL_ID = process.env.SHEETS_JOURNAL_ID || "";
 
 /** Firebase リージョン */
 export const REGION = "asia-northeast1"; // 東京
+
+/** Vertex AI 設定（ADC＝サービスアカウント認証・外部APIキー不要） */
+export const GCP_PROJECT_ID =
+  process.env.GOOGLE_CLOUD_PROJECT ||
+  process.env.GCLOUD_PROJECT ||
+  "yah-mobile-v1-3ed24";
+export const VERTEX_LOCATION = "asia-northeast1"; // 東京（データ residency）

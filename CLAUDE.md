@@ -34,6 +34,7 @@ GitHub: `kazuyoshi228/chat-yah-mobi-v0.2`。
 - **個別対応**（購入/eSIM）: ログイン時のみ。トリガーが **`(default)` の `orders`/`esim_links`/`users` を `userId==uid` で read-only 参照**（同期・コピーなし）。
 - **管理** `/admin/*`: Google ログイン（`@yah.mobi`/`@bonfire.co.jp` ドメイン制限）→ chat DB 読取。中核6画面のみ（KPI/チャット一覧/RAG/クイック返信/フィードバック/フローツリー）。
 - **Functions（codebase `chat`・4関数）**: `onVisitorMessageCreated` / `onSessionEnded` / `onRagDocumentWritten` / `dataRetentionPurge`（すべて chat DB にバインド）。
+- **AI（Vertex AI・ADC＝サービスアカウント認証・外部APIキー無し）**: Gemini 2.5 Flash ＋ text-embedding-004（768次元）。`functions/src/utils/ai.ts` は `@google/genai` の vertexai モード。**前提: プロジェクトで Vertex AI API 有効化＋Functions 実行 SA に `roles/aiplatform.user`**。
 - **入口保護**: App Check（reCAPTCHA Enterprise・サイトキー未設定なら無効）＋訪問者ごと日次レート制限（`chat_rate_limits`・100/日）。
 - **履行系（返金・QR・決済）は販売側**。QR はウィジェットから `https://yah.mobi/mypage` へ案内するのみ。
 - Express/tRPC/Socket.io/SQL/S3/Turnstile/Upstash は**撤去済み**（復活させない）。

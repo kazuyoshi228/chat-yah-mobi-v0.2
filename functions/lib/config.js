@@ -6,7 +6,7 @@
  * 全て GCP プロジェクト内のサービスアカウント認証。
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.REGION = exports.SHEETS_JOURNAL_ID = exports.ADMIN_EMAIL = exports.RETENTION_DAYS = exports.DAILY_AI_LIMIT_PER_VISITOR = exports.MAX_MESSAGES_PER_SESSION = exports.MAX_MESSAGE_LENGTH = exports.RAG_DISTANCE_THRESHOLD = exports.RAG_TOP_K = exports.EMBEDDING_DIMENSION = exports.GEMINI_EMBEDDING_MODEL = exports.GEMINI_MODEL = void 0;
+exports.VERTEX_LOCATION = exports.GCP_PROJECT_ID = exports.REGION = exports.SHEETS_JOURNAL_ID = exports.ADMIN_EMAIL = exports.RETENTION_DAYS = exports.DAILY_AI_LIMIT_PER_VISITOR = exports.MAX_MESSAGES_PER_SESSION = exports.MAX_MESSAGE_LENGTH = exports.RAG_DISTANCE_THRESHOLD = exports.RAG_TOP_K = exports.EMBEDDING_DIMENSION = exports.GEMINI_EMBEDDING_MODEL = exports.GEMINI_MODEL = void 0;
 /** Gemini モデル設定 */
 exports.GEMINI_MODEL = "gemini-2.5-flash";
 exports.GEMINI_EMBEDDING_MODEL = "text-embedding-004";
@@ -27,4 +27,9 @@ exports.ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@yah.mobi";
 exports.SHEETS_JOURNAL_ID = process.env.SHEETS_JOURNAL_ID || "";
 /** Firebase リージョン */
 exports.REGION = "asia-northeast1"; // 東京
+/** Vertex AI 設定（ADC＝サービスアカウント認証・外部APIキー不要） */
+exports.GCP_PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    "yah-mobile-v1-3ed24";
+exports.VERTEX_LOCATION = "asia-northeast1"; // 東京（データ residency）
 //# sourceMappingURL=config.js.map

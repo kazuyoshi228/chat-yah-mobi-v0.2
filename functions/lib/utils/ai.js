@@ -1,11 +1,15 @@
 "use strict";
 /**
- * AI ユーティリティ — Gemini / RAG / Embedding
+ * AI ユーティリティ — Gemini（Vertex AI）/ RAG / Embedding
+ *
+ * 🔑 認証は ADC（Cloud Functions のサービスアカウント）。外部 API キーは持たない。
+ *    → Vertex AI モード（@google/genai の vertexai:true）を使用。
+ *    前提: Vertex AI API 有効化 ＋ 実行 SA に roles/aiplatform.user。
  *
  * Google サービスのみ使用:
- * - Gemini 2.5 Flash (LLM回答 + 翻訳)
- * - Gemini Embedding (ベクトル生成)
- * - Firestore Vector Search (RAG検索)
+ * - Gemini 2.5 Flash（LLM回答 + 翻訳）
+ * - text-embedding-004（ベクトル生成・768次元）
+ * - Firestore Vector Search（RAG検索）
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadHospitalityGuidelines = loadHospitalityGuidelines;
@@ -13,31 +17,33 @@ exports.searchRAG = searchRAG;
 exports.generateAIResponse = generateAIResponse;
 exports.generateSummary = generateSummary;
 exports.generateEmbedding = generateEmbedding;
-const generative_ai_1 = require("@google/generative-ai");
+const genai_1 = require("@google/genai");
 const db_1 = require("../db");
 const config_1 = require("../config");
-/** Gemini クライアント（GCPサービスアカウント認証） */
+/** Gen AI クライアント（Vertex AI・ADC 認証） */
 let genAI;
 function getGenAI() {
     if (!genAI) {
-        // Cloud Functions は ADC (Application Default Credentials) を自動使用
-        // API キー不要
-        genAI = new generative_ai_1.GoogleGenerativeAI(process.env.GOOGLE_API_KEY || "");
+        genAI = new genai_1.GoogleGenAI({
+            vertexai: true,
+            project: config_1.GCP_PROJECT_ID,
+            location: config_1.VERTEX_LOCATION,
+        });
     }
     return genAI;
 }
 /** AI応答の構造化出力スキーマ */
 const responseSchema = {
-    type: generative_ai_1.SchemaType.OBJECT,
+    type: genai_1.Type.OBJECT,
     properties: {
-        answer: { type: generative_ai_1.SchemaType.STRING, description: "AI回答テキスト" },
-        resolved: { type: generative_ai_1.SchemaType.BOOLEAN, description: "問題が解決したか" },
+        answer: { type: genai_1.Type.STRING, description: "AI回答テキスト" },
+        resolved: { type: genai_1.Type.BOOLEAN, description: "問題が解決したか" },
         escalationReason: {
-            type: generative_ai_1.SchemaType.STRING,
+            type: genai_1.Type.STRING,
             description: "未解決の場合の理由（resolved=true なら空文字）",
         },
         language: {
-            type: generative_ai_1.SchemaType.STRING,
+            type: genai_1.Type.STRING,
             description: "回答の言語コード (ja, en, zh, ko, th, vi)",
         },
     },
@@ -58,7 +64,7 @@ async function loadHospitalityGuidelines() {
     return `\n\n【ホスピタリティ基準 — 全ての応答に適用】\n${guidelines.join("\n")}`;
 }
 /**
- * RAG ハイブリッド検索: Vector Search + N-gram キーワード
+ * RAG ハイブリッド検索: Vector Search（findNearest）
  */
 async function searchRAG(query) {
     // 1. クエリの Embedding 生成
@@ -83,13 +89,6 @@ async function searchRAG(query) {
  * Gemini でAI回答を生成（翻訳も兼用）
  */
 async function generateAIResponse(params) {
-    const model = getGenAI().getGenerativeModel({
-        model: config_1.GEMINI_MODEL,
-        generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema,
-        },
-    });
     const systemPrompt = `あなたは yah.mobile のカスタマーサポート AI です。
 eSIM（海外旅行用モバイルデータ通信）の専門家として、お客様を全力でサポートしてください。
 ${params.hospitalityPrompt}
@@ -107,16 +106,23 @@ ${params.customerContext || "（匿名ユーザー）"}
 4. 返金・契約変更・技術的に解決不能な問題は resolved を false にしてください。
 5. resolved が false の場合、escalationReason に理由を記載してください。
 6. 常にホスピタリティ基準に従い、温かみのある対応をしてください。`;
-    const history = params.conversationHistory.map((msg) => ({
-        role: msg.role === "visitor" ? "user" : "model",
-        parts: [{ text: msg.content }],
-    }));
-    const chat = model.startChat({
-        history,
-        systemInstruction: systemPrompt,
+    const contents = [
+        ...params.conversationHistory.map((msg) => ({
+            role: msg.role === "visitor" ? "user" : "model",
+            parts: [{ text: msg.content }],
+        })),
+        { role: "user", parts: [{ text: params.visitorMessage }] },
+    ];
+    const response = await getGenAI().models.generateContent({
+        model: config_1.GEMINI_MODEL,
+        contents,
+        config: {
+            systemInstruction: systemPrompt,
+            responseMimeType: "application/json",
+            responseSchema,
+        },
     });
-    const result = await chat.sendMessage(params.visitorMessage);
-    const text = result.response.text();
+    const text = response.text ?? "";
     try {
         return JSON.parse(text);
     }
@@ -134,26 +140,30 @@ ${params.customerContext || "（匿名ユーザー）"}
  * Gemini で会話サマリーを生成
  */
 async function generateSummary(messages) {
-    const model = getGenAI().getGenerativeModel({ model: config_1.GEMINI_MODEL });
     const conversation = messages
         .map((m) => `${m.role}: ${m.content}`)
         .join("\n");
-    const result = await model.generateContent(`以下のチャット会話を日本語で3行以内に要約してください。\n\n${conversation}`);
-    return result.response.text();
+    const response = await getGenAI().models.generateContent({
+        model: config_1.GEMINI_MODEL,
+        contents: `以下のチャット会話を日本語で3行以内に要約してください。\n\n${conversation}`,
+    });
+    return response.text ?? "";
 }
 /**
- * Gemini Embedding でベクトル生成
+ * text-embedding-004 でベクトル生成（768次元）
  */
 async function generateEmbedding(text) {
-    const model = getGenAI().getGenerativeModel({
+    const response = await getGenAI().models.embedContent({
         model: config_1.GEMINI_EMBEDDING_MODEL,
+        contents: text,
     });
-    const result = await model.embedContent(text);
-    const embedding = result.embedding.values;
-    // 次元数の検証
-    if (embedding.length !== config_1.EMBEDDING_DIMENSION) {
-        throw new Error(`Embedding dimension mismatch: expected ${config_1.EMBEDDING_DIMENSION}, got ${embedding.length}`);
+    const values = response.embeddings?.[0]?.values;
+    if (!values || values.length === 0) {
+        throw new Error("Embedding 生成失敗: values が空です");
     }
-    return embedding;
+    if (values.length !== config_1.EMBEDDING_DIMENSION) {
+        throw new Error(`Embedding dimension mismatch: expected ${config_1.EMBEDDING_DIMENSION}, got ${values.length}`);
+    }
+    return values;
 }
 //# sourceMappingURL=ai.js.map
