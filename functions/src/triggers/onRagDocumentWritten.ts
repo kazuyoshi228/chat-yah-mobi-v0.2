@@ -15,15 +15,14 @@ import {
   DocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
+import { chatDb as db, CHAT_DATABASE_ID } from "../db";
 import { generateEmbedding } from "../utils/ai";
 import { REGION } from "../config";
-
-if (!admin.apps.length) admin.initializeApp();
-const db = admin.firestore();
 
 export const onRagDocumentWritten = onDocumentWritten(
   {
     document: "chat_rag_documents/{id}",
+    database: CHAT_DATABASE_ID,
     region: REGION,
   },
   async (

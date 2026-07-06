@@ -48,13 +48,12 @@ exports.onSessionEnded = void 0;
 const firestore_1 = require("firebase-functions/v2/firestore");
 const admin = __importStar(require("firebase-admin"));
 const googleapis_1 = require("googleapis");
+const db_1 = require("../db");
 const ai_1 = require("../utils/ai");
 const config_1 = require("../config");
-if (!admin.apps.length)
-    admin.initializeApp();
-const db = admin.firestore();
 exports.onSessionEnded = (0, firestore_1.onDocumentUpdated)({
     document: "chat_sessions/{sessionId}",
+    database: db_1.CHAT_DATABASE_ID,
     region: config_1.REGION,
 }, async (event) => {
     if (!event.data)
@@ -67,7 +66,7 @@ exports.onSessionEnded = (0, firestore_1.onDocumentUpdated)({
         return;
     try {
         // ── Step 1: 全メッセージ取得 ──
-        const messagesSnap = await db
+        const messagesSnap = await db_1.chatDb
             .collection(`chat_sessions/${sessionId}/chat_messages`)
             .orderBy("createdAt", "asc")
             .get();
@@ -82,7 +81,7 @@ exports.onSessionEnded = (0, firestore_1.onDocumentUpdated)({
         // ── Step 3: セッション更新（summary + scheduledDeleteAt） ──
         const createdAt = after.createdAt;
         const scheduledDeleteAt = new Date(createdAt.toDate().getTime() + 2 * 365 * 24 * 60 * 60 * 1000);
-        const sessionRef = db.doc(`chat_sessions/${sessionId}`);
+        const sessionRef = db_1.chatDb.doc(`chat_sessions/${sessionId}`);
         await sessionRef.update({
             summary,
             scheduledDeleteAt: admin.firestore.Timestamp.fromDate(scheduledDeleteAt),

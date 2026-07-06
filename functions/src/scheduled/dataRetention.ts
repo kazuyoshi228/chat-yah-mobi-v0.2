@@ -12,10 +12,8 @@
 
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
+import { chatDb as db } from "../db";
 import { REGION } from "../config";
-
-if (!admin.apps.length) admin.initializeApp();
-const db = admin.firestore();
 
 /** バッチ削除の上限（Firestore の制限: 500） */
 const BATCH_SIZE = 450;

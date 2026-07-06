@@ -1,13 +1,15 @@
 /**
- * onVisitorMessageCreated — メインAI応答トリガー
+ * onVisitorMessageCreated — メインAI応答トリガー（chat DB）
  *
- * トリガー: /chat_sessions/{sessionId}/messages/{messageId} の作成
+ * トリガー: [chat DB] /chat_sessions/{sessionId}/chat_messages/{messageId} の作成
  * 処理:
- *   1. ホスピタリティ基準ロード
- *   2. RAG ハイブリッド検索
- *   3. 動的コンテキスト構築（顧客データ）
+ *   1. ホスピタリティ基準ロード（chat DB）
+ *   2. RAG ハイブリッド検索（chat DB）
+ *   3. 動的コンテキスト構築（顧客データ = 販売 (default) DB を read-only 参照）
  *   4. Gemini AI 回答生成（翻訳も兼用）
  *   5. エスカレーション判定（未解決 → Gmail + Sheets）
+ *
+ * 🚨 (default) DB は read-only。書き込みは chatDb のみ。
  */
 
 import {
@@ -17,6 +19,7 @@ import {
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { google } from "googleapis";
+import { chatDb, defaultDb, CHAT_DATABASE_ID } from "../db";
 import {
   loadHospitalityGuidelines,
   searchRAG,
@@ -30,12 +33,10 @@ import {
   MAX_MESSAGES_PER_SESSION,
 } from "../config";
 
-if (!admin.apps.length) admin.initializeApp();
-const db = admin.firestore();
-
 export const onVisitorMessageCreated = onDocumentCreated(
   {
     document: "chat_sessions/{sessionId}/chat_messages/{messageId}",
+    database: CHAT_DATABASE_ID,
     region: REGION,
     // Cloud Functions v2: メモリ・タイムアウト設定
     memory: "512MiB",
@@ -57,7 +58,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
     if (data.role !== "visitor") return;
 
     // ── セッション確認: active のみ ──
-    const sessionRef = db.doc(`chat_sessions/${sessionId}`);
+    const sessionRef = chatDb.doc(`chat_sessions/${sessionId}`);
     const sessionSnap = await sessionRef.get();
     if (!sessionSnap.exists || sessionSnap.data()?.status !== "active") return;
 
@@ -73,11 +74,11 @@ export const onVisitorMessageCreated = onDocumentCreated(
       const ragResults = await searchRAG(data.content);
       const ragContext = ragResults.map((r) => r.content).join("\n\n---\n\n");
 
-      // ── Step 3: 動的コンテキスト構築 ──
+      // ── Step 3: 動的コンテキスト構築（(default) read-only） ──
       const customerContext = await buildCustomerContext(visitorId);
 
       // ── Step 4: 会話履歴取得 ──
-      const historySnap = await db
+      const historySnap = await chatDb
         .collection(`chat_sessions/${sessionId}/chat_messages`)
         .orderBy("createdAt", "asc")
         .limit(MAX_MESSAGES_PER_SESSION)
@@ -99,7 +100,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       });
 
       // ── Step 6: AI回答をメッセージに追加 ──
-      await db.collection(`chat_sessions/${sessionId}/chat_messages`).add({
+      await chatDb.collection(`chat_sessions/${sessionId}/chat_messages`).add({
         role: "ai",
         content: aiResponse.answer,
         resolved: aiResponse.resolved,
@@ -120,7 +121,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       console.error("AI応答生成エラー:", error);
 
       // エラー時もユーザーにメッセージを返す
-      await db.collection(`chat_sessions/${sessionId}/chat_messages`).add({
+      await chatDb.collection(`chat_sessions/${sessionId}/chat_messages`).add({
         role: "ai",
         content:
           "申し訳ございません。一時的なエラーが発生しました。しばらくしてからもう一度お試しください。",
@@ -133,41 +134,58 @@ export const onVisitorMessageCreated = onDocumentCreated(
 );
 
 /**
- * 顧客コンテキストを構築
+ * 顧客コンテキストを構築 — 販売 (default) DB を read-only で直接参照
+ *
+ * - 本人特定: visitorId = Firebase Auth uid（匿名 uid は何もヒットせず自動的に RAG のみ）
+ * - 参照: users/{uid} / orders(userId==uid) / esim_links(userId==uid)
+ * - 🚨 機微情報（決済ID・メール等）は AI コンテキストに載せない
+ * - (default) に複合インデックスを要求しないよう orderBy は使わず、メモリ内でソート
+ * - TODO(要確認): orders / esim_links の表示用フィールド実キー（planName/status/期限/データ量）
+ *   は yah.mobi 実データで確認して調整する
  */
 async function buildCustomerContext(visitorId: string): Promise<string> {
   const parts: string[] = [];
 
-  // 顧客プロファイル
-  const profileSnap = await db.doc(`customerProfiles/${visitorId}`).get();
-  if (profileSnap.exists) {
-    const p = profileSnap.data()!;
-    parts.push(`顧客名: ${p.name || "不明"}`);
-    parts.push(`メール: ${p.email || "不明"}`);
+  // 顧客プロファイル（(default)/users/{uid}）
+  const userSnap = await defaultDb.doc(`users/${visitorId}`).get();
+  if (userSnap.exists) {
+    const u = userSnap.data()!;
+    const name = (u.displayName as string) || (u.name as string) || "不明";
+    parts.push(`顧客名: ${name}`);
   } else {
     parts.push("顧客: 匿名ユーザー");
   }
 
-  // 購入履歴
-  const purchasesSnap = await db
-    .collection("purchases")
-    .where("uid", "==", visitorId)
-    .orderBy("createdAt", "desc")
-    .limit(5)
+  // 購入状況（(default)/orders where userId == uid）
+  const ordersSnap = await defaultDb
+    .collection("orders")
+    .where("userId", "==", visitorId)
+    .limit(10)
     .get();
 
-  if (!purchasesSnap.empty) {
-    const purchases = purchasesSnap.docs.map((doc) => {
-      const d = doc.data();
-      return `- ${d.planName || "不明プラン"} (${d.status || "不明"})`;
-    });
-    parts.push(`\n購入履歴:\n${purchases.join("\n")}`);
+  if (!ordersSnap.empty) {
+    // createdAt は number(ms) / Firestore Timestamp のどちらでも扱えるように
+    const toMillis = (v: unknown): number =>
+      typeof v === "number"
+        ? v
+        : v instanceof admin.firestore.Timestamp
+          ? v.toMillis()
+          : 0;
+    const orders = ordersSnap.docs
+      .map((doc) => doc.data())
+      .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
+      .slice(0, 5)
+      .map((d) => {
+        const plan = d.planName || d.planId || "不明プラン";
+        return `- ${plan} (${d.status || "不明"})`;
+      });
+    parts.push(`\n購入履歴:\n${orders.join("\n")}`);
   }
 
-  // eSIM状態
-  const esimSnap = await db
-    .collection("esimStatuses")
-    .where("uid", "==", visitorId)
+  // eSIM状態（(default)/esim_links where userId == uid）
+  const esimSnap = await defaultDb
+    .collection("esim_links")
+    .where("userId", "==", visitorId)
     .limit(5)
     .get();
 
@@ -191,13 +209,15 @@ async function handleEscalation(
   aiResponse: AIResponse,
   sessionRef: admin.firestore.DocumentReference
 ): Promise<void> {
-  // セッションにフラグ設定
+  // セッションにフラグ設定（chat DB）
   await sessionRef.update({ escalated: true });
 
-  // 顧客名取得
-  const profileSnap = await db.doc(`customerProfiles/${visitorId}`).get();
-  const customerName = profileSnap.exists
-    ? (profileSnap.data()?.name as string) || "匿名"
+  // 顧客名取得（(default)/users read-only）
+  const userSnap = await defaultDb.doc(`users/${visitorId}`).get();
+  const customerName = userSnap.exists
+    ? (userSnap.data()?.displayName as string) ||
+      (userSnap.data()?.name as string) ||
+      "匿名"
     : "匿名";
 
   // ── Gmail API: Admin にエスカレーション通知 ──

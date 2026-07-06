@@ -5,16 +5,30 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "/widget-chat",
+        "headers": [
+          {
+            "key": "Content-Security-Policy",
+            "value": "frame-ancestors 'self' https://yah.mobi https://www.yah.mobi https://yah-mobile-v1-3ed24.web.app https://yah-mobile-v1-3ed24--dev-tvnc2fob.web.app"
+          }
+        ]
+      }
     ]
   },
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
+  "firestore": [
+    {
+      "database": "chat",
+      "rules": "firestore.chat.rules",
+      "indexes": "firestore.indexes.json"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
-      "codebase": "default",
+      "codebase": "chat",
       "ignore": [
         "node_modules",
         ".git",

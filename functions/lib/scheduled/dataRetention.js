@@ -47,10 +47,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dataRetentionPurge = void 0;
 const scheduler_1 = require("firebase-functions/v2/scheduler");
 const admin = __importStar(require("firebase-admin"));
+const db_1 = require("../db");
 const config_1 = require("../config");
-if (!admin.apps.length)
-    admin.initializeApp();
-const db = admin.firestore();
 /** バッチ削除の上限（Firestore の制限: 500） */
 const BATCH_SIZE = 450;
 exports.dataRetentionPurge = (0, scheduler_1.onSchedule)({
@@ -64,7 +62,7 @@ exports.dataRetentionPurge = (0, scheduler_1.onSchedule)({
     let totalDeleted = 0;
     try {
         // ── 期限切れセッションを検索 ──
-        const expiredSnap = await db
+        const expiredSnap = await db_1.chatDb
             .collection("chat_sessions")
             .where("scheduledDeleteAt", "<=", now)
             .limit(100) // 1回の実行で最大100セッション処理
@@ -102,12 +100,12 @@ exports.dataRetentionPurge = (0, scheduler_1.onSchedule)({
  * サブコレクション内のドキュメントをバッチ削除
  */
 async function deleteSubcollection(collectionPath) {
-    const collRef = db.collection(collectionPath);
+    const collRef = db_1.chatDb.collection(collectionPath);
     // ページネーションで全件削除
     let query = collRef.limit(BATCH_SIZE);
     let snapshot = await query.get();
     while (!snapshot.empty) {
-        const batch = db.batch();
+        const batch = db_1.chatDb.batch();
         for (const doc of snapshot.docs) {
             batch.delete(doc.ref);
         }
@@ -120,13 +118,13 @@ async function deleteSubcollection(collectionPath) {
  * セッションに関連する chat_surveys ドキュメントを削除
  */
 async function deleteSurveys(sessionId) {
-    const chat_surveysSnap = await db
+    const chat_surveysSnap = await db_1.chatDb
         .collection("chat_surveys")
         .where("sessionId", "==", sessionId)
         .get();
     if (chat_surveysSnap.empty)
         return;
-    const batch = db.batch();
+    const batch = db_1.chatDb.batch();
     for (const doc of chat_surveysSnap.docs) {
         batch.delete(doc.ref);
     }

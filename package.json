@@ -8,7 +8,11 @@
     "build": "vite build",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "deploy": "echo '🚨 素の firebase deploy は禁止（yah.mobi 巻き込み防止）。deploy:hosting / deploy:functions / deploy:rules を使う' && exit 1",
+    "deploy:hosting": "npm run build && firebase deploy --only hosting:chat-yah-mobi-v2",
+    "deploy:functions": "firebase deploy --only functions:chat",
+    "deploy:rules": "firebase deploy --only firestore:chat"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

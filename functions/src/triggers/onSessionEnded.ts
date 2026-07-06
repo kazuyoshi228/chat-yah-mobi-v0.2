@@ -18,15 +18,14 @@ import {
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { google } from "googleapis";
+import { chatDb as db, CHAT_DATABASE_ID } from "../db";
 import { generateSummary } from "../utils/ai";
 import { REGION, SHEETS_JOURNAL_ID } from "../config";
-
-if (!admin.apps.length) admin.initializeApp();
-const db = admin.firestore();
 
 export const onSessionEnded = onDocumentUpdated(
   {
     document: "chat_sessions/{sessionId}",
+    database: CHAT_DATABASE_ID,
     region: REGION,
   },
   async (

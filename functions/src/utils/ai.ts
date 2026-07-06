@@ -8,7 +8,7 @@
  */
 
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
-import * as admin from "firebase-admin";
+import { chatDb as db } from "../db";
 import {
   GEMINI_MODEL,
   GEMINI_EMBEDDING_MODEL,
@@ -16,8 +16,6 @@ import {
   RAG_TOP_K,
   RAG_DISTANCE_THRESHOLD,
 } from "../config";
-
-const db = admin.firestore();
 
 /** Gemini クライアント（GCPサービスアカウント認証） */
 let genAI: GoogleGenerativeAI;

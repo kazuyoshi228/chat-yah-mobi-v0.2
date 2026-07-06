@@ -37,8 +37,9 @@ const auth: Auth = getAuth(app);
 // Google認証プロバイダ
 const googleProvider = new GoogleAuthProvider();
 
-// Firestore データベース
-const db: Firestore = getFirestore(app);
+// Firestore データベース — chat 専用 named DB「chat」
+// 🚨 client は chat DB のみ。(default)（販売 yah.mobi）には接続しない。
+const db: Firestore = getFirestore(app, "chat");
 
 // Cloud Functions（asia-northeast1 = 東京リージョン）
 const functions = getFunctions(app, "asia-northeast1");

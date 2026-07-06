@@ -45,13 +45,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.onRagDocumentWritten = void 0;
 const firestore_1 = require("firebase-functions/v2/firestore");
 const admin = __importStar(require("firebase-admin"));
+const db_1 = require("../db");
 const ai_1 = require("../utils/ai");
 const config_1 = require("../config");
-if (!admin.apps.length)
-    admin.initializeApp();
-const db = admin.firestore();
 exports.onRagDocumentWritten = (0, firestore_1.onDocumentWritten)({
     document: "chat_rag_documents/{id}",
+    database: db_1.CHAT_DATABASE_ID,
     region: config_1.REGION,
 }, async (event) => {
     if (!event.data)
@@ -84,7 +83,7 @@ exports.onRagDocumentWritten = (0, firestore_1.onDocumentWritten)({
         // ── Embedding 生成 ──
         const embedding = await (0, ai_1.generateEmbedding)(afterContent);
         // ── Firestore に Embedding を保存 ──
-        await db.doc(`chat_rag_documents/${id}`).update({
+        await db_1.chatDb.doc(`chat_rag_documents/${id}`).update({
             embedding: admin.firestore.FieldValue.vector(embedding),
             embeddingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
