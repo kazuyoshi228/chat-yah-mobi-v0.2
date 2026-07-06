@@ -85,8 +85,8 @@ export const onVisitorMessageCreated = onDocumentCreated(
         return;
       }
 
-      // ── Step 1: ホスピタリティ基準ロード ──
-      const hospitalityPrompt = await loadHospitalityGuidelines();
+      // ── Step 1: ホスピタリティ基準ロード（状況別トリガーに訪問者メッセージを渡す） ──
+      const hospitalityPrompt = await loadHospitalityGuidelines(data.content);
 
       // ── Step 2: RAG ハイブリッド検索 ──
       const ragResults = await searchRAG(data.content);

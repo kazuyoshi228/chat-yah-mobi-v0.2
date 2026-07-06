@@ -62,23 +62,91 @@ export interface AIResponse {
   language: string;
 }
 
+/** カテゴリの表示名（プロンプト内の見出し） */
+const HOSPITALITY_CATEGORY_LABEL: Record<string, string> = {
+  credo: "クレド",
+  steps: "サービスの3ステップ",
+  tone: "トーン・言葉遣い",
+  emotion: "感情マネジメント",
+  oonas: "おもてなし5原則(OONAS)",
+  wow: "WOW体験",
+  judgment: "良い判断",
+  scenario: "状況別プロトコル",
+};
+
+/** 常時注入ブロックの文字数ソフト上限（トークン肥大の抑制） */
+const HOSPITALITY_ALWAYS_CHAR_CAP = 4000;
+
 /**
- * ホスピタリティ基準を Firestore から読み込み、system prompt に変換
+ * ホスピタリティ基準を Firestore から読み込み、system prompt 用に整形。
+ * - scope="always"（既定）: 常時注入（category ごとに見出し・priority 昇順）
+ * - scope="situational": trigger.keywords が visitorMessage に一致した時のみ注入
+ * @param visitorMessage 状況別トリガー判定に使う（省略時は状況別を出さない）
  */
-export async function loadHospitalityGuidelines(): Promise<string> {
+export async function loadHospitalityGuidelines(
+  visitorMessage?: string
+): Promise<string> {
   const snap = await db
     .collection("chat_hospitality_guidelines")
     .where("isActive", "==", true)
-    .orderBy("priority", "asc")
     .get();
 
   if (snap.empty) return "";
 
-  const guidelines = snap.docs.map(
-    (doc) => `- ${doc.data().title}: ${doc.data().content}`
-  );
+  type G = {
+    title?: string;
+    content?: string;
+    category?: string;
+    priority?: number;
+    scope?: string;
+    trigger?: { keywords?: string[] } | null;
+  };
+  const docs: G[] = snap.docs.map((d) => d.data() as G);
+  const sortByPriority = (a: G, b: G) => (a.priority ?? 999) - (b.priority ?? 999);
 
-  return `\n\n【ホスピタリティ基準 — 全ての応答に適用】\n${guidelines.join("\n")}`;
+  // ── 常時（scope 未設定は always 扱い＝後方互換） ──
+  const always = docs
+    .filter((g) => (g.scope ?? "always") === "always")
+    .sort(sortByPriority);
+
+  // category ごとに見出し付きで整形（未知カテゴリはそのまま列挙）
+  const sections: string[] = [];
+  const seenCat: string[] = [];
+  for (const g of always) {
+    const cat = g.category ?? "";
+    if (!seenCat.includes(cat)) seenCat.push(cat);
+  }
+  for (const cat of seenCat) {
+    const items = always
+      .filter((g) => (g.category ?? "") === cat)
+      .map((g) => `- ${g.title}: ${g.content}`);
+    const label = HOSPITALITY_CATEGORY_LABEL[cat];
+    sections.push(label ? `■ ${label}\n${items.join("\n")}` : items.join("\n"));
+  }
+  let alwaysBlock = sections.join("\n");
+  if (alwaysBlock.length > HOSPITALITY_ALWAYS_CHAR_CAP) {
+    alwaysBlock = alwaysBlock.slice(0, HOSPITALITY_ALWAYS_CHAR_CAP);
+  }
+
+  // ── 状況別（キーワード一致時のみ） ──
+  let situationalBlock = "";
+  if (visitorMessage) {
+    const msg = visitorMessage.toLowerCase();
+    const matched = docs
+      .filter((g) => g.scope === "situational")
+      .filter((g) => {
+        const kws = g.trigger?.keywords ?? [];
+        return kws.some((k) => k && msg.includes(String(k).toLowerCase()));
+      })
+      .sort(sortByPriority)
+      .map((g) => `- ${g.title}: ${g.content}`);
+    if (matched.length > 0) {
+      situationalBlock = `\n\n【状況別ガイド（今回の状況に該当）】\n${matched.join("\n")}`;
+    }
+  }
+
+  if (!alwaysBlock && !situationalBlock) return "";
+  return `\n\n【ホスピタリティ基準 — 全ての応答に適用】\n${alwaysBlock}${situationalBlock}`;
 }
 
 /**

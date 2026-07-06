@@ -93,8 +93,8 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
             });
             return;
         }
-        // ── Step 1: ホスピタリティ基準ロード ──
-        const hospitalityPrompt = await (0, ai_1.loadHospitalityGuidelines)();
+        // ── Step 1: ホスピタリティ基準ロード（状況別トリガーに訪問者メッセージを渡す） ──
+        const hospitalityPrompt = await (0, ai_1.loadHospitalityGuidelines)(data.content);
         // ── Step 2: RAG ハイブリッド検索 ──
         const ragResults = await (0, ai_1.searchRAG)(data.content);
         const ragContext = ragResults.map((r) => r.content).join("\n\n---\n\n");
