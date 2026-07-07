@@ -24,10 +24,19 @@ service cloud.firestore {
 
     function isVerified() { return isAuth() && !isAnonymous(); }
 
+    // 管理者判定（多層防御）:
+    //  - 非匿名（isVerified）
+    //  - email_verified == true（未確認メールでの詐称を排除）
+    //  - Google ログイン限定（sign_in_provider == 'google.com'）
+    //  - 許可ドメイン（@yah.mobi / @bonfire.co.jp）
+    // ※ メール/パスワード等で attacker@yah.mobi を自己登録しても、
+    //   email_verified/provider が一致しないため管理者にならない。
     function isAdmin() {
-      return isVerified() &&
-        (request.auth.token.email.matches('.*@yah[.]mobi$') ||
-         request.auth.token.email.matches('.*@bonfire[.]co[.]jp$'));
+      return isVerified()
+        && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && (request.auth.token.email.matches('.*@yah[.]mobi$')
+            || request.auth.token.email.matches('.*@bonfire[.]co[.]jp$'));
     }
 
     function isOwner(uid) { return isAuth() && request.auth.uid == uid; }

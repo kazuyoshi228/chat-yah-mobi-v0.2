@@ -271,7 +271,9 @@ async function buildCustomerContext(visitorId) {
     if (!esimSnap.empty) {
         const statuses = esimSnap.docs.map((doc) => {
             const d = doc.data();
-            return `- ICCID: ${d.iccid || "不明"} / 状態: ${d.status || "不明"}`;
+            // ICCID は機微なため下4桁のみ（本人確認の言及用・全桁は載せない）
+            const iccid = d.iccid ? `****${String(d.iccid).slice(-4)}` : "不明";
+            return `- ICCID: ${iccid} / 状態: ${d.status || "不明"}`;
         });
         parts.push(`\neSIM状態:\n${statuses.join("\n")}`);
     }
