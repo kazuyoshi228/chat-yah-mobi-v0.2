@@ -8,16 +8,19 @@
  *
  * 🚨 書き込むのは chat DB の chat_flow_nodes だけ。
  * 使い方（functions ディレクトリで）:
- *   下見:  node scripts/seed_flow_tree.mjs
- *   投入:  node scripts/seed_flow_tree.mjs --write
+ *   下見:            node scripts/seed_flow_tree.mjs
+ *   投入:            node scripts/seed_flow_tree.mjs --write
+ *   投入＋旧掃除:     node scripts/seed_flow_tree.mjs --write --clean-legacy
  *
  * doc ID 固定（root / b_purchase / b_esim / b_other）→ 再実行は上書き（重複しない）。
+ * --clean-legacy: root 直下で本seed以外の子ノード（旧ブランチ）を削除する。
  */
 import { initializeApp, applicationDefault } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const PROJECT_ID = "yah-mobile-v1-3ed24";
 const WRITE = process.argv.includes("--write");
+const CLEAN_LEGACY = process.argv.includes("--clean-legacy");
 
 const app = initializeApp({ credential: applicationDefault(), projectId: PROJECT_ID });
 const chat = getFirestore(app, "chat");
@@ -157,10 +160,22 @@ async function main() {
         `  [${n.type}] ${n.id}  p:${n.parentId ?? "(root)"}  ai:${n.aiTrigger}  order:${n.sortOrder}  "${label.ja}"`
       );
     }
+    // 掃除候補（root直下・本seed以外）を明示
+    const seedIds = new Set(NODES.map((n) => n.id));
+    const legacy = existing.docs.filter(
+      (d) => d.data().parentId === "root" && !seedIds.has(d.id)
+    );
+    if (legacy.length > 0) {
+      console.log(
+        `\n⚠ 旧ブランチ ${legacy.length} 件（${legacy.map((d) => d.id).join(", ")}）が残っています。` +
+          `\n   → 掃除するには: node scripts/seed_flow_tree.mjs --write --clean-legacy`
+      );
+    }
     console.log("\n--write で書き込みます。");
     process.exit(0);
   }
 
+  const seedIds = new Set(NODES.map((n) => n.id));
   const batch = chat.batch();
   for (const n of NODES) {
     const { id, ...data } = n;
@@ -170,8 +185,34 @@ async function main() {
       { merge: true }
     );
   }
+
+  // 旧ブランチ掃除（root直下で本seed以外の子を削除）
+  let legacyDeleted = 0;
+  if (CLEAN_LEGACY) {
+    for (const d of existing.docs) {
+      if (d.data().parentId === "root" && !seedIds.has(d.id)) {
+        batch.delete(d.ref);
+        legacyDeleted++;
+      }
+    }
+  }
+
   await batch.commit();
-  console.log(`✅ ${NODES.length} ノードを投入しました（root + 3分岐）。`);
+  console.log(
+    `✅ ${NODES.length} ノードを投入${
+      CLEAN_LEGACY ? `＋旧ブランチ ${legacyDeleted} 件を削除` : ""
+    }しました（root + 3分岐）。`
+  );
+  if (!CLEAN_LEGACY) {
+    const remaining = existing.docs.filter(
+      (d) => d.data().parentId === "root" && !seedIds.has(d.id)
+    ).length;
+    if (remaining > 0) {
+      console.log(
+        `⚠ 旧ブランチ ${remaining} 件が残っています。掃除は --clean-legacy を併用してください。`
+      );
+    }
+  }
   process.exit(0);
 }
 
