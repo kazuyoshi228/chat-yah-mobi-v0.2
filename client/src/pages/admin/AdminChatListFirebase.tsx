@@ -24,6 +24,7 @@ interface ChatMessage {
   role: string;
   content: string;
   resolved?: boolean;
+  directToContact?: boolean;
   createdAt: unknown;
 }
 
@@ -242,7 +243,9 @@ export default function AdminChatListFirebase() {
                     {messages.map((msg) => {
                       const isVisitor = msg.role === "visitor";
                       const directedToContact =
-                        msg.role === "ai" && msg.resolved === false;
+                        msg.role === "ai" &&
+                        (msg.directToContact === true ||
+                          msg.resolved === false);
                       return (
                         <div key={msg.id}>
                           <div

@@ -23,6 +23,7 @@ export interface ChatMessage {
   role: "visitor" | "admin" | "ai";
   content: string;
   resolved?: boolean;
+  directToContact?: boolean;
   createdAt: Date | Timestamp | null;
 }
 
@@ -69,6 +70,7 @@ export function useChatMessages(
           role: doc.data().role,
           content: doc.data().content,
           resolved: doc.data().resolved,
+          directToContact: doc.data().directToContact,
           createdAt: doc.data().createdAt,
         }));
         setMessages(msgs);

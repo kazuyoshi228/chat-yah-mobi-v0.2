@@ -129,6 +129,7 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
             role: "ai",
             content: aiResponse.answer,
             resolved: aiResponse.resolved,
+            directToContact: aiResponse.directToContact ?? false,
             language: aiResponse.language,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
@@ -156,9 +157,10 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
             console.error("chat_agent_logs 記録エラー:", logErr);
         }
         // ── Step 7: エスカレーション判定 ──
-        //   resolved=false ＝ AIが解決できず /contact フォームへ誘導 ＝ エスカレーション。
-        //   chat 側は escalated フラグを立てるだけ（通知・対応は販売サイトの問い合わせフォーム）。
-        if (!aiResponse.resolved) {
+        //   /contact フォームへ誘導した（directToContact）or 未解決（resolved=false）
+        //   ＝ エスカレーション。chat 側は escalated フラグを立てるだけ
+        //   （通知・対応は販売サイトの問い合わせフォーム）。
+        if (aiResponse.directToContact || !aiResponse.resolved) {
             await handleEscalation(sessionRef);
         }
     }
