@@ -65,8 +65,14 @@ export const onRagDocumentWritten = onDocumentWritten(
     }
 
     try {
-      // ── Embedding 生成 ──
-      const embedding = await generateEmbedding(afterContent);
+      // ── Embedding 生成（transient対策で1回リトライ） ──
+      let embedding: number[];
+      try {
+        embedding = await generateEmbedding(afterContent);
+      } catch {
+        await new Promise((r) => setTimeout(r, 1000));
+        embedding = await generateEmbedding(afterContent);
+      }
 
       // ── Firestore に Embedding を保存 ──
       await db.doc(`chat_rag_documents/${id}`).update({
@@ -76,7 +82,12 @@ export const onRagDocumentWritten = onDocumentWritten(
 
       console.log(`RAGドキュメント ${id}: Embedding 生成完了`);
     } catch (error) {
-      console.error(`RAGドキュメント ${id}: Embedding 生成エラー:`, error);
+      // docId はメッセージ本文に含めない（Error Reporting のグループ膨張防止）。
+      // 失敗しても次回書込で embedding 欠落を検知し自己修復する。
+      console.error("RAG embedding 生成エラー（スキップ・後で再生成）", {
+        docId: id,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 );

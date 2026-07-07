@@ -26,16 +26,8 @@ export const AI_RATE_LIMIT_PER_MINUTE = 6;
 
 /** データ保持期限 */
 export const RETENTION_DAYS = 365 * 2; // 2年
-
-/** Admin メールアドレス（エスカレーション通知先） */
-export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@yah.mobi";
-
-/** RAG下書き承認の通知先（L1: 週次バッチが下書き生成時にメール） */
-export const APPROVAL_EMAIL =
-  process.env.APPROVAL_EMAIL || "kazuyoshi.yamada@bonfire.co.jp";
-
-/** 管理画面のベースURL（メール本文のリンク用） */
-export const ADMIN_BASE_URL = process.env.ADMIN_BASE_URL || "https://chat.yah.mobi";
+// ※ メール通知（ADMIN_EMAIL / APPROVAL_EMAIL / ADMIN_BASE_URL）は廃止。
+//   エスカレーション＝CONTACTフォーム誘導、L1承認待ち＝管理画面バッジで可視化。
 
 /** Google Sheets 仕訳帳 ID */
 export const SHEETS_JOURNAL_ID = process.env.SHEETS_JOURNAL_ID || "";

@@ -7,7 +7,7 @@
  *   2. 質問を簡易クラスタリング（単語Jaccard・ベストエフォート）
  *   3. クラスタごとに Gemini で6言語ドラフトを生成
  *   4. chat_rag_documents に isActive:false（＝承認待ち下書き）で投入
- *   5. APPROVAL_EMAIL に「承認待ち◯件」を通知
+ *      → 承認待ちは管理画面サイドバー「RAG Documents」バッジで可視化（メール通知は廃止）
  *
  * 🚨 生成物は必ず isActive:false。公開（本番反映）は人が /admin/rag で承認する。
  *    下書きは searchRAG 側で本番検索から除外される（isActive !== false）。
@@ -16,9 +16,8 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import { chatDb as db } from "../db";
-import { REGION, APPROVAL_EMAIL, ADMIN_BASE_URL } from "../config";
+import { REGION } from "../config";
 import { generateRagDraft } from "../utils/ai";
-import { sendGmail } from "../utils/mail";
 
 const LOOKBACK_DAYS = 7;
 const MAX_CLUSTERS = 5; // 1回の実行で作る下書きの上限
@@ -87,27 +86,10 @@ export const generateRagDrafts = onSchedule(
       return;
     }
 
-    // 4. 承認依頼メール（APPROVAL_EMAIL 宛）
-    const body = [
-      `AIが回答できなかった質問（過去${LOOKBACK_DAYS}日）から、RAG知識ベースの下書きを ${created.length} 件自動生成しました。`,
-      `内容を確認して公開/却下してください（公開すると本番のAIが参照します）。`,
-      "",
-      ...created.map(
-        (c, i) =>
-          `${i + 1}. 「${c.title}」（類似質問 ${c.count}件）\n   例: ${c.sample}`
-      ),
-      "",
-      `承認画面: ${ADMIN_BASE_URL}/admin/rag?filter=pending`,
-    ].join("\n");
-
-    await sendGmail({
-      to: APPROVAL_EMAIL,
-      subject: `[yah.mobi チャット] RAG下書き ${created.length}件（承認待ち）`,
-      body,
-    });
-
+    // 4. 承認待ちの可視化は管理画面サイドバー「RAG Documents」のバッジで行う
+    //    （メール通知は廃止＝Gmailのドメイン委任が無く送信不可のため。バッジで代替）。
     console.log(
-      `generateRagDrafts: 下書き ${created.length} 件を作成・${APPROVAL_EMAIL} へ通知しました`
+      `generateRagDrafts: 下書き ${created.length} 件を作成（/admin/rag の承認待ちに表示）`
     );
   }
 );

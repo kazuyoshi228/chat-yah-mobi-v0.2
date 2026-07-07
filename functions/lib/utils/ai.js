@@ -294,13 +294,19 @@ async function generateRagDraft(sampleQuestions) {
         return null;
     }
 }
+/** text-embedding-004 の入力上限対策（トークン超過での失敗を防ぐソフト上限） */
+const EMBED_INPUT_CHAR_CAP = 8000;
 /**
  * text-embedding-004 でベクトル生成（768次元）
+ * 長文（6言語ドラフト等）は上限超過で失敗するため、入力を安全長に切り詰める。
  */
 async function generateEmbedding(text) {
+    const input = text.length > EMBED_INPUT_CHAR_CAP
+        ? text.slice(0, EMBED_INPUT_CHAR_CAP)
+        : text;
     const response = await getGenAI().models.embedContent({
         model: config_1.GEMINI_EMBEDDING_MODEL,
-        contents: text,
+        contents: input,
     });
     const values = response.embeddings?.[0]?.values;
     if (!values || values.length === 0) {
