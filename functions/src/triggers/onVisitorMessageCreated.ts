@@ -100,7 +100,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
       const baseContext = await buildCustomerContext(visitorId);
       const entryIntent = (session.initialMessage as string) || "";
       const customerContext = entryIntent
-        ? `【相談メニュー】訪問者は「${entryIntent}」を選んで開始\n${baseContext}`
+        ? `[Entry menu selected by visitor]: ${entryIntent}\n${baseContext}`
         : baseContext;
 
       // ── Step 4: 会話履歴取得 ──
@@ -261,11 +261,14 @@ async function buildCustomerContext(visitorId: string): Promise<string> {
         (userSnap.data()?.name as string) ||
         "")
     : "";
+  // ラベルは言語中立（英語）で。値が日本語でも回答言語は訪問者言語に固定（システムプロンプト参照）。
   if (uname) {
-    parts.push(`顧客名: ${uname}`);
+    parts.push(`Customer name: ${uname}`);
   } else {
-    // 名前不明（匿名等）: AI が『匿名ユーザー様』と呼ばないよう明示
-    parts.push("顧客名: 不明（名前が分からないため『お客様』とお呼びする）");
+    // 名前不明（匿名等）: AI が『匿名ユーザー様』等と呼ばないよう明示
+    parts.push(
+      "Customer name: unknown (address them politely as 'customer' in the visitor's language)"
+    );
   }
 
   // 購入状況（(default)/orders where userId == uid）
@@ -288,10 +291,10 @@ async function buildCustomerContext(visitorId: string): Promise<string> {
       .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
       .slice(0, 5)
       .map((d) => {
-        const plan = d.planName || d.planId || "不明プラン";
-        return `- ${plan} (${d.status || "不明"})`;
+        const plan = d.planName || d.planId || "unknown plan";
+        return `- ${plan} (${d.status || "unknown"})`;
       });
-    parts.push(`\n購入履歴:\n${orders.join("\n")}`);
+    parts.push(`\nPurchase history:\n${orders.join("\n")}`);
   }
 
   // eSIM状態（(default)/esim_links where userId == uid）
@@ -305,10 +308,10 @@ async function buildCustomerContext(visitorId: string): Promise<string> {
     const statuses = esimSnap.docs.map((doc) => {
       const d = doc.data();
       // ICCID は機微なため下4桁のみ（本人確認の言及用・全桁は載せない）
-      const iccid = d.iccid ? `****${String(d.iccid).slice(-4)}` : "不明";
-      return `- ICCID: ${iccid} / 状態: ${d.status || "不明"}`;
+      const iccid = d.iccid ? `****${String(d.iccid).slice(-4)}` : "unknown";
+      return `- ICCID: ${iccid} / status: ${d.status || "unknown"}`;
     });
-    parts.push(`\neSIM状態:\n${statuses.join("\n")}`);
+    parts.push(`\neSIM status:\n${statuses.join("\n")}`);
   }
 
   return parts.join("\n");
