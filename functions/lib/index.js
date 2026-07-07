@@ -3,7 +3,7 @@
  * yah.mobile チャットサポート — Cloud Functions エントリポイント（codebase: chat）
  *
  * 設計思想: シンプル・モダン・ミニマル・堅牢・安全
- * Cloud Functions: 5関数（トリガー3 ＋ スケジュール2）
+ * Cloud Functions: 6関数（トリガー3 ＋ スケジュール2 ＋ Callable1）
  * 外部APIキー: ゼロ / Google サービス依存: 4つのみ (Gemini, Firestore Vector, Gmail, Sheets)
  * 返金・QR 再取得は販売側で完結（chat 非関与）。顧客データは (default) を read-only で直接参照。
  */
@@ -41,7 +41,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateRagDrafts = exports.dataRetentionPurge = exports.onRagDocumentWritten = exports.onSessionEnded = exports.onVisitorMessageCreated = void 0;
+exports.claimSession = exports.generateRagDrafts = exports.dataRetentionPurge = exports.onRagDocumentWritten = exports.onSessionEnded = exports.onVisitorMessageCreated = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 // ── Firestore トリガー (3関数) ──
@@ -56,4 +56,7 @@ var dataRetention_1 = require("./scheduled/dataRetention");
 Object.defineProperty(exports, "dataRetentionPurge", { enumerable: true, get: function () { return dataRetention_1.dataRetentionPurge; } });
 var generateRagDrafts_1 = require("./scheduled/generateRagDrafts");
 Object.defineProperty(exports, "generateRagDrafts", { enumerable: true, get: function () { return generateRagDrafts_1.generateRagDrafts; } });
+// ── Callable 関数 (1関数) ──
+var claimSession_1 = require("./callables/claimSession");
+Object.defineProperty(exports, "claimSession", { enumerable: true, get: function () { return claimSession_1.claimSession; } });
 //# sourceMappingURL=index.js.map

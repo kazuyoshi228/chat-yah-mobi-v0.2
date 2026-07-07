@@ -34,7 +34,8 @@ interface UseChatMessagesReturn {
 }
 
 export function useChatMessages(
-  sessionId: string | null
+  sessionId: string | null,
+  reloadKey = 0
 ): UseChatMessagesReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +91,8 @@ export function useChatMessages(
 
     // クリーンアップ: リスナーを解除
     return () => unsubscribe();
-  }, [sessionId]);
+    // reloadKey: ログイン/所有者付け替え後に再購読する（uid変更で権限が変わるため）
+  }, [sessionId, reloadKey]);
 
   // メッセージを送信
   const sendMessage = useCallback(

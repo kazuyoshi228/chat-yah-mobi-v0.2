@@ -17,6 +17,8 @@ import {
   Star,
   CheckCircle,
   ChevronLeft,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -75,13 +77,79 @@ const CONTACT_LABEL: Record<string, string> = {
   vi: "Mở biểu mẫu liên hệ",
 };
 
+/** ログイン/新規登録パネルの多言語ラベル */
+const L = (
+  ja: string,
+  en: string,
+  zh: string,
+  ko: string,
+  th: string,
+  vi: string
+): Record<string, string> => ({ ja, en, zh, ko, th, vi });
+const AUTH_LABELS = {
+  signin: L("ログイン", "Sign in", "登录", "로그인", "เข้าสู่ระบบ", "Đăng nhập"),
+  signout: L("ログアウト", "Sign out", "登出", "로그아웃", "ออกจากระบบ", "Đăng xuất"),
+  register: L("新規登録", "Sign up", "注册", "회원가입", "สมัคร", "Đăng ký"),
+  google: L(
+    "Google で続ける",
+    "Continue with Google",
+    "使用 Google 继续",
+    "Google로 계속",
+    "ดำเนินการต่อด้วย Google",
+    "Tiếp tục với Google"
+  ),
+  email: L("メールアドレス", "Email", "邮箱", "이메일", "อีเมล", "Email"),
+  password: L("パスワード", "Password", "密码", "비밀번호", "รหัสผ่าน", "Mật khẩu"),
+  toLogin: L(
+    "アカウントをお持ちの方",
+    "Already have an account? Sign in",
+    "已有账号？登录",
+    "이미 계정이 있으신가요? 로그인",
+    "มีบัญชีแล้ว? เข้าสู่ระบบ",
+    "Đã có tài khoản? Đăng nhập"
+  ),
+  toRegister: L(
+    "アカウントを作成",
+    "Create an account",
+    "创建账号",
+    "계정 만들기",
+    "สร้างบัญชี",
+    "Tạo tài khoản"
+  ),
+  hint: L(
+    "ログインすると、ご注文やeSIMの状況を確認できます。",
+    "Sign in to get help with your orders and eSIM status.",
+    "登录后可查询您的订单和 eSIM 状态。",
+    "로그인하면 주문·eSIM 상태를 확인할 수 있습니다.",
+    "เข้าสู่ระบบเพื่อดูคำสั่งซื้อและสถานะ eSIM ของคุณ",
+    "Đăng nhập để xem đơn hàng và trạng thái eSIM của bạn."
+  ),
+  error: L(
+    "認証に失敗しました。メール/パスワードをご確認ください。",
+    "Sign-in failed. Please check your email/password.",
+    "认证失败，请检查邮箱/密码。",
+    "인증 실패. 이메일/비밀번호를 확인하세요.",
+    "การเข้าสู่ระบบล้มเหลว โปรดตรวจสอบอีเมล/รหัสผ่าน",
+    "Đăng nhập thất bại. Vui lòng kiểm tra email/mật khẩu."
+  ),
+  or: L("または", "or", "或", "또는", "หรือ", "hoặc"),
+};
+
 // ── メインコンポーネント ──
 
 export default function ChatWidgetFirebase() {
   const { t, lang: language } = useLanguage();
 
-  // Firebase認証（匿名認証自動サインイン）
-  const { user, loading: authLoading } = useFirebaseAuth();
+  // Firebase認証（匿名自動サインイン＋お客様ログイン/新規登録）
+  const {
+    user,
+    loading: authLoading,
+    isAnonymous,
+    signInWithGoogle,
+    registerWithEmail,
+    signInWithEmail,
+    signOutUser,
+  } = useFirebaseAuth();
 
   // チャットセッション管理
   const {
@@ -91,12 +159,68 @@ export default function ChatWidgetFirebase() {
     endSession,
   } = useChatSession();
 
+  // ログイン/所有者付け替え後にメッセージ購読を張り直すためのキー
+  const [authReloadKey, setAuthReloadKey] = useState(0);
+
   // リアルタイムメッセージ同期
   const {
     messages,
     typingIndicator: typingInfo,
     sendMessage: sendFirebaseMessage,
-  } = useChatMessages(sessionId);
+  } = useChatMessages(sessionId, authReloadKey);
+
+  // ── ログインパネル状態 ──
+  const [showLogin, setShowLogin] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+
+  const afterAuthSuccess = () => {
+    setShowLogin(false);
+    setAuthError("");
+    setAuthEmail("");
+    setAuthPassword("");
+    setAuthBusy(false);
+    // 付け替え後は権限が変わるのでメッセージ購読を張り直す
+    setAuthReloadKey((k) => k + 1);
+  };
+
+  const handleGoogleAuth = async () => {
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      await signInWithGoogle(sessionId ?? undefined);
+      afterAuthSuccess();
+    } catch (e) {
+      console.error(e);
+      setAuthError(AUTH_LABELS.error[language] ?? AUTH_LABELS.error.en);
+      setAuthBusy(false);
+    }
+  };
+
+  const handleEmailAuth = async () => {
+    if (!authEmail.trim() || !authPassword.trim()) return;
+    setAuthBusy(true);
+    setAuthError("");
+    try {
+      if (authMode === "register") {
+        await registerWithEmail(authEmail.trim(), authPassword);
+      } else {
+        await signInWithEmail(
+          authEmail.trim(),
+          authPassword,
+          sessionId ?? undefined
+        );
+      }
+      afterAuthSuccess();
+    } catch (e) {
+      console.error(e);
+      setAuthError(AUTH_LABELS.error[language] ?? AUTH_LABELS.error.en);
+      setAuthBusy(false);
+    }
+  };
 
   // ── ウィジェット状態 ──
   const [widgetState, setWidgetState] = useState<WidgetState>("closed");
@@ -376,16 +500,120 @@ export default function ChatWidgetFirebase() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={closeWidget}
-              className="p-1.5 text-white/60 hover:text-white transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              {isAnonymous ? (
+                <button
+                  onClick={() => {
+                    setShowLogin(true);
+                    setAuthError("");
+                  }}
+                  className="text-xs text-white/80 hover:text-white px-2 py-1 rounded-md border border-white/25 transition-colors flex items-center gap-1"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  {AUTH_LABELS.signin[language] ?? AUTH_LABELS.signin.en}
+                </button>
+              ) : (
+                <button
+                  onClick={signOutUser}
+                  title={user?.email ?? undefined}
+                  className="text-xs text-white/70 hover:text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  {AUTH_LABELS.signout[language] ?? AUTH_LABELS.signout.en}
+                </button>
+              )}
+              <button
+                onClick={closeWidget}
+                className="p-1.5 text-white/60 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
+          {/* ── ログイン / 新規登録パネル ── */}
+          {showLogin && (
+            <div className="flex-1 min-h-0 p-4 flex flex-col gap-3 overflow-y-auto">
+              <p className="text-xs text-gray-600 leading-relaxed">
+                {AUTH_LABELS.hint[language] ?? AUTH_LABELS.hint.en}
+              </p>
+
+              <Button
+                onClick={handleGoogleAuth}
+                disabled={authBusy}
+                variant="outline"
+                className="w-full text-xs"
+              >
+                {authBusy ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                ) : null}
+                {AUTH_LABELS.google[language] ?? AUTH_LABELS.google.en}
+              </Button>
+
+              <div className="flex items-center gap-2 my-1">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-[10px] text-gray-400">
+                  {AUTH_LABELS.or[language] ?? AUTH_LABELS.or.en}
+                </span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              <input
+                type="email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder={AUTH_LABELS.email[language] ?? AUTH_LABELS.email.en}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black"
+              />
+              <input
+                type="password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                placeholder={
+                  AUTH_LABELS.password[language] ?? AUTH_LABELS.password.en
+                }
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black"
+              />
+
+              {authError && (
+                <p className="text-[11px] text-red-500">{authError}</p>
+              )}
+
+              <Button
+                onClick={handleEmailAuth}
+                disabled={authBusy || !authEmail.trim() || !authPassword.trim()}
+                className="w-full bg-black hover:bg-gray-800 text-white text-xs"
+              >
+                {authBusy ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                ) : null}
+                {authMode === "register"
+                  ? AUTH_LABELS.register[language] ?? AUTH_LABELS.register.en
+                  : AUTH_LABELS.signin[language] ?? AUTH_LABELS.signin.en}
+              </Button>
+
+              <button
+                onClick={() =>
+                  setAuthMode((m) => (m === "login" ? "register" : "login"))
+                }
+                className="text-[11px] text-gray-500 hover:text-gray-800 text-center"
+              >
+                {authMode === "login"
+                  ? AUTH_LABELS.toRegister[language] ?? AUTH_LABELS.toRegister.en
+                  : AUTH_LABELS.toLogin[language] ?? AUTH_LABELS.toLogin.en}
+              </button>
+
+              <button
+                onClick={() => setShowLogin(false)}
+                className="text-[11px] text-gray-400 hover:text-gray-600 text-center mt-1"
+              >
+                ←
+              </button>
+            </div>
+          )}
+
           {/* ── デシジョンツリーフロー ── */}
-          {widgetState === "flow" && !showQrGuide && (
+          {widgetState === "flow" && !showQrGuide && !showLogin && (
             <ScrollArea className="flex-1 min-h-0">
               <div className="p-4 flex flex-col gap-3">
                 {currentNode && (
@@ -483,7 +711,7 @@ export default function ChatWidgetFirebase() {
           )}
 
           {/* ── QR案内（再取得はマイページで自己解決・chat は案内のみ） ── */}
-          {widgetState === "flow" && showQrGuide && (
+          {widgetState === "flow" && showQrGuide && !showLogin && (
             <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
               {/* ボットメッセージ */}
               <div className="flex items-start gap-2">
@@ -550,7 +778,7 @@ export default function ChatWidgetFirebase() {
           )}
 
           {/* ── AIチャット ── */}
-          {widgetState === "chat" && (
+          {widgetState === "chat" && !showLogin && (
             <>
               <ScrollArea className="flex-1 min-h-0 px-3 py-3">
                 <div className="space-y-2">
@@ -668,7 +896,7 @@ export default function ChatWidgetFirebase() {
           )}
 
           {/* ── 終了 + サーベイ ── */}
-          {widgetState === "ended" && (
+          {widgetState === "ended" && !showLogin && (
             <div className="flex-1 p-4 flex flex-col items-center justify-center gap-3 overflow-y-auto">
               {!surveySubmitted ? (
                 <>
