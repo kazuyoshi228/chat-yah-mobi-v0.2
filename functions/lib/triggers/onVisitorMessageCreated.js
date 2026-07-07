@@ -100,7 +100,13 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
         const ragResults = await (0, ai_1.searchRAG)(data.content);
         const ragContext = ragResults.map((r) => r.content).join("\n\n---\n\n");
         // ── Step 3: 動的コンテキスト構築（(default) read-only） ──
-        const customerContext = await buildCustomerContext(visitorId);
+        //   ＋ 冒頭デシジョンツリーで選ばれた相談メニュー（session.initialMessage）を前置し、
+        //     最初の回答が分岐意図に沿うようにする（widget変更なし・非履行）。
+        const baseContext = await buildCustomerContext(visitorId);
+        const entryIntent = session.initialMessage || "";
+        const customerContext = entryIntent
+            ? `【相談メニュー】訪問者は「${entryIntent}」を選んで開始\n${baseContext}`
+            : baseContext;
         // ── Step 4: 会話履歴取得 ──
         const historySnap = await db_1.chatDb
             .collection(`chat_sessions/${sessionId}/chat_messages`)
