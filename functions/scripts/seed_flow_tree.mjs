@@ -135,9 +135,22 @@ async function main() {
   console.log(`投入予定: ${NODES.length} ノード（root + 3分岐）\n`);
 
   const existing = await chat.collection(COL).get();
-  console.log(`既存ノード: ${existing.size} 件\n`);
+  console.log(`既存ノード: ${existing.size} 件`);
 
   if (!WRITE) {
+    // 既存ノードの中身（ID・親・ラベル）を表示 ＝ 上書き/追加の判断材料
+    if (existing.size > 0) {
+      console.log("\n── 既存ノード（現状） ──");
+      const seedIds = new Set(NODES.map((n) => n.id));
+      for (const d of existing.docs) {
+        const x = d.data();
+        let l = "";
+        try { l = JSON.parse(x.label).ja ?? ""; } catch { l = String(x.label ?? ""); }
+        const mark = seedIds.has(d.id) ? "◎上書き対象" : "△別ノード(残存)";
+        console.log(`  ${mark}  ${d.id}  p:${x.parentId ?? "(root)"}  "${l}"`);
+      }
+    }
+    console.log("\n── 投入予定（このseed） ──");
     for (const n of NODES) {
       const label = JSON.parse(n.label);
       console.log(
