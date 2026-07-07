@@ -18,7 +18,6 @@ import {
   QueryDocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import { google } from "googleapis";
 import { chatDb, defaultDb, CHAT_DATABASE_ID } from "../db";
 import {
   loadHospitalityGuidelines,
@@ -26,12 +25,8 @@ import {
   generateAIResponse,
   AIResponse,
 } from "../utils/ai";
-import { sendGmail } from "../utils/mail";
 import {
   REGION,
-  ADMIN_EMAIL,
-  ADMIN_BASE_URL,
-  SHEETS_JOURNAL_ID,
   MAX_MESSAGES_PER_SESSION,
   DAILY_AI_LIMIT_PER_VISITOR,
 } from "../config";
@@ -163,13 +158,10 @@ export const onVisitorMessageCreated = onDocumentCreated(
       }
 
       // ── Step 7: エスカレーション判定 ──
+      //   resolved=false ＝ AIが解決できず /contact フォームへ誘導 ＝ エスカレーション。
+      //   chat 側は escalated フラグを立てるだけ（通知・対応は販売サイトの問い合わせフォーム）。
       if (!aiResponse.resolved) {
-        await handleEscalation(
-          sessionId,
-          visitorId,
-          aiResponse,
-          sessionRef
-        );
+        await handleEscalation(sessionRef);
       }
     } catch (error) {
       console.error("AI応答生成エラー:", error);
@@ -318,66 +310,13 @@ async function buildCustomerContext(visitorId: string): Promise<string> {
 }
 
 /**
- * エスカレーション処理: Gmail通知 + Google Sheets 記録
+ * エスカレーション: chat 側は escalated フラグを立てるだけ。
+ *  - 定義: resolved=false ＝ AIが解決できず /contact フォームへ誘導 ＝ エスカレーション
+ *  - 通知・対応は販売サイトの問い合わせフォーム（yah.mobi/contact）が担う
+ *  - 自前メール／Sheets 記録は廃止（二重通知回避）。未解決の詳細は chat_agent_logs に記録済み
  */
 async function handleEscalation(
-  sessionId: string,
-  visitorId: string,
-  aiResponse: AIResponse,
   sessionRef: admin.firestore.DocumentReference
 ): Promise<void> {
-  // セッションにフラグ設定（chat DB）
   await sessionRef.update({ escalated: true });
-
-  // 顧客名取得（(default)/users read-only）
-  const userSnap = await defaultDb.doc(`users/${visitorId}`).get();
-  const customerName = userSnap.exists
-    ? (userSnap.data()?.displayName as string) ||
-      (userSnap.data()?.name as string) ||
-      "匿名"
-    : "匿名";
-
-  // ── Gmail: Admin にエスカレーション通知（共通 sendGmail を使用） ──
-  await sendGmail({
-    to: ADMIN_EMAIL,
-    subject: `[yah.mobi チャット] エスカレーション: ${customerName}`,
-    body: [
-      `セッションID: ${sessionId}`,
-      `顧客: ${customerName}`,
-      `理由: ${aiResponse.escalationReason}`,
-      `AI回答: ${aiResponse.answer.substring(0, 200)}...`,
-      "",
-      `管理画面: ${ADMIN_BASE_URL}/admin/chats?session=${sessionId}`,
-    ].join("\n"),
-  });
-
-  // ── Google Sheets API: 仕訳帳に記録 ──
-  if (SHEETS_JOURNAL_ID) {
-    try {
-      const auth = new google.auth.GoogleAuth({
-        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-      });
-      const sheets = google.sheets({ version: "v4", auth });
-
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SHEETS_JOURNAL_ID,
-        range: "エスカレーション!A:F",
-        valueInputOption: "USER_ENTERED",
-        requestBody: {
-          values: [
-            [
-              new Date().toISOString(),
-              sessionId,
-              customerName,
-              "❌",
-              aiResponse.escalationReason,
-              aiResponse.answer.substring(0, 200),
-            ],
-          ],
-        },
-      });
-    } catch (error) {
-      console.error("Sheets 記録エラー:", error);
-    }
-  }
 }

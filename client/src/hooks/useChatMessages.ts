@@ -22,6 +22,7 @@ export interface ChatMessage {
   sessionId: string;
   role: "visitor" | "admin" | "ai";
   content: string;
+  resolved?: boolean;
   createdAt: Date | Timestamp | null;
 }
 
@@ -66,6 +67,7 @@ export function useChatMessages(
           sessionId: sessionId,
           role: doc.data().role,
           content: doc.data().content,
+          resolved: doc.data().resolved,
           createdAt: doc.data().createdAt,
         }));
         setMessages(msgs);

@@ -64,6 +64,17 @@ function parseI18n(json: string | null, lang: string): string {
 
 type WidgetState = "closed" | "flow" | "chat" | "ended";
 
+/** 問い合わせフォーム（販売サイト）。AIが解決できない時の人間ハンドオフ先。 */
+const CONTACT_FORM_URL = "https://yah.mobi/contact";
+const CONTACT_LABEL: Record<string, string> = {
+  ja: "お問い合わせフォームを開く",
+  en: "Open the contact form",
+  zh: "打开咨询表单",
+  ko: "문의 양식 열기",
+  th: "เปิดแบบฟอร์มติดต่อ",
+  vi: "Mở biểu mẫu liên hệ",
+};
+
 // ── メインコンポーネント ──
 
 export default function ChatWidgetFirebase() {
@@ -103,11 +114,6 @@ export default function ChatWidgetFirebase() {
   const [flowNodes, setFlowNodes] = useState<FlowNode[]>([]);
   const [currentNodeId, setCurrentNodeId] = useState<string>("root");
   const [breadcrumb, setBreadcrumb] = useState<string[]>([]);
-  const [showFormPrompt, setShowFormPrompt] = useState(false);
-  const [formPromptContent, setFormPromptContent] = useState("");
-  const [formEmail, setFormEmail] = useState("");
-  const [formMessage, setFormMessage] = useState("");
-  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // QR案内状態（再取得は販売サイトのマイページで自己解決。chat は案内のみ）
   const [showQrGuide, setShowQrGuide] = useState(false);
@@ -175,7 +181,6 @@ export default function ChatWidgetFirebase() {
     const last = prev.pop()!;
     setBreadcrumb(prev);
     setCurrentNodeId(last);
-    setShowFormPrompt(false);
     setShowQrGuide(false);
   };
 
@@ -207,11 +212,8 @@ export default function ChatWidgetFirebase() {
       return;
     }
     if (node.formTrigger) {
-      const content = parseI18n(node.content, language);
-      setFormPromptContent(content);
-      setBreadcrumb((prev) => [...prev, currentNodeId]);
-      setCurrentNodeId(node.id);
-      setShowFormPrompt(true);
+      // 自前フォームは持たず、販売サイトの問い合わせフォームへ誘導（非履行・案内のみ）
+      window.open(CONTACT_FORM_URL, "_blank", "noopener,noreferrer");
       return;
     }
     if (node.aiTrigger) {
@@ -276,34 +278,11 @@ export default function ChatWidgetFirebase() {
   };
 
   // ── フォーム送信（Firestoreに直接書き込み） ──
-  const handleFormSubmit = async () => {
-    if (!formEmail.trim() || !formMessage.trim() || !user) return;
-    try {
-      const contactRef = collection(db, "contactForms");
-      const { addDoc: addDocFn } = await import("firebase/firestore");
-      await addDocFn(contactRef, {
-        visitorId: user.uid,
-        email: formEmail,
-        message: formMessage,
-        language,
-        createdAt: serverTimestamp(),
-      });
-      setFormSubmitted(true);
-    } catch (error) {
-      console.error("[ChatWidgetFirebase] フォーム送信エラー:", error);
-      setFormSubmitted(true); // エラーでもUIは完了表示にする
-    }
-  };
-
   // ── ウィジェット開閉 ──
   const openWidget = () => {
     setWidgetState("flow");
     setCurrentNodeId("root");
     setBreadcrumb([]);
-    setShowFormPrompt(false);
-    setFormSubmitted(false);
-    setFormEmail("");
-    setFormMessage("");
     setShowQrGuide(false);
   };
 
@@ -406,7 +385,7 @@ export default function ChatWidgetFirebase() {
           </div>
 
           {/* ── デシジョンツリーフロー ── */}
-          {widgetState === "flow" && !showFormPrompt && !showQrGuide && (
+          {widgetState === "flow" && !showQrGuide && (
             <ScrollArea className="flex-1">
               <div className="p-4 flex flex-col gap-3">
                 {currentNode && (
@@ -501,57 +480,6 @@ export default function ChatWidgetFirebase() {
                 )}
               </div>
             </ScrollArea>
-          )}
-
-          {/* ── フォームプロンプト ── */}
-          {widgetState === "flow" && showFormPrompt && (
-            <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
-              {!formSubmitted ? (
-                <>
-                  {/* ボットメッセージ */}
-                  <div className="flex items-start gap-2">
-                    <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-gray-500" />
-                    </div>
-                    <div className="bg-gray-100 rounded-xl rounded-tl-sm px-3 py-2.5 text-xs text-gray-800 leading-relaxed max-w-[85%]">
-                      <p className="whitespace-pre-wrap">
-                        {formPromptContent}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* フォームフィールド */}
-                  <input
-                    type="email"
-                    value={formEmail}
-                    onChange={(e) => setFormEmail(e.target.value)}
-                    placeholder={ui("form_email")}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black"
-                  />
-                  <Textarea
-                    value={formMessage}
-                    onChange={(e) => setFormMessage(e.target.value)}
-                    placeholder={ui("form_message")}
-                    rows={4}
-                    className="resize-none border-gray-200 focus:border-black focus:ring-black text-xs"
-                  />
-                  <Button
-                    onClick={handleFormSubmit}
-                    disabled={!formEmail.trim() || !formMessage.trim()}
-                    className="w-full bg-black hover:bg-gray-800 text-white text-xs"
-                  >
-                    {ui("form_submit")}
-                  </Button>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full gap-3">
-                  <CheckCircle className="w-10 h-10 text-green-500" />
-                  <p className="text-sm text-gray-600 text-center">
-                    {ui("form_thanks")}
-                  </p>
-                </div>
-              )}
-            </div>
           )}
 
           {/* ── QR案内（再取得はマイページで自己解決・chat は案内のみ） ── */}
@@ -678,6 +606,30 @@ export default function ChatWidgetFirebase() {
                   <div ref={bottomRef} />
                 </div>
               </ScrollArea>
+
+              {/* エスカレーション: 直近のAI回答が未解決なら問い合わせフォームへ誘導 */}
+              {(() => {
+                const lastAi = [...messages]
+                  .reverse()
+                  .find((m) => m.role === "ai");
+                if (!lastAi || lastAi.resolved !== false) return null;
+                return (
+                  <div className="px-3 pt-2 flex-shrink-0">
+                    <Button
+                      onClick={() =>
+                        window.open(
+                          CONTACT_FORM_URL,
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                      className="w-full bg-black hover:bg-gray-800 text-white text-xs"
+                    >
+                      {CONTACT_LABEL[language] ?? CONTACT_LABEL.en}
+                    </Button>
+                  </div>
+                );
+              })()}
 
               {/* 入力エリア */}
               <div className="border-t border-gray-100 px-3 py-2 flex items-end gap-2 flex-shrink-0">
