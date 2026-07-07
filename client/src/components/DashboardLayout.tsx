@@ -26,6 +26,8 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { useAdminAuth } from "@/contexts/AuthContext";
+import { useCollection } from "@/hooks/useFirestoreAdmin";
+import { where } from "firebase/firestore";
 import { YahLogo } from "@/components/YahLogo";
 
 export type SidebarItem = {
@@ -237,6 +239,12 @@ function DashboardLayoutContent({
   const activeMenuItem = sidebarItems.find((item) => item.href === location);
   const isMobile = useIsMobile();
 
+  // 承認待ちRAG下書き（isActive:false）の件数 → サイドバーにバッジ表示
+  const { docs: pendingRagDocs } = useCollection("chat_rag_documents", [
+    where("isActive", "==", false),
+  ]);
+  const pendingRagCount = pendingRagDocs.length;
+
   useEffect(() => {
     if (isCollapsed) setIsResizing(false);
   }, [isCollapsed]);
@@ -310,6 +318,14 @@ function DashboardLayoutContent({
                     >
                       <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
                       <span>{item.title}</span>
+                      {item.href === "/admin/rag" && pendingRagCount > 0 && (
+                        <span
+                          title={`${pendingRagCount} 件の承認待ち`}
+                          className="ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500 text-white"
+                        >
+                          {pendingRagCount}
+                        </span>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
