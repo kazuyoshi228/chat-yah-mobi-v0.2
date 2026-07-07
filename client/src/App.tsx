@@ -18,7 +18,6 @@ import BigKPIs from "@/pages/admin/BigKPIsFirebase";
 import AdminRag from "@/pages/admin/AdminRagFirebase";
 import AdminChatList from "@/pages/admin/AdminChatListFirebase";
 import AdminFlowTree from "@/pages/admin/AdminFlowTreeFirebase";
-import AdminQuickReplies from "@/pages/admin/AdminQuickRepliesFirebase";
 import AdminFeedback from "@/pages/admin/AdminFeedbackFirebase";
 import Hospitality from "@/pages/admin/HospitalityFirebase";
 
@@ -39,7 +38,6 @@ export default function App() {
         <Route path="/admin/dashboard" component={BigKPIs} />
         <Route path="/admin/chats" component={AdminChatList} />
         <Route path="/admin/rag" component={AdminRag} />
-        <Route path="/admin/quick-replies" component={AdminQuickReplies} />
         <Route path="/admin/feedback" component={AdminFeedback} />
         <Route path="/admin/flow-tree" component={AdminFlowTree} />
         <Route path="/admin/hospitality" component={Hospitality} />

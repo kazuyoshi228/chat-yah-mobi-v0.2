@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useIsMobile } from "@/hooks/useMobile";
-import { LogOut, PanelLeft, MessageCircle, BookOpen, Zap, Star, GitBranch, Target, ShieldCheck, Heart } from "lucide-react";
+import { LogOut, PanelLeft, MessageCircle, BookOpen, Star, GitBranch, Target, ShieldCheck, Heart } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -37,7 +37,6 @@ export type SidebarItem = {
 const DEFAULT_ADMIN_ITEMS: SidebarItem[] = [
   { title: "Big KPIs", href: "/admin", icon: Target },
   { title: "Chat List", href: "/admin/chats", icon: MessageCircle },
-  { title: "Quick Replies", href: "/admin/quick-replies", icon: Zap },
   { title: "RAG Documents", href: "/admin/rag", icon: BookOpen },
   { title: "Feedback", href: "/admin/feedback", icon: Star },
   { title: "Flow Tree", href: "/admin/flow-tree", icon: GitBranch },
