@@ -10,8 +10,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import NotFound from "@/pages/NotFound";
 import WidgetChat from "@/pages/WidgetChat";
 import RootRedirect from "@/pages/RootRedirect";
-import WidgetAuthSuccess from "@/pages/WidgetAuthSuccess";
-import CheckIn from "@/pages/CheckIn";
 
 // Admin pages（中核のみ・Firebase版）
 import BigKPIs from "@/pages/admin/BigKPIsFirebase";
@@ -27,11 +25,9 @@ export default function App() {
       <Switch>
         {/* Root */}
         <Route path="/" component={RootRedirect} />
-        <Route path="/checkin" component={CheckIn} />
 
         {/* Embeddable widget (認証不要) */}
         <Route path="/widget-chat" component={WidgetChat} />
-        <Route path="/widget-auth-success" component={WidgetAuthSuccess} />
 
         {/* Admin portal（中核のみ・DashboardLayout内で認証チェック） */}
         <Route path="/admin" component={BigKPIs} />
