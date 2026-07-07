@@ -104,7 +104,40 @@ exports.dataRetentionPurge = (0, scheduler_1.onSchedule)({
     catch (error) {
         console.error("chat_agent_logs 保持削除エラー:", error);
     }
+    // ── レート制限カウンタ（chat_rate_limits）の古いドキュメント削除（肥大防止） ──
+    try {
+        const purged = await purgeOldRateLimits(now);
+        if (purged > 0)
+            console.log(`データ保持: chat_rate_limits ${purged} 件を削除`);
+    }
+    catch (error) {
+        console.error("chat_rate_limits 保持削除エラー:", error);
+    }
 });
+/**
+ * chat_rate_limits（日次/分次カウンタ）の古いドキュメントを削除（3日より前）
+ */
+async function purgeOldRateLimits(now) {
+    const cutoff = admin.firestore.Timestamp.fromMillis(now.toMillis() - 3 * 24 * 60 * 60 * 1000);
+    const collRef = db_1.chatDb.collection("chat_rate_limits");
+    let deleted = 0;
+    let snapshot = await collRef
+        .where("updatedAt", "<=", cutoff)
+        .limit(BATCH_SIZE)
+        .get();
+    while (!snapshot.empty) {
+        const batch = db_1.chatDb.batch();
+        for (const doc of snapshot.docs)
+            batch.delete(doc.ref);
+        await batch.commit();
+        deleted += snapshot.size;
+        snapshot = await collRef
+            .where("updatedAt", "<=", cutoff)
+            .limit(BATCH_SIZE)
+            .get();
+    }
+    return deleted;
+}
 /**
  * chat_agent_logs の保持期限（RETENTION_DAYS）を過ぎたログをバッチ削除
  */

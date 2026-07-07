@@ -29,6 +29,7 @@ import {
   REGION,
   MAX_MESSAGES_PER_SESSION,
   DAILY_AI_LIMIT_PER_VISITOR,
+  AI_RATE_LIMIT_PER_MINUTE,
 } from "../config";
 
 export const onVisitorMessageCreated = onDocumentCreated(
@@ -65,17 +66,36 @@ export const onVisitorMessageCreated = onDocumentCreated(
     const visitorLanguage = (session.language as string) || "ja";
 
     try {
-      // ── Step 0: コスト保護（訪問者ごとの日次レート制限・Firestore カウンタ） ──
-      const withinLimit = await checkDailyRateLimit(visitorId);
-      if (!withinLimit) {
-        console.warn(`レート制限超過: visitor=${visitorId}`);
+      // ── Step 0a: コスト保護（短時間の連投＝1分あたりの上限） ──
+      const withinBurst = await checkBurstRateLimit(visitorId);
+      if (!withinBurst) {
+        console.warn(`バースト制限超過: visitor=${visitorId}`);
         await chatDb
           .collection(`chat_sessions/${sessionId}/chat_messages`)
           .add({
             role: "ai",
             content:
-              "本日のご利用上限に達しました。お手数ですが、明日以降に再度お試しください。",
-            resolved: false,
+              "メッセージの送信が速すぎます。少し時間をおいてからお試しください。/ You're sending messages too quickly. Please wait a moment and try again.",
+            resolved: true, // システム通知（未解決/エスカレーション扱いにしない）
+            directToContact: false,
+            language: visitorLanguage,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        return;
+      }
+
+      // ── Step 0b: コスト保護（訪問者ごとの日次レート制限・Firestore カウンタ） ──
+      const withinLimit = await checkDailyRateLimit(visitorId);
+      if (!withinLimit) {
+        console.warn(`日次レート制限超過: visitor=${visitorId}`);
+        await chatDb
+          .collection(`chat_sessions/${sessionId}/chat_messages`)
+          .add({
+            role: "ai",
+            content:
+              "本日のご利用上限に達しました。お手数ですが、明日以降に再度お試しください。/ You've reached today's usage limit. Please try again tomorrow.",
+            resolved: true, // システム通知（未解決/エスカレーション扱いにしない）
+            directToContact: false,
             language: visitorLanguage,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
           });
@@ -216,6 +236,33 @@ function classifyFailure(
     return "account_or_emotional";
   }
   return "answer_quality";
+}
+
+/**
+ * バースト制限 — 直近1分あたりの上限。chat_rate_limits/{visitorId}_min_{yyyymmddHHMM} を加算。
+ * 短時間の連投（無駄打ち/濫用）を抑える。
+ */
+async function checkBurstRateLimit(visitorId: string): Promise<boolean> {
+  const minuteKey = new Date()
+    .toISOString()
+    .slice(0, 16)
+    .replace(/[-:T]/g, ""); // yyyymmddHHMM
+  const ref = chatDb.doc(`chat_rate_limits/${visitorId}_min_${minuteKey}`);
+
+  return chatDb.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const count = (snap.exists ? (snap.data()?.count as number) : 0) || 0;
+    if (count >= AI_RATE_LIMIT_PER_MINUTE) return false;
+    tx.set(
+      ref,
+      {
+        count: count + 1,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return true;
+  });
 }
 
 /**

@@ -21,6 +21,9 @@ export const MAX_MESSAGES_PER_SESSION = 100;
 /** AI コスト保護: 訪問者ごとの 1 日あたり AI 応答上限（Firestore カウンタ） */
 export const DAILY_AI_LIMIT_PER_VISITOR = 50;
 
+/** AI コスト保護: 訪問者ごとの 1 分あたり AI 応答上限（連投抑制） */
+export const AI_RATE_LIMIT_PER_MINUTE = 6;
+
 /** データ保持期限 */
 export const RETENTION_DAYS = 365 * 2; // 2年
 

@@ -6,7 +6,7 @@
  * 全て GCP プロジェクト内のサービスアカウント認証。
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VERTEX_LOCATION = exports.GCP_PROJECT_ID = exports.REGION = exports.SHEETS_JOURNAL_ID = exports.ADMIN_BASE_URL = exports.APPROVAL_EMAIL = exports.ADMIN_EMAIL = exports.RETENTION_DAYS = exports.DAILY_AI_LIMIT_PER_VISITOR = exports.MAX_MESSAGES_PER_SESSION = exports.MAX_MESSAGE_LENGTH = exports.RAG_DISTANCE_THRESHOLD = exports.RAG_TOP_K = exports.EMBEDDING_DIMENSION = exports.GEMINI_EMBEDDING_MODEL = exports.GEMINI_MODEL = void 0;
+exports.VERTEX_LOCATION = exports.GCP_PROJECT_ID = exports.REGION = exports.SHEETS_JOURNAL_ID = exports.ADMIN_BASE_URL = exports.APPROVAL_EMAIL = exports.ADMIN_EMAIL = exports.RETENTION_DAYS = exports.AI_RATE_LIMIT_PER_MINUTE = exports.DAILY_AI_LIMIT_PER_VISITOR = exports.MAX_MESSAGES_PER_SESSION = exports.MAX_MESSAGE_LENGTH = exports.RAG_DISTANCE_THRESHOLD = exports.RAG_TOP_K = exports.EMBEDDING_DIMENSION = exports.GEMINI_EMBEDDING_MODEL = exports.GEMINI_MODEL = void 0;
 /** Gemini モデル設定 */
 exports.GEMINI_MODEL = "gemini-2.5-flash";
 exports.GEMINI_EMBEDDING_MODEL = "text-embedding-004";
@@ -19,6 +19,8 @@ exports.MAX_MESSAGE_LENGTH = 2000;
 exports.MAX_MESSAGES_PER_SESSION = 100;
 /** AI コスト保護: 訪問者ごとの 1 日あたり AI 応答上限（Firestore カウンタ） */
 exports.DAILY_AI_LIMIT_PER_VISITOR = 50;
+/** AI コスト保護: 訪問者ごとの 1 分あたり AI 応答上限（連投抑制） */
+exports.AI_RATE_LIMIT_PER_MINUTE = 6;
 /** データ保持期限 */
 exports.RETENTION_DAYS = 365 * 2; // 2年
 /** Admin メールアドレス（エスカレーション通知先） */
