@@ -386,7 +386,7 @@ export default function ChatWidgetFirebase() {
 
           {/* ── デシジョンツリーフロー ── */}
           {widgetState === "flow" && !showQrGuide && (
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-4 flex flex-col gap-3">
                 {currentNode && (
                   <>
@@ -552,7 +552,7 @@ export default function ChatWidgetFirebase() {
           {/* ── AIチャット ── */}
           {widgetState === "chat" && (
             <>
-              <ScrollArea className="flex-1 px-3 py-3">
+              <ScrollArea className="flex-1 min-h-0 px-3 py-3">
                 <div className="space-y-2">
                   {messages.map((msg, i) => {
                     const isVisitor = msg.role === "visitor";

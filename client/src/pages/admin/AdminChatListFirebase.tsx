@@ -23,6 +23,7 @@ interface ChatMessage {
   id: string;
   role: string;
   content: string;
+  resolved?: boolean;
   createdAt: unknown;
 }
 
@@ -55,6 +56,7 @@ export default function AdminChatListFirebase() {
       setMessages(
         snap.docs.map((d) => ({ id: d.id, ...d.data() } as ChatMessage))
       );
+      // ↑ resolved も d.data() から取り込まれる（ChatMessage に resolved を追加済み）
       setMessagesLoading(false);
     });
 
@@ -166,6 +168,18 @@ export default function AdminChatListFirebase() {
                       )}>
                         {s.status === "active" ? "アクティブ" : "終了"}
                       </span>
+                      {s.escalated && (
+                        <span
+                          className={cn(
+                            "text-[10px] px-1.5 py-0.5 rounded-full ml-1 flex-shrink-0",
+                            selectedId === s.id
+                              ? "bg-white/20 text-white/90"
+                              : "bg-red-50 text-red-600"
+                          )}
+                        >
+                          📮 フォーム誘導
+                        </span>
+                      )}
                       {s.summary && (
                         <span className={cn(
                           "text-xs truncate ml-1",
@@ -227,36 +241,49 @@ export default function AdminChatListFirebase() {
                   <div className="space-y-3">
                     {messages.map((msg) => {
                       const isVisitor = msg.role === "visitor";
+                      const directedToContact =
+                        msg.role === "ai" && msg.resolved === false;
                       return (
-                        <div
-                          key={msg.id}
-                          className={cn(
-                            "flex items-end gap-2",
-                            isVisitor ? "flex-row-reverse" : "flex-row"
-                          )}
-                        >
-                          {!isVisitor && (
-                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                              <Bot className="w-3 h-3 text-gray-500" />
-                            </div>
-                          )}
-                          {isVisitor && (
-                            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 text-blue-600" />
-                            </div>
-                          )}
+                        <div key={msg.id}>
                           <div
                             className={cn(
-                              "max-w-[70%] rounded-xl px-3 py-2 text-xs",
-                              isVisitor
-                                ? "bg-blue-600 text-white rounded-br-sm"
-                                : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                              "flex items-end gap-2",
+                              isVisitor ? "flex-row-reverse" : "flex-row"
                             )}
                           >
-                            <p className="whitespace-pre-wrap leading-relaxed">
-                              {msg.content}
-                            </p>
+                            {!isVisitor && (
+                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                <Bot className="w-3 h-3 text-gray-500" />
+                              </div>
+                            )}
+                            {isVisitor && (
+                              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <User className="w-3 h-3 text-blue-600" />
+                              </div>
+                            )}
+                            <div
+                              className={cn(
+                                "max-w-[70%] rounded-xl px-3 py-2 text-xs",
+                                isVisitor
+                                  ? "bg-blue-600 text-white rounded-br-sm"
+                                  : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                              )}
+                            >
+                              <p className="whitespace-pre-wrap leading-relaxed">
+                                {msg.content}
+                              </p>
+                            </div>
                           </div>
+                          {/* エスカレーション: このAI回答で問い合わせフォームへ誘導した印 */}
+                          {directedToContact && (
+                            <div className="flex items-center gap-2 my-2">
+                              <div className="flex-1 h-px bg-red-200" />
+                              <span className="text-[10px] text-red-600 whitespace-nowrap">
+                                📮 お問い合わせフォームへ誘導（エスカレーション）
+                              </span>
+                              <div className="flex-1 h-px bg-red-200" />
+                            </div>
+                          )}
                         </div>
                       );
                     })}

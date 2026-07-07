@@ -293,6 +293,10 @@ async function buildCustomerContext(visitorId) {
  *  - 自前メール／Sheets 記録は廃止（二重通知回避）。未解決の詳細は chat_agent_logs に記録済み
  */
 async function handleEscalation(sessionRef) {
-    await sessionRef.update({ escalated: true });
+    await sessionRef.update({
+        escalated: true,
+        escalationType: "contact_form", // 問い合わせフォームへ誘導した、の意味
+        escalatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 }
 //# sourceMappingURL=onVisitorMessageCreated.js.map

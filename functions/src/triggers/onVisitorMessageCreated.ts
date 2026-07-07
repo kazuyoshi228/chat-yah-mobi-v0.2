@@ -318,5 +318,9 @@ async function buildCustomerContext(visitorId: string): Promise<string> {
 async function handleEscalation(
   sessionRef: admin.firestore.DocumentReference
 ): Promise<void> {
-  await sessionRef.update({ escalated: true });
+  await sessionRef.update({
+    escalated: true,
+    escalationType: "contact_form", // 問い合わせフォームへ誘導した、の意味
+    escalatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 }
