@@ -41,6 +41,14 @@
           "vectorConfig": { "dimension": 768, "flat": {} }
         }
       ]
+    },
+    {
+      "collectionGroup": "chat_agent_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "failureBucket", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

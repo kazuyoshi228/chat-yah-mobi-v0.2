@@ -13,7 +13,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import { chatDb as db } from "../db";
-import { REGION } from "../config";
+import { REGION, RETENTION_DAYS } from "../config";
 
 /** バッチ削除の上限（Firestore の制限: 500） */
 const BATCH_SIZE = 450;
@@ -73,8 +73,45 @@ export const dataRetentionPurge = onSchedule(
     } catch (error) {
       console.error("データ保持ジョブエラー:", error);
     }
+
+    // ── 監査ログ（chat_agent_logs）の保持期限削除 ──
+    try {
+      const purged = await purgeOldAgentLogs(now);
+      if (purged > 0) console.log(`データ保持: chat_agent_logs ${purged} 件を削除`);
+    } catch (error) {
+      console.error("chat_agent_logs 保持削除エラー:", error);
+    }
   }
 );
+
+/**
+ * chat_agent_logs の保持期限（RETENTION_DAYS）を過ぎたログをバッチ削除
+ */
+async function purgeOldAgentLogs(
+  now: admin.firestore.Timestamp
+): Promise<number> {
+  const cutoff = admin.firestore.Timestamp.fromMillis(
+    now.toMillis() - RETENTION_DAYS * 24 * 60 * 60 * 1000
+  );
+  const collRef = db.collection("chat_agent_logs");
+  let deleted = 0;
+  let snapshot = await collRef
+    .where("createdAt", "<=", cutoff)
+    .limit(BATCH_SIZE)
+    .get();
+
+  while (!snapshot.empty) {
+    const batch = db.batch();
+    for (const doc of snapshot.docs) batch.delete(doc.ref);
+    await batch.commit();
+    deleted += snapshot.size;
+    snapshot = await collRef
+      .where("createdAt", "<=", cutoff)
+      .limit(BATCH_SIZE)
+      .get();
+  }
+  return deleted;
+}
 
 /**
  * サブコレクション内のドキュメントをバッチ削除

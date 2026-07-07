@@ -52,6 +52,7 @@ const admin = __importStar(require("firebase-admin"));
 const googleapis_1 = require("googleapis");
 const db_1 = require("../db");
 const ai_1 = require("../utils/ai");
+const mail_1 = require("../utils/mail");
 const config_1 = require("../config");
 exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
     document: "chat_sessions/{sessionId}/chat_messages/{messageId}",
@@ -65,7 +66,7 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
     if (!snap)
         return;
     const data = snap.data();
-    const { sessionId } = event.params;
+    const { sessionId, messageId } = event.params;
     // ── ガード: visitor のメッセージのみ処理 ──
     if (data.role !== "visitor")
         return;
@@ -127,6 +128,29 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
             language: aiResponse.language,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
+        // ── Step 6.5: 監査ログ（失敗分析用・chat_agent_logs） ──
+        //   解決率・原因別クラスタ・会話/原因RAGリンクの元データ。
+        //   ログ失敗が本体フローを止めないよう独立 try/catch。
+        try {
+            const ragHitCount = ragResults.length;
+            await db_1.chatDb.collection("chat_agent_logs").add({
+                sessionId,
+                messageId,
+                visitorId,
+                language: aiResponse.language,
+                question: data.content.slice(0, 1000),
+                answer: aiResponse.answer.slice(0, 1000),
+                resolved: aiResponse.resolved,
+                ragHitCount,
+                ragTopId: ragResults[0]?.id ?? null,
+                ragTopScore: ragResults[0]?.score ?? null,
+                failureBucket: classifyFailure(aiResponse.resolved, ragHitCount, data.content, aiResponse.escalationReason),
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
+        catch (logErr) {
+            console.error("chat_agent_logs 記録エラー:", logErr);
+        }
         // ── Step 7: エスカレーション判定 ──
         if (!aiResponse.resolved) {
             await handleEscalation(sessionId, visitorId, aiResponse, sessionRef);
@@ -144,6 +168,32 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
         });
     }
 });
+/**
+ * 失敗の原因分類（ルールベース・追加API無し）
+ * - resolved            : 解決（失敗ではない）
+ * - knowledge_gap       : RAGヒット0（該当知識なし＝L1自動ドラフトの対象）
+ * - account_or_emotional: 注文/eSIM/返金/怒り/人間希望 等（AI単独では不可の領域）
+ * - answer_quality      : 上記以外の未解決（文書はあるが解決に至らず）
+ */
+function classifyFailure(resolved, ragHitCount, question, escalationReason) {
+    if (resolved)
+        return "resolved";
+    if (ragHitCount === 0)
+        return "knowledge_gap";
+    const t = `${question} ${escalationReason}`.toLowerCase();
+    const ACCOUNT_OR_EMOTIONAL = [
+        // アカウント個別（AIでは実行不可）
+        "注文", "order", "返金", "払い戻", "refund", "退款", "환불", "hoàn tiền",
+        "esim", "iccid", "残量", "データ量", "使い切", "有効期限", "expire",
+        // 感情/人間希望
+        "最悪", "怒", "ふざけ", "詐欺", "terrible", "worst", "angry", "scam",
+        "担当", "オペレーター", "人間", "human", "operator", "agent",
+    ];
+    if (ACCOUNT_OR_EMOTIONAL.some((k) => t.includes(k))) {
+        return "account_or_emotional";
+    }
+    return "answer_quality";
+}
 /**
  * 日次レート制限 — chat DB の chat_rate_limits/{visitorId_yyyymmdd} をトランザクションで加算
  * （client からは default deny で触れない。Fn のみが書く）
@@ -240,37 +290,19 @@ async function handleEscalation(sessionId, visitorId, aiResponse, sessionRef) {
             userSnap.data()?.name ||
             "匿名"
         : "匿名";
-    // ── Gmail API: Admin にエスカレーション通知 ──
-    try {
-        const auth = new googleapis_1.google.auth.GoogleAuth({
-            scopes: ["https://www.googleapis.com/auth/gmail.send"],
-        });
-        const gmail = googleapis_1.google.gmail({ version: "v1", auth });
-        const subject = `[yah.mobi チャット] エスカレーション: ${customerName}`;
-        const body = [
+    // ── Gmail: Admin にエスカレーション通知（共通 sendGmail を使用） ──
+    await (0, mail_1.sendGmail)({
+        to: config_1.ADMIN_EMAIL,
+        subject: `[yah.mobi チャット] エスカレーション: ${customerName}`,
+        body: [
             `セッションID: ${sessionId}`,
             `顧客: ${customerName}`,
             `理由: ${aiResponse.escalationReason}`,
             `AI回答: ${aiResponse.answer.substring(0, 200)}...`,
             "",
-            `管理画面: https://chat.yah.mobi/admin/sessions/${sessionId}`,
-        ].join("\n");
-        const raw = Buffer.from(`To: ${config_1.ADMIN_EMAIL}\r\n` +
-            `Subject: =?UTF-8?B?${Buffer.from(subject).toString("base64")}?=\r\n` +
-            `Content-Type: text/plain; charset=UTF-8\r\n\r\n` +
-            body)
-            .toString("base64")
-            .replace(/\+/g, "-")
-            .replace(/\//g, "_")
-            .replace(/=+$/, "");
-        await gmail.users.messages.send({
-            userId: "me",
-            requestBody: { raw },
-        });
-    }
-    catch (error) {
-        console.error("エスカレーションメール送信エラー:", error);
-    }
+            `管理画面: ${config_1.ADMIN_BASE_URL}/admin/chats?session=${sessionId}`,
+        ].join("\n"),
+    });
     // ── Google Sheets API: 仕訳帳に記録 ──
     if (config_1.SHEETS_JOURNAL_ID) {
         try {

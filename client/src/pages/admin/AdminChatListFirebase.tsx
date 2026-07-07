@@ -34,6 +34,12 @@ export default function AdminChatListFirebase() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [customerName, setCustomerName] = useState<string>("");
 
+  // ディープリンク（失敗分析の「会話を見る」→ ?session=<id>）
+  useEffect(() => {
+    const sid = new URLSearchParams(window.location.search).get("session");
+    if (sid) setSelectedId(sid);
+  }, []);
+
   // 選択セッションのメッセージをリアルタイム監視
   useEffect(() => {
     if (!selectedId) {

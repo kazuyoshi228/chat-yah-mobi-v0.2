@@ -2,7 +2,7 @@
  * AdminRagFirebase — RAG ドキュメント管理画面（Firestore版）
  * tRPC → Firestore SDK 直接
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { orderBy } from "firebase/firestore";
 import { useCollection, useAddDoc, useUpdateDoc, useDeleteDoc } from "@/hooks/useFirestoreAdmin";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2, BookOpen, Globe, AlertTriangle } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, BookOpen, Globe, AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -47,9 +47,12 @@ interface RagDoc {
   content: string;
   category?: string;
   isActive?: boolean;
+  source?: string;
   createdAt?: unknown;
   updatedAt?: unknown;
 }
+
+type StatusView = "published" | "pending";
 
 export default function AdminRagFirebase() {
   const { docs, loading, error } = useCollection("chat_rag_documents", [orderBy("createdAt", "desc")]);
@@ -64,11 +67,21 @@ export default function AdminRagFirebase() {
   const [category, setCategory] = useState("");
   const [langFilter, setLangFilter] = useState<LangFilter>("all");
   const [search, setSearch] = useState("");
+  const [statusView, setStatusView] = useState<StatusView>("published");
+  const [deepLinkDocId, setDeepLinkDocId] = useState<string | null>(null);
 
   const ragDocs = docs as unknown as RagDoc[];
 
+  const pendingCount = useMemo(
+    () => ragDocs.filter((d) => d.isActive === false).length,
+    [ragDocs]
+  );
+
   const filtered = useMemo(() => {
-    let result = ragDocs;
+    // 承認待ち（下書き = isActive:false）と公開を分ける
+    let result = ragDocs.filter((d) =>
+      statusView === "pending" ? d.isActive === false : d.isActive !== false
+    );
     if (langFilter !== "all") {
       result = result.filter(
         (d) => detectLanguage(`${d.title} ${d.content}`) === langFilter
@@ -83,7 +96,33 @@ export default function AdminRagFirebase() {
       );
     }
     return result;
-  }, [ragDocs, langFilter, search]);
+  }, [ragDocs, statusView, langFilter, search]);
+
+  // ── ディープリンク（?filter=pending / ?draft=... / ?doc=...） ──
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("filter") === "pending") setStatusView("pending");
+    const draft = p.get("draft");
+    if (draft) {
+      setEditingDoc(null);
+      setTitle(draft.slice(0, 60));
+      setContent(draft);
+      setCategory("");
+      setDialogOpen(true);
+    }
+    const docId = p.get("doc");
+    if (docId) setDeepLinkDocId(docId);
+  }, []);
+
+  // ?doc= は docs 読み込み後に対象を探して編集ダイアログを開く
+  useEffect(() => {
+    if (!deepLinkDocId) return;
+    const found = ragDocs.find((d) => d.id === deepLinkDocId);
+    if (found) {
+      openEdit(found);
+      setDeepLinkDocId(null);
+    }
+  }, [deepLinkDocId, ragDocs]);
 
   const openCreate = () => {
     setEditingDoc(null);
@@ -104,7 +143,14 @@ export default function AdminRagFirebase() {
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) return;
     try {
-      const data = { title: title.trim(), content: content.trim(), category: category.trim(), isActive: true };
+      // 編集時は公開状態を維持（下書きは下書きのまま。公開は [公開] ボタンで行う）
+      const isActive = editingDoc ? editingDoc.isActive !== false : true;
+      const data = {
+        title: title.trim(),
+        content: content.trim(),
+        category: category.trim(),
+        isActive,
+      };
       if (editingDoc) {
         await updateDocument(editingDoc.id, data);
         toast.success("ドキュメントを更新しました");
@@ -128,6 +174,27 @@ export default function AdminRagFirebase() {
     }
   };
 
+  // 下書きを公開（isActive:true）→ onRagDocumentWritten が本番検索に載せる
+  const handlePublish = async (id: string) => {
+    try {
+      await updateDocument(id, { isActive: true });
+      toast.success("公開しました（本番AIが参照します）");
+    } catch {
+      toast.error("公開に失敗しました");
+    }
+  };
+
+  // 下書きを却下（削除）
+  const handleReject = async (id: string) => {
+    if (!confirm("この下書きを却下（削除）しますか？")) return;
+    try {
+      await deleteDocument(id);
+      toast.success("却下しました");
+    } catch {
+      toast.error("却下に失敗しました");
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -143,6 +210,42 @@ export default function AdminRagFirebase() {
             <Plus className="w-4 h-4 mr-2" />
             新規追加
           </Button>
+        </div>
+
+        {/* 公開 / 承認待ち 切替 */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setStatusView("published")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+              statusView === "published"
+                ? "bg-black text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            )}
+          >
+            公開中
+          </button>
+          <button
+            onClick={() => setStatusView("pending")}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5",
+              statusView === "pending"
+                ? "bg-amber-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            )}
+          >
+            承認待ち（下書き）
+            {pendingCount > 0 && (
+              <span
+                className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-full",
+                  statusView === "pending" ? "bg-white/25" : "bg-amber-500 text-white"
+                )}
+              >
+                {pendingCount}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* フィルター */}
@@ -206,6 +309,11 @@ export default function AdminRagFirebase() {
                           {doc.category}
                         </span>
                       )}
+                      {doc.source === "auto_draft" && (
+                        <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                          自動生成
+                        </span>
+                      )}
                       <span className="text-xs text-muted-foreground">
                         <Globe className="w-3 h-3 inline mr-0.5" />
                         {detectLanguage(`${doc.title} ${doc.content}`).toUpperCase()}
@@ -223,13 +331,34 @@ export default function AdminRagFirebase() {
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(doc.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                    </Button>
+                    {statusView === "pending" ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handlePublish(doc.id)}
+                          title="公開する"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleReject(doc.id)}
+                          title="却下する"
+                        >
+                          <X className="w-3.5 h-3.5 text-red-500" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(doc.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

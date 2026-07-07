@@ -6,7 +6,7 @@
  * 全て GCP プロジェクト内のサービスアカウント認証。
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VERTEX_LOCATION = exports.GCP_PROJECT_ID = exports.REGION = exports.SHEETS_JOURNAL_ID = exports.ADMIN_EMAIL = exports.RETENTION_DAYS = exports.DAILY_AI_LIMIT_PER_VISITOR = exports.MAX_MESSAGES_PER_SESSION = exports.MAX_MESSAGE_LENGTH = exports.RAG_DISTANCE_THRESHOLD = exports.RAG_TOP_K = exports.EMBEDDING_DIMENSION = exports.GEMINI_EMBEDDING_MODEL = exports.GEMINI_MODEL = void 0;
+exports.VERTEX_LOCATION = exports.GCP_PROJECT_ID = exports.REGION = exports.SHEETS_JOURNAL_ID = exports.ADMIN_BASE_URL = exports.APPROVAL_EMAIL = exports.ADMIN_EMAIL = exports.RETENTION_DAYS = exports.DAILY_AI_LIMIT_PER_VISITOR = exports.MAX_MESSAGES_PER_SESSION = exports.MAX_MESSAGE_LENGTH = exports.RAG_DISTANCE_THRESHOLD = exports.RAG_TOP_K = exports.EMBEDDING_DIMENSION = exports.GEMINI_EMBEDDING_MODEL = exports.GEMINI_MODEL = void 0;
 /** Gemini モデル設定 */
 exports.GEMINI_MODEL = "gemini-2.5-flash";
 exports.GEMINI_EMBEDDING_MODEL = "text-embedding-004";
@@ -23,6 +23,10 @@ exports.DAILY_AI_LIMIT_PER_VISITOR = 100;
 exports.RETENTION_DAYS = 365 * 2; // 2年
 /** Admin メールアドレス（エスカレーション通知先） */
 exports.ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@yah.mobi";
+/** RAG下書き承認の通知先（L1: 週次バッチが下書き生成時にメール） */
+exports.APPROVAL_EMAIL = process.env.APPROVAL_EMAIL || "kazuyoshi.yamada@bonfire.co.jp";
+/** 管理画面のベースURL（メール本文のリンク用） */
+exports.ADMIN_BASE_URL = process.env.ADMIN_BASE_URL || "https://chat.yah.mobi";
 /** Google Sheets 仕訳帳 ID */
 exports.SHEETS_JOURNAL_ID = process.env.SHEETS_JOURNAL_ID || "";
 /** Firebase リージョン */

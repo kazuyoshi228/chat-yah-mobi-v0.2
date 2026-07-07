@@ -16,6 +16,7 @@ exports.loadHospitalityGuidelines = loadHospitalityGuidelines;
 exports.searchRAG = searchRAG;
 exports.generateAIResponse = generateAIResponse;
 exports.generateSummary = generateSummary;
+exports.generateRagDraft = generateRagDraft;
 exports.generateEmbedding = generateEmbedding;
 const genai_1 = require("@google/genai");
 const db_1 = require("../db");
@@ -122,25 +123,33 @@ async function loadHospitalityGuidelines(visitorMessage) {
 }
 /**
  * RAG ハイブリッド検索: Vector Search（findNearest）
+ *
+ * 戻り値に文書ID（id）も含める（失敗分析ログ／原因RAGリンク用）。
+ * 承認待ちの下書き（isActive===false）は本番検索から除外する。
+ * ※ isActive 未設定のレガシー文書は残す（= isActive !== false のみ除外）。
  */
 async function searchRAG(query) {
     // 1. クエリの Embedding 生成
     const queryEmbedding = await generateEmbedding(query);
     // 2. Firestore Vector Search (findNearest)
+    //    下書き除外で件数が目減りしても TOP_K を満たせるよう少し多めに取得
     const ragRef = db_1.chatDb.collection("chat_rag_documents");
     const vectorResults = await ragRef
         .findNearest("embedding", queryEmbedding, {
-        limit: config_1.RAG_TOP_K,
+        limit: config_1.RAG_TOP_K + 5,
         distanceMeasure: "COSINE",
     })
         .get();
-    // distanceThreshold フィルタリングは取得後に実施
+    // 下書き除外 → 距離しきい値 → TOP_K に整形
     return vectorResults.docs
+        .filter((doc) => doc.data().isActive !== false)
         .map((doc) => ({
+        id: doc.id,
         content: doc.data().content,
         score: doc.data().distance ?? 0,
     }))
-        .filter((r) => r.score <= config_1.RAG_DISTANCE_THRESHOLD);
+        .filter((r) => r.score <= config_1.RAG_DISTANCE_THRESHOLD)
+        .slice(0, config_1.RAG_TOP_K);
 }
 /**
  * Gemini でAI回答を生成（翻訳も兼用）
@@ -205,6 +214,63 @@ async function generateSummary(messages) {
         contents: `以下のチャット会話を日本語で3行以内に要約してください。\n\n${conversation}`,
     });
     return response.text ?? "";
+}
+/** RAG下書き（L1自動生成）の構造化出力スキーマ */
+const ragDraftSchema = {
+    type: genai_1.Type.OBJECT,
+    properties: {
+        title: { type: genai_1.Type.STRING, description: "知識ベースの短いタイトル（日本語）" },
+        category: {
+            type: genai_1.Type.STRING,
+            description: "分類（例: setup, troubleshoot, billing, plan, general）",
+        },
+        content: {
+            type: genai_1.Type.STRING,
+            description: "6言語（日本語/English/中文/한국어/ไทย/Tiếng Việt）で書いた知識ベース本文。各言語を見出し付きで併記する。",
+        },
+    },
+    required: ["title", "category", "content"],
+};
+/**
+ * L1: 知識欠落（RAGヒット0）の代表質問から、RAG知識ベースの「下書き」を自動生成する。
+ *
+ * 🚨 事実の創作を禁止。確定情報が無い箇所は「要確認」と明記させる。
+ *    生成物は必ず isActive:false の下書きとして保存し、公開は人が承認する。
+ * @param sampleQuestions 同種の未解決質問（代表例。言語は混在してよい）
+ */
+async function generateRagDraft(sampleQuestions) {
+    const systemPrompt = `あなたは yah.mobile（海外旅行者向け eSIM）のサポート知識ベース編集者です。
+以下は「AIが回答できなかった（知識ベースに該当が無かった）お客様の質問」の実例です。
+これらに今後AIが正しく答えられるよう、知識ベースの下書きを1本作成してください。
+
+【厳守事項】
+1. 事実を創作しない。料金・手順・提供有無・期限など確定情報が不明な点は、断定せず本文中に「（要確認）」と明記する。
+2. 一般的で普遍的に正しい案内（例: eSIM設定の一般手順、問い合わせ導線）に留め、社内でしか確定できない数値や約束は書かない。
+3. 6言語（日本語 / English / 中文 / 한국어 / ไทย / Tiếng Việt）で併記し、各言語を見出しで区切る。
+4. 簡潔・具体的に。`;
+    const userPrompt = `# 未解決だった質問の実例\n${sampleQuestions
+        .map((q, i) => `${i + 1}. ${q}`)
+        .join("\n")}`;
+    try {
+        const response = await getGenAI().models.generateContent({
+            model: config_1.GEMINI_MODEL,
+            contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+            config: {
+                systemInstruction: systemPrompt,
+                responseMimeType: "application/json",
+                responseSchema: ragDraftSchema,
+            },
+        });
+        const text = response.text ?? "";
+        const parsed = JSON.parse(text);
+        if (!parsed.title || !parsed.content)
+            return null;
+        return parsed;
+    }
+    catch (error) {
+        console.error("RAG下書き生成エラー:", error);
+        return null;
+    }
 }
 /**
  * text-embedding-004 でベクトル生成（768次元）

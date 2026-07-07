@@ -95,7 +95,40 @@ exports.dataRetentionPurge = (0, scheduler_1.onSchedule)({
     catch (error) {
         console.error("データ保持ジョブエラー:", error);
     }
+    // ── 監査ログ（chat_agent_logs）の保持期限削除 ──
+    try {
+        const purged = await purgeOldAgentLogs(now);
+        if (purged > 0)
+            console.log(`データ保持: chat_agent_logs ${purged} 件を削除`);
+    }
+    catch (error) {
+        console.error("chat_agent_logs 保持削除エラー:", error);
+    }
 });
+/**
+ * chat_agent_logs の保持期限（RETENTION_DAYS）を過ぎたログをバッチ削除
+ */
+async function purgeOldAgentLogs(now) {
+    const cutoff = admin.firestore.Timestamp.fromMillis(now.toMillis() - config_1.RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const collRef = db_1.chatDb.collection("chat_agent_logs");
+    let deleted = 0;
+    let snapshot = await collRef
+        .where("createdAt", "<=", cutoff)
+        .limit(BATCH_SIZE)
+        .get();
+    while (!snapshot.empty) {
+        const batch = db_1.chatDb.batch();
+        for (const doc of snapshot.docs)
+            batch.delete(doc.ref);
+        await batch.commit();
+        deleted += snapshot.size;
+        snapshot = await collRef
+            .where("createdAt", "<=", cutoff)
+            .limit(BATCH_SIZE)
+            .get();
+    }
+    return deleted;
+}
 /**
  * サブコレクション内のドキュメントをバッチ削除
  */
