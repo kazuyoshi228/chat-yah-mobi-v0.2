@@ -190,12 +190,16 @@ async function buildCustomerContext(visitorId: string): Promise<string> {
 
   // 顧客プロファイル（(default)/users/{uid}）
   const userSnap = await defaultDb.doc(`users/${visitorId}`).get();
-  if (userSnap.exists) {
-    const u = userSnap.data()!;
-    const name = (u.displayName as string) || (u.name as string) || "不明";
-    parts.push(`顧客名: ${name}`);
+  const uname = userSnap.exists
+    ? ((userSnap.data()?.displayName as string) ||
+        (userSnap.data()?.name as string) ||
+        "")
+    : "";
+  if (uname) {
+    parts.push(`顧客名: ${uname}`);
   } else {
-    parts.push("顧客: 匿名ユーザー");
+    // 名前不明（匿名等）: AI が『匿名ユーザー様』と呼ばないよう明示
+    parts.push("顧客名: 不明（名前が分からないため『お客様』とお呼びする）");
   }
 
   // 購入状況（(default)/orders where userId == uid）
