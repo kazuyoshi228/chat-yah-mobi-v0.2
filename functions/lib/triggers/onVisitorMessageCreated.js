@@ -100,11 +100,16 @@ exports.onVisitorMessageCreated = (0, firestore_1.onDocumentCreated)({
         // ── Step 3: 動的コンテキスト構築（(default) read-only） ──
         //   ＋ 冒頭デシジョンツリーで選ばれた相談メニュー（session.initialMessage）を前置し、
         //     最初の回答が分岐意図に沿うようにする（widget変更なし・非履行）。
-        const baseContext = await buildCustomerContext(visitorId);
+        const { text: baseContext, customerName } = await buildCustomerContext(visitorId);
         const entryIntent = session.initialMessage || "";
         const customerContext = entryIntent
             ? `[Entry menu selected by visitor]: ${entryIntent}\n${baseContext}`
             : baseContext;
+        // 管理画面（chat一覧/詳細）で「誰か」を表示するため、顧客名をセッションへ保存。
+        // ログイン顧客のみ名前が取れる（匿名は空 → 保存しない）。変化時のみ書く。
+        if (customerName && session.customerName !== customerName) {
+            await sessionRef.update({ customerName });
+        }
         // ── Step 4: 会話履歴取得 ──
         const historySnap = await db_1.chatDb
             .collection(`chat_sessions/${sessionId}/chat_messages`)
@@ -286,7 +291,7 @@ async function buildCustomerContext(visitorId) {
         });
         parts.push(`\neSIM status:\n${statuses.join("\n")}`);
     }
-    return parts.join("\n");
+    return { text: parts.join("\n"), customerName: uname };
 }
 /**
  * エスカレーション: chat 側は escalated フラグを立てるだけ。

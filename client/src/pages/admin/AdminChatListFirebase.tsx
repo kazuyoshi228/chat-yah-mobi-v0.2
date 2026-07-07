@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import {
-  collection, query, orderBy, onSnapshot, limit, doc, getDoc,
+  collection, query, orderBy, onSnapshot, limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useChatSessions, type ChatSessionDoc } from "@/hooks/useFirestoreAdmin";
@@ -64,19 +64,14 @@ export default function AdminChatListFirebase() {
     return () => unsubscribe();
   }, [selectedId]);
 
-  // 選択セッションの顧客名取得
+  // 選択セッションの顧客名（onVisitorMessageCreated が session.customerName に保存）
   useEffect(() => {
-    if (!selectedId) return;
+    if (!selectedId) {
+      setCustomerName("");
+      return;
+    }
     const session = sessions.find((s) => s.id === selectedId);
-    if (!session) return;
-
-    getDoc(doc(db, `customerProfiles/${session.visitorId}`)).then((snap) => {
-      if (snap.exists()) {
-        setCustomerName((snap.data().name as string) || "匿名");
-      } else {
-        setCustomerName("匿名ユーザー");
-      }
-    });
+    setCustomerName(session?.customerName || "匿名ユーザー（未ログイン）");
   }, [selectedId, sessions]);
 
   const selectedSession = sessions.find((s) => s.id === selectedId);
@@ -137,8 +132,8 @@ export default function AdminChatListFirebase() {
                     )}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono">
-                        {s.id.slice(0, 12)}...
+                      <span className="text-xs font-medium truncate max-w-[150px]">
+                        {s.customerName || `匿名 · ${s.id.slice(0, 6)}`}
                       </span>
                       <div className="flex gap-1">
                         {s.escalated && (

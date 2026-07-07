@@ -221,6 +221,7 @@ export interface ChatSessionDoc {
   escalated?: boolean;
   escalationType?: string;
   escalatedAt?: Timestamp;
+  customerName?: string;
   summary?: string;
   createdAt: Timestamp;
 }
