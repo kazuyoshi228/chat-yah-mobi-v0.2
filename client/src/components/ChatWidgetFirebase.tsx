@@ -607,12 +607,17 @@ export default function ChatWidgetFirebase() {
                 </div>
               </ScrollArea>
 
-              {/* エスカレーション: 直近のAI回答が未解決なら問い合わせフォームへ誘導 */}
+              {/* エスカレーション: 本当に行き詰まった時だけ問い合わせフォームへ誘導（最後の手段）。
+                  条件: 直近のAI回答が未解決 かつ 会話が1往復以上（挨拶・初手では出さない） */}
               {(() => {
                 const lastAi = [...messages]
                   .reverse()
                   .find((m) => m.role === "ai");
-                if (!lastAi || lastAi.resolved !== false) return null;
+                const visitorTurns = messages.filter(
+                  (m) => m.role === "visitor"
+                ).length;
+                if (!lastAi || lastAi.resolved !== false || visitorTurns < 2)
+                  return null;
                 return (
                   <div className="px-3 pt-2 flex-shrink-0">
                     <Button

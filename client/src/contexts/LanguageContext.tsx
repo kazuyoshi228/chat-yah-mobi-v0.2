@@ -18,15 +18,22 @@ const LanguageContext = createContext<LanguageContextValue>({
 
 const STORAGE_KEY = "yah_chat_lang";
 
-function detectBrowserLang(): Lang {
+const SUPPORTED: Lang[] = ["en", "ja", "zh", "ko", "th", "vi"];
+
+/**
+ * 初期言語の決定。訪日外国人向けサービスのため **既定は英語**。
+ * navigator.language には追従しない（日本語ロケールのブラウザでも英語で開始）。
+ * 明示指定のみ尊重: ①URL ?lang=（埋め込み時の指定）②localStorage（ユーザーが選んだ言語）。
+ */
+function resolveInitialLang(): Lang {
+  try {
+    const p = new URLSearchParams(window.location.search).get("lang");
+    if (p && SUPPORTED.includes(p as Lang)) return p as Lang;
+  } catch {
+    /* ignore */
+  }
   const stored = localStorage.getItem(STORAGE_KEY) as Lang | null;
-  if (stored && ["en", "ja", "zh", "ko", "th", "vi"].includes(stored)) return stored;
-  const nav = navigator.language.toLowerCase();
-  if (nav.startsWith("ja")) return "ja";
-  if (nav.startsWith("zh")) return "zh";
-  if (nav.startsWith("ko")) return "ko";
-  if (nav.startsWith("th")) return "th";
-  if (nav.startsWith("vi")) return "vi";
+  if (stored && SUPPORTED.includes(stored)) return stored;
   return "en";
 }
 
@@ -34,7 +41,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
-    setLangState(detectBrowserLang());
+    setLangState(resolveInitialLang());
   }, []);
 
   const setLang = (newLang: Lang) => {
