@@ -18,7 +18,7 @@ exports.RAG_DISTANCE_THRESHOLD = 0.3; // 類似度閾値
 exports.MAX_MESSAGE_LENGTH = 2000;
 exports.MAX_MESSAGES_PER_SESSION = 100;
 /** AI コスト保護: 訪問者ごとの 1 日あたり AI 応答上限（Firestore カウンタ） */
-exports.DAILY_AI_LIMIT_PER_VISITOR = 100;
+exports.DAILY_AI_LIMIT_PER_VISITOR = 50;
 /** データ保持期限 */
 exports.RETENTION_DAYS = 365 * 2; // 2年
 /** Admin メールアドレス（エスカレーション通知先） */
