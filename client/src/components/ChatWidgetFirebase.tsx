@@ -30,7 +30,7 @@ import { ChatView } from "@/components/widget/ChatView";
 import { QrGuide } from "@/components/widget/QrGuide";
 import { LoginPanel } from "@/components/widget/LoginPanel";
 import { SurveyView } from "@/components/widget/SurveyView";
-import { CONTACT_FORM_URL, AUTH_LABELS, pick } from "@/components/widget/labels";
+import { buildContactUrl, AUTH_LABELS, pick } from "@/components/widget/labels";
 import type { FlowNode } from "@/components/widget/types";
 
 type WidgetState = "closed" | "flow" | "chat" | "ended";
@@ -75,6 +75,7 @@ export default function ChatWidgetFirebase() {
     signInWithGoogle,
     registerWithEmail,
     signInWithEmail,
+    signInWithParentSso,
     signOutUser,
   } = useFirebaseAuth();
 
@@ -108,6 +109,19 @@ export default function ChatWidgetFirebase() {
   // 埋め込みモード: 親側でパネルが隠れているか（未読バッジ通知の判定に使用）。
   // ローダーは iframe を先読みするため、最初の yah:open が来るまでは「隠れている」。
   const [parentHidden, setParentHidden] = useState(true);
+
+  // ── 埋め込み時: 親ページ(yah.mobi)のログインを引き継ぐSSO（マウント時に1回だけ試行） ──
+  //   親が未ログイン/応答なしなら匿名のまま（従来どおりRAGのみ）。成功時は uid_real に切替。
+  const ssoTriedRef = useRef(false);
+  useEffect(() => {
+    if (!EMBEDDED || !PARENT_ORIGIN) return;
+    if (authLoading || !isAnonymous) return; // 匿名確立後・未ログインの時だけ
+    if (ssoTriedRef.current) return;
+    ssoTriedRef.current = true;
+    void signInWithParentSso(PARENT_ORIGIN, sessionId ?? undefined).then((ok) => {
+      if (ok) setAuthReloadKey((k) => k + 1); // 購読を uid_real で張り直す
+    });
+  }, [authLoading, isAnonymous, sessionId, signInWithParentSso]);
 
   // ── 親（ローダー）からの postMessage 受信 ──
   useEffect(() => {
@@ -225,8 +239,8 @@ export default function ChatWidgetFirebase() {
       return;
     }
     if (node.formTrigger) {
-      // 自前フォームは持たず、販売サイトの問い合わせフォームへ誘導（非履行・案内のみ）
-      window.open(CONTACT_FORM_URL, "_blank", "noopener,noreferrer");
+      // 自前フォームは持たず、販売サイトの問い合わせフォームへ誘導（非履行・案内のみ）。言語は引き継ぐ。
+      window.open(buildContactUrl(language), "_blank", "noopener,noreferrer");
       return;
     }
     if (node.aiTrigger) {

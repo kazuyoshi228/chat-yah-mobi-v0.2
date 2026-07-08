@@ -15,6 +15,7 @@ import {
   signInWithCredential,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithCustomToken,
   GoogleAuthProvider,
   EmailAuthProvider,
   signOut,
@@ -28,6 +29,10 @@ const claimSessionFn = httpsCallable(
   getFunctions(app, "asia-northeast1"),
   "claimSession"
 );
+const ssoExchangeFn = httpsCallable(
+  getFunctions(app, "asia-northeast1"),
+  "ssoExchange"
+);
 
 /** 既存アカウントへ切替時: 匿名セッションの所有者を本人uidへ付け替え（会話継続） */
 async function claimIfNeeded(sessionId?: string, anonToken?: string | null) {
@@ -37,6 +42,31 @@ async function claimIfNeeded(sessionId?: string, anonToken?: string | null) {
   } catch (e) {
     console.error("[useFirebaseAuth] claimSession 失敗:", e);
   }
+}
+
+/** 親ページ(yah.mobi)へ IDトークンを要求し、応答（token/none）を待つ。タイムアウトで null。 */
+function requestParentIdToken(parentOrigin: string): Promise<string | null> {
+  if (typeof window === "undefined" || window.parent === window) return Promise.resolve(null);
+  return new Promise<string | null>((resolve) => {
+    let done = false;
+    const finish = (v: string | null) => {
+      if (done) return;
+      done = true;
+      window.removeEventListener("message", onMsg);
+      clearTimeout(timer);
+      resolve(v);
+    };
+    const onMsg = (event: MessageEvent) => {
+      if (event.origin !== parentOrigin) return;
+      const d = event.data as { type?: string; token?: unknown };
+      if (!d || typeof d !== "object") return;
+      if (d.type === "yah:auth-token" && typeof d.token === "string") finish(d.token);
+      else if (d.type === "yah:auth-none") finish(null);
+    };
+    const timer = setTimeout(() => finish(null), 4000);
+    window.addEventListener("message", onMsg);
+    window.parent.postMessage({ type: "yah:request-auth" }, parentOrigin);
+  });
 }
 
 interface UseFirebaseAuthReturn {
@@ -50,6 +80,8 @@ interface UseFirebaseAuthReturn {
     password: string,
     sessionId?: string
   ) => Promise<void>;
+  /** 埋め込み時: 親ページ(yah.mobi)のログインを引き継いでサインイン。成功時 true */
+  signInWithParentSso: (parentOrigin: string, sessionId?: string) => Promise<boolean>;
   signOutUser: () => Promise<void>;
 }
 
@@ -123,6 +155,32 @@ export function useFirebaseAuth(): UseFirebaseAuthReturn {
     []
   );
 
+  // SSO: 親ページの IDトークン → ssoExchange でカスタムトークン → 同一 uid でサインイン
+  //      （既存の匿名セッションは claimSession で引き継ぐ）
+  const signInWithParentSso = useCallback(
+    async (parentOrigin: string, sessionId?: string): Promise<boolean> => {
+      const anon = auth.currentUser;
+      if (anon && !anon.isAnonymous) return false; // 既にログイン済み
+      const anonToken = anon?.isAnonymous ? await anon.getIdToken() : null;
+
+      const idToken = await requestParentIdToken(parentOrigin);
+      if (!idToken) return false; // 親が未ログイン or 応答なし
+
+      try {
+        const res = await ssoExchangeFn({ idToken });
+        const customToken = (res.data as { token?: string })?.token;
+        if (!customToken) return false;
+        await signInWithCustomToken(auth, customToken);
+        await claimIfNeeded(sessionId, anonToken);
+        return true;
+      } catch (e) {
+        console.error("[useFirebaseAuth] SSO 失敗:", e);
+        return false;
+      }
+    },
+    []
+  );
+
   const signOutUser = useCallback(async () => {
     await signOut(auth);
     // onAuthStateChanged が null を検知 → 匿名で再サインイン（上の effect）
@@ -135,6 +193,7 @@ export function useFirebaseAuth(): UseFirebaseAuthReturn {
     signInWithGoogle,
     registerWithEmail,
     signInWithEmail,
+    signInWithParentSso,
     signOutUser,
   };
 }

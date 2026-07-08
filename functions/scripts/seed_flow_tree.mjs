@@ -43,7 +43,7 @@ const NODES = [
       "Chúng tôi có thể giúp gì cho bạn?"
     ),
     content: null,
-    options: JSON.stringify(["b_purchase", "b_esim", "b_other"]),
+    options: JSON.stringify(["b_purchase", "b_esim", "b_refund", "b_other"]),
     icon: "message",
     formTrigger: 0,
     aiTrigger: 0,
@@ -102,6 +102,33 @@ const NODES = [
     formTrigger: 0,
     aiTrigger: 1,
     sortOrder: 20,
+    isActive: 1,
+  },
+  {
+    id: "b_refund",
+    parentId: "root",
+    type: "redirect_ai",
+    label: i18n(
+      "返金・キャンセル",
+      "Refund & Cancellation",
+      "退款与取消",
+      "환불·취소",
+      "การคืนเงิน/ยกเลิก",
+      "Hoàn tiền & Huỷ"
+    ),
+    content: i18n(
+      "返金・キャンセルについて相談したい（ログインで対象のご注文を確認します）",
+      "I'd like help with a refund or cancellation (sign in so we can check your order).",
+      "我想咨询退款或取消（登录后可确认您的订单）。",
+      "환불·취소에 대해 문의하고 싶어요 (로그인하면 대상 주문을 확인해 드립니다).",
+      "ต้องการสอบถามเรื่องการคืนเงิน/ยกเลิก (เข้าสู่ระบบเพื่อตรวจสอบคำสั่งซื้อของคุณ)",
+      "Tôi cần hỗ trợ hoàn tiền hoặc huỷ (đăng nhập để chúng tôi kiểm tra đơn hàng)."
+    ),
+    options: null,
+    icon: "bot",
+    formTrigger: 0,
+    aiTrigger: 1,
+    sortOrder: 25,
     isActive: 1,
   },
   {

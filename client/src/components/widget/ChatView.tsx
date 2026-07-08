@@ -13,7 +13,7 @@ import { Bot, Headphones, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { ChatMessage } from "@/hooks/useChatMessages";
-import { CONTACT_FORM_URL, CONTACT_LABEL, pick } from "./labels";
+import { buildContactUrl, CONTACT_LABEL, pick } from "./labels";
 
 interface ChatViewProps {
   messages: ChatMessage[];
@@ -111,12 +111,20 @@ export function ChatView({ messages, typing, onSend, onEndSession }: ChatViewPro
         </div>
       </ScrollArea>
 
-      {/* 問い合わせフォームへの誘導ボタン（最後の手段） */}
+      {/* 問い合わせフォームへの誘導ボタン（最後の手段）。
+          refund等はAIが設定した contactCategory/contactOrderId を /contact にプリフィルで引き継ぐ */}
       {showContact && (
         <div className="px-3 pt-2 flex-shrink-0">
           <Button
             onClick={() =>
-              window.open(CONTACT_FORM_URL, "_blank", "noopener,noreferrer")
+              window.open(
+                buildContactUrl(language, {
+                  category: lastAi?.contactCategory,
+                  orderId: lastAi?.contactOrderId,
+                }),
+                "_blank",
+                "noopener,noreferrer"
+              )
             }
             className="w-full bg-black hover:bg-gray-800 text-white text-xs"
           >

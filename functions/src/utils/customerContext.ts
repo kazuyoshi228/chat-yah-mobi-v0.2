@@ -59,13 +59,16 @@ export async function buildCustomerContext(
 
   if (!ordersSnap.empty) {
     const orders = ordersSnap.docs
-      .map((doc) => doc.data())
+      .map((doc) => ({ id: doc.id, ...doc.data() } as { id: string } & Record<string, unknown>))
       .filter((d) => d.hiddenByUser !== true) // ユーザーが非表示にした注文は参照しない
       .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
       .slice(0, 5)
       .map((d) => {
-        const plan = d.planName || d.planId || "unknown plan";
-        return `- ${plan} (${d.status || "unknown"})`;
+        const plan = (d.planName as string) || (d.planId as string) || "unknown plan";
+        // order ID / 金額 / 種別: 返金相談時に対象注文を特定・確認するために必要（機微情報ではない）
+        const amount = typeof d.amountJpy === "number" ? ` ¥${d.amountJpy.toLocaleString("en-US")}` : "";
+        const type = d.orderType === "topup" ? " [top-up]" : "";
+        return `- ${plan}${type}${amount} (${(d.status as string) || "unknown"}) [order ID: ${d.id}]`;
       });
     if (orders.length > 0) {
       parts.push(`\nPurchase history:\n${orders.join("\n")}`);

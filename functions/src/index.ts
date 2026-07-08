@@ -19,6 +19,7 @@ export { onRagDocumentWritten } from "./triggers/onRagDocumentWritten";
 export { dataRetentionPurge } from "./scheduled/dataRetention";
 export { generateRagDrafts } from "./scheduled/generateRagDrafts";
 
-// ── Callable 関数 (1関数) ──
+// ── Callable 関数 (2関数) ──
 export { claimSession } from "./callables/claimSession";
+export { ssoExchange } from "./callables/ssoExchange"; // 親ページ(yah.mobi)ログインのSSO引き継ぎ
 

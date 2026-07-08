@@ -24,6 +24,9 @@ export interface ChatMessage {
   content: string;
   resolved?: boolean;
   directToContact?: boolean;
+  /** フォーム誘導時のコンテキスト（/contact のURLパラメータに引き継ぐ）。AIが設定 */
+  contactCategory?: string | null;
+  contactOrderId?: string | null;
   createdAt: Date | Timestamp | null;
 }
 
@@ -71,6 +74,8 @@ export function useChatMessages(
           content: doc.data().content,
           resolved: doc.data().resolved,
           directToContact: doc.data().directToContact,
+          contactCategory: doc.data().contactCategory ?? null,
+          contactOrderId: doc.data().contactOrderId ?? null,
           createdAt: doc.data().createdAt,
         }));
         setMessages(msgs);

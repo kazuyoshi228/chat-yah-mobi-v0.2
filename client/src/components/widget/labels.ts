@@ -8,6 +8,26 @@
 /** 問い合わせフォーム（販売サイト）。AIが解決できない時の人間ハンドオフ先。 */
 export const CONTACT_FORM_URL = "https://yah.mobi/contact";
 
+/** chat の言語コード → 販売サイト(/contact)の言語コード（サイトは en/ko/zh-CN/zh-TW/th のみ） */
+const SITE_LANG: Record<string, string> = { ko: "ko", th: "th", zh: "zh-CN" };
+
+/**
+ * /contact のURLを組み立てる。言語＋（あれば）カテゴリ/注文IDをプリフィルとして引き継ぐ。
+ * 販売側 ContactSection が ?category=&orderId=&lang= を解釈する（batch2-B）。
+ */
+export function buildContactUrl(
+  lang: string,
+  ctx?: { category?: string | null; orderId?: string | null }
+): string {
+  const params = new URLSearchParams();
+  const siteLang = SITE_LANG[lang];
+  if (siteLang) params.set("lang", siteLang);
+  if (ctx?.category) params.set("category", ctx.category);
+  if (ctx?.orderId) params.set("orderId", ctx.orderId);
+  const qs = params.toString();
+  return qs ? `${CONTACT_FORM_URL}?${qs}` : CONTACT_FORM_URL;
+}
+
 /** マイページ（QR再取得・アカウント系の自己解決先） */
 export const MYPAGE_URL = "https://yah.mobi/mypage";
 

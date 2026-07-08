@@ -151,6 +151,9 @@ export const onVisitorMessageCreated = onDocumentCreated(
         content: aiResponse.answer,
         resolved: aiResponse.resolved,
         directToContact: aiResponse.directToContact ?? false,
+        // フォーム誘導のコンテキスト（refund等）: ウィジェットが /contact のURLパラメータへ引き継ぐ
+        contactCategory: aiResponse.contactCategory || null,
+        contactOrderId: aiResponse.contactOrderId || null,
         language: aiResponse.language,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

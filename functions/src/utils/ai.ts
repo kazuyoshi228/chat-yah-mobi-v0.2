@@ -57,6 +57,16 @@ const responseSchema = {
       description:
         "お問い合わせフォームへ誘導すべきか（返金の実処理希望・担当/人間対応の希望・解決不能など）。true の時、画面に『お問い合わせフォームを開く』ボタンが自動表示される。",
     },
+    contactCategory: {
+      type: Type.STRING,
+      description:
+        "directToContact=true のときのフォームカテゴリ。返金・キャンセル関連なら 'refundCancel'、それ以外・不明は空文字。",
+    },
+    contactOrderId: {
+      type: Type.STRING,
+      description:
+        "directToContact=true で対象注文が特定できている場合、その注文ID（顧客情報 Purchase history の [order ID: ...] から正確に転記）。特定できない・注文と無関係なら空文字。",
+    },
   },
   required: [
     "answer",
@@ -64,6 +74,8 @@ const responseSchema = {
     "escalationReason",
     "language",
     "directToContact",
+    "contactCategory",
+    "contactOrderId",
   ],
 };
 
@@ -73,6 +85,8 @@ export interface AIResponse {
   escalationReason: string;
   language: string;
   directToContact: boolean;
+  contactCategory: string;
+  contactOrderId: string;
 }
 
 /** カテゴリの表示名（プロンプト内の見出し） */
@@ -240,6 +254,8 @@ export async function generateAIResponse(params: {
       escalationReason: "",
       language: params.visitorLanguage,
       directToContact: false,
+      contactCategory: "",
+      contactOrderId: "",
     };
   }
 }
