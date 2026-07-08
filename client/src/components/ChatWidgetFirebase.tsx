@@ -235,7 +235,7 @@ export default function ChatWidgetFirebase() {
                   yah.mobile Support
                 </p>
                 <p className="text-xs text-white/60">
-                  {widgetState === "chat" ? "AI + Operator" : "Support"}
+                  {widgetState === "chat" ? "24/7 AI chat support" : "Support"}
                 </p>
               </div>
             </div>
