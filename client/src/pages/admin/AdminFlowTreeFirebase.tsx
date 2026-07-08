@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { parseI18nObject } from "@/lib/i18nJson";
 import {
   ChevronRight, Plus, Pencil, Trash2, GitBranch, RefreshCw, ChevronsDownUp, ChevronsUpDown,
   Wifi, Smartphone, CreditCard, MessageSquare, Package, Wrench, AlertTriangle,
@@ -145,10 +146,8 @@ const NODE_TYPE_COLORS: Record<NodeType, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function parseLabel(labelJson: string): { ja?: string; en?: string; qr_resend?: boolean } {
-  try { return JSON.parse(labelJson); }
-  catch { return { ja: labelJson, en: labelJson }; }
-}
+/** 多言語JSONラベルのパース（widget と共通の lib/i18nJson を使用） */
+const parseLabel = parseI18nObject;
 
 function buildNodeForm(node?: FlowNode): NodeFormState {
   if (!node) {
