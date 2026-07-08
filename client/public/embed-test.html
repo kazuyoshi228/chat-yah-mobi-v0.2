@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>yah.mobile Chat Widget — Embed Test Page</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; margin: 0; color: #222; }
+    header { background: #111; color: #fff; padding: 20px 24px; }
+    main { max-width: 720px; margin: 0 auto; padding: 32px 24px 120px; line-height: 1.7; }
+    .card { border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px 20px; margin: 16px 0; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="margin:0;font-size:18px;">🧪 Embed Test — 販売サイトを模した親ページ</h1>
+  </header>
+  <main>
+    <p>このページは <code>widget.js</code>（1タグ設置）の動作確認用です。yah.mobi に設置した時と同じ挙動になります。</p>
+    <div class="card">
+      <strong>チェック項目</strong>
+      <ol>
+        <li>右下に黒いランチャーボタンが出る</li>
+        <li>クリック → パネルが開き、<strong>3分岐がそのまま表示</strong>（二重ランチャーが出ない）</li>
+        <li>AIチャット → 応答が来る／Sign in パネルが開く</li>
+        <li>ヘッダの「×」→ パネルが閉じてランチャーに戻る（再度開くと<strong>会話が残っている</strong>）</li>
+        <li>パネルを閉じた状態でAI返信 → ランチャーに<strong>赤い未読バッジ</strong></li>
+        <li>ページ本文のリンクやスクロールが邪魔されない</li>
+      </ol>
+    </div>
+    <div class="card">
+      <strong>本番設置タグ（yah.mobi 側に貼るもの）</strong>
+      <pre><code>&lt;script src="https://chat.yah.mobi/widget.js" data-lang="en" defer&gt;&lt;/script&gt;</code></pre>
+    </div>
+    <p>ダミー本文：Lorem ipsum dolor sit amet, consectetur adipiscing elit. スクロールとクリックの干渉確認用のテキストです。</p>
+  </main>
+
+  <!-- 実際の設置タグと同じ（同一ホストから読込） -->
+  <script src="/widget.js" data-lang="en" defer></script>
+</body>
+</html>

@@ -35,6 +35,35 @@ import type { FlowNode } from "@/components/widget/types";
 
 type WidgetState = "closed" | "flow" | "chat" | "ended";
 
+// ── 埋め込みモード（yah.mobi 親ページの widget.js ローダー経由） ──
+//   ローダーが iframe を `?origin=<親origin>` 付きで開く。許可originのみ有効化し、
+//   このモードでは内蔵ランチャーを消してパネルを iframe 全面に表示、
+//   開閉/未読は postMessage（yah:open / yah:close / yah:unread）で親と連携する。
+const ALLOWED_PARENT_ORIGINS = [
+  "https://yah.mobi",
+  "https://www.yah.mobi",
+  "https://yah-mobile-v1-3ed24.web.app",
+  "https://yah-mobile-v1-3ed24--dev-tvnc2fob.web.app",
+];
+
+function detectParentOrigin(): string | null {
+  if (typeof window === "undefined" || window.parent === window) return null;
+  try {
+    const o = new URLSearchParams(window.location.search).get("origin");
+    if (!o) return null;
+    // 自ホスト（embed-test.html 等のテスト用親ページ）も許可
+    if (ALLOWED_PARENT_ORIGINS.includes(o) || o === window.location.origin) {
+      return o;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+const PARENT_ORIGIN = detectParentOrigin();
+const EMBEDDED = PARENT_ORIGIN !== null;
+
 export default function ChatWidgetFirebase() {
   const { lang: language } = useLanguage();
 
@@ -69,9 +98,36 @@ export default function ChatWidgetFirebase() {
   } = useChatMessages(sessionId, authReloadKey);
 
   // ── ウィジェット状態 ──
-  const [widgetState, setWidgetState] = useState<WidgetState>("closed");
+  //   埋め込みモードではランチャーは親（ローダー）側にあるため、最初からフロー表示。
+  const [widgetState, setWidgetState] = useState<WidgetState>(
+    EMBEDDED ? "flow" : "closed"
+  );
   const [unreadCount, setUnreadCount] = useState(0);
   const [showLogin, setShowLogin] = useState(false);
+
+  // 埋め込みモード: 親側でパネルが隠れているか（未読バッジ通知の判定に使用）。
+  // ローダーは iframe を先読みするため、最初の yah:open が来るまでは「隠れている」。
+  const [parentHidden, setParentHidden] = useState(true);
+
+  // ── 親（ローダー）からの postMessage 受信 ──
+  useEffect(() => {
+    if (!EMBEDDED || !PARENT_ORIGIN) return;
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== PARENT_ORIGIN) return; // origin検証
+      const data = event.data;
+      if (!data || typeof data !== "object") return;
+      if (data.type === "yah:open") setParentHidden(false);
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  // 親へパネルを閉じるよう通知（ヘッダの×。iframe自体は生きたままで会話は保持される）
+  const notifyParentClose = () => {
+    if (!PARENT_ORIGIN) return;
+    window.parent.postMessage({ type: "yah:close" }, PARENT_ORIGIN);
+    setParentHidden(true);
+  };
 
   // デシジョンツリー状態
   const [flowNodes, setFlowNodes] = useState<FlowNode[]>([]);
@@ -103,13 +159,25 @@ export default function ChatWidgetFirebase() {
 
   const prevMsgCountRef = useRef(0);
   useEffect(() => {
-    if (messages.length > prevMsgCountRef.current && widgetState !== "chat") {
+    if (messages.length > prevMsgCountRef.current) {
       const newMsgs = messages.slice(prevMsgCountRef.current);
       const incomingCount = newMsgs.filter((m) => m.role !== "visitor").length;
-      if (incomingCount > 0) setUnreadCount((c) => c + incomingCount);
+      if (incomingCount > 0) {
+        if (EMBEDDED) {
+          // 親側でパネルが隠れている間の受信 → 親ランチャーに未読バッジを出す
+          if (parentHidden && PARENT_ORIGIN) {
+            window.parent.postMessage(
+              { type: "yah:unread", count: incomingCount },
+              PARENT_ORIGIN
+            );
+          }
+        } else if (widgetState !== "chat") {
+          setUnreadCount((c) => c + incomingCount);
+        }
+      }
     }
     prevMsgCountRef.current = messages.length;
-  }, [messages, widgetState]);
+  }, [messages, widgetState, parentHidden]);
 
   // ── デシジョンツリー ヘルパー ──
   const currentNode = flowNodes.find((n) => n.id === currentNodeId);
@@ -228,12 +296,22 @@ export default function ChatWidgetFirebase() {
   if (authLoading) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div
+      className={
+        EMBEDDED
+          ? "w-full h-[100dvh]" // 埋め込み: iframe 全面（サイズ/位置はローダー側が管理）
+          : "fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3"
+      }
+    >
       {/* チャットウィンドウ */}
       {widgetState !== "closed" && (
         <div
-          className="w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
-          style={{ height: "520px" }}
+          className={
+            EMBEDDED
+              ? "w-full h-full bg-white flex flex-col overflow-hidden"
+              : "w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+          }
+          style={EMBEDDED ? undefined : { height: "520px" }}
         >
           {/* ヘッダー */}
           <div className="bg-black px-4 py-3 flex items-center justify-between flex-shrink-0">
@@ -278,7 +356,7 @@ export default function ChatWidgetFirebase() {
                 </button>
               )}
               <button
-                onClick={closeWidget}
+                onClick={EMBEDDED ? notifyParentClose : closeWidget}
                 className="p-1.5 text-white/60 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -342,22 +420,26 @@ export default function ChatWidgetFirebase() {
         </div>
       )}
 
-      {/* トグルボタン */}
-      <button
-        onClick={() => (widgetState === "closed" ? openWidget() : closeWidget())}
-        className="w-14 h-14 rounded-full bg-black hover:bg-gray-800 text-white shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative"
-      >
-        {widgetState === "closed" ? (
-          <MessageCircle className="w-6 h-6" />
-        ) : (
-          <X className="w-6 h-6" />
-        )}
-        {unreadCount > 0 && widgetState === "closed" && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-            {unreadCount}
-          </span>
-        )}
-      </button>
+      {/* トグルボタン（埋め込みモードではランチャーは親ページ側＝表示しない） */}
+      {!EMBEDDED && (
+        <button
+          onClick={() =>
+            widgetState === "closed" ? openWidget() : closeWidget()
+          }
+          className="w-14 h-14 rounded-full bg-black hover:bg-gray-800 text-white shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative"
+        >
+          {widgetState === "closed" ? (
+            <MessageCircle className="w-6 h-6" />
+          ) : (
+            <X className="w-6 h-6" />
+          )}
+          {unreadCount > 0 && widgetState === "closed" && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+              {unreadCount}
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@
   })();
 
   var config = {
-    lang: currentScript.getAttribute("data-lang") || "ja",
+    lang: currentScript.getAttribute("data-lang") || "en", // 既定は英語（訪日外国人向け）
     position: currentScript.getAttribute("data-position") || "bottom-right",
     color: currentScript.getAttribute("data-color") || "#000000",
     zIndex: parseInt(currentScript.getAttribute("data-z-index") || "999999", 10),
