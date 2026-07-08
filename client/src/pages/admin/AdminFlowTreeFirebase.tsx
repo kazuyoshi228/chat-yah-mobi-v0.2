@@ -339,8 +339,8 @@ export default function AdminFlowTreeFirebase() {
     try {
       await updateDocument(id, { isActive: 0 });
       toast.success("ノードを無効化しました");
-    } catch (e: any) {
-      toast.error(`無効化失敗: ${e.message}`);
+    } catch (e) {
+      toast.error(`無効化失敗: ${e instanceof Error ? e.message : String(e)}`);
     }
   }, [updateDocument]);
 
@@ -376,8 +376,8 @@ export default function AdminFlowTreeFirebase() {
       }, { merge: true });
       toast.success("ノードを保存しました");
       setDialogOpen(false);
-    } catch (e: any) {
-      toast.error(`保存失敗: ${e.message}`);
+    } catch (e) {
+      toast.error(`保存失敗: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(false);
     }

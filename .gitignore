@@ -115,3 +115,6 @@ client/public/__manus__/version.json
 
 # Firebase deploy cache
 .firebase/
+
+# Functions build output (predeploy tsc で再生成される)
+functions/lib/

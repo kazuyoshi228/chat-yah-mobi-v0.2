@@ -1,5 +1,5 @@
 /**
- * onSessionEnded — セッション終了時のサマリー生成 + ジャーナル記録
+ * onSessionEnded — セッション終了時のサマリー生成
  *
  * トリガー: /chat_sessions/{sessionId} の更新
  * ガード: status が 'ended' に変更された場合のみ処理
@@ -7,7 +7,8 @@
  *   1. サブコレクションから全メッセージ取得
  *   2. Gemini でサマリー生成
  *   3. セッションに summary + scheduledDeleteAt を書き込み
- *   4. Google Sheets 仕訳帳に最終結果を記録
+ * ※ Google Sheets 仕訳帳への記録は撤去済み（未使用・summary は session に保存され
+ *   管理画面で閲覧できるため）。
  */
 
 import {
@@ -17,10 +18,9 @@ import {
   QueryDocumentSnapshot,
 } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import { google } from "googleapis";
 import { chatDb as db, CHAT_DATABASE_ID } from "../db";
 import { generateSummary } from "../utils/ai";
-import { REGION, SHEETS_JOURNAL_ID } from "../config";
+import { REGION } from "../config";
 
 export const onSessionEnded = onDocumentUpdated(
   {
@@ -72,55 +72,8 @@ export const onSessionEnded = onDocumentUpdated(
         summary,
         scheduledDeleteAt: admin.firestore.Timestamp.fromDate(scheduledDeleteAt),
       });
-
-      // ── Step 4: Google Sheets 仕訳帳に最終結果を記録 ──
-      const resolved = after.escalated !== true;
-      await writeToJournal(sessionId, after, summary, resolved);
     } catch (error) {
       console.error("セッション終了処理エラー:", error);
     }
   }
 );
-
-/**
- * Google Sheets 仕訳帳にセッション結果を記録
- */
-async function writeToJournal(
-  sessionId: string,
-  sessionData: admin.firestore.DocumentData,
-  summary: string,
-  resolved: boolean
-): Promise<void> {
-  if (!SHEETS_JOURNAL_ID) return;
-
-  try {
-    const auth = new google.auth.GoogleAuth({
-      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
-    const sheets = google.sheets({ version: "v4", auth });
-
-    const visitorId = (sessionData.visitorId as string) || "不明";
-    const language = (sessionData.language as string) || "ja";
-
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: SHEETS_JOURNAL_ID,
-      range: "セッション結果!A:G",
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [
-          [
-            new Date().toISOString(),
-            sessionId,
-            visitorId,
-            language,
-            resolved ? "✅ 解決" : "❌ 未解決",
-            summary.substring(0, 300),
-            sessionData.escalated ? "エスカレーション済" : "",
-          ],
-        ],
-      },
-    });
-  } catch (error) {
-    console.error("Sheets 仕訳帳記録エラー:", error);
-  }
-}

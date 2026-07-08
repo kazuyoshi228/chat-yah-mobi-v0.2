@@ -3,7 +3,7 @@
  * tRPC → Firestore SDK 直接
  */
 import { useMemo } from "react";
-import { orderBy } from "firebase/firestore";
+import { orderBy, Timestamp } from "firebase/firestore";
 import { useCollection } from "@/hooks/useFirestoreAdmin";
 import DashboardLayout from "@/components/DashboardLayout";
 import { YahLogo } from "@/components/YahLogo";
@@ -39,23 +39,37 @@ function ResolvedBadge({ resolved }: { resolved: string | null | undefined }) {
 // Stable constraints reference to avoid re-renders
 const surveyConstraints = [orderBy("createdAt", "desc")];
 
+/** chat_surveys ドキュメント（アンケート） */
+interface SurveyDoc {
+  id: string;
+  sessionId?: string;
+  rating: number;
+  resolved?: "yes" | "no" | null;
+  language?: string;
+  operatorId?: string;
+  comment?: string;
+  freeComment?: string;
+  visitorName?: string;
+  createdAt?: Timestamp | number | null;
+}
+
 export default function AdminFeedbackFirebase() {
   const { docs: rawData, loading: isLoading } = useCollection("chat_surveys", surveyConstraints);
 
-  const data = rawData as any[];
+  const data = rawData as unknown as SurveyDoc[];
 
   const avgRating = useMemo(() => {
     if (!data || data.length === 0) return "—";
-    return (data.reduce((s: number, d: any) => s + (d.rating ?? 0), 0) / data.length).toFixed(1);
+    return (data.reduce((s, d) => s + (d.rating ?? 0), 0) / data.length).toFixed(1);
   }, [data]);
 
   const resolvedCount = useMemo(
-    () => data?.filter((d: any) => d.resolved === "yes").length ?? 0,
+    () => data?.filter((d) => d.resolved === "yes").length ?? 0,
     [data]
   );
 
   const withComments = useMemo(
-    () => data?.filter((d: any) => d.freeComment || d.comment).length ?? 0,
+    () => data?.filter((d) => d.freeComment || d.comment).length ?? 0,
     [data]
   );
 
@@ -104,7 +118,7 @@ export default function AdminFeedbackFirebase() {
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
-                {data.map((item: any) => (
+                {data.map((item) => (
                   <div key={item.id} className="px-5 py-4 hover:bg-gray-50/50 transition-colors">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0 space-y-1.5">
@@ -140,9 +154,11 @@ export default function AdminFeedbackFirebase() {
                           Session #{item.sessionId}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.createdAt?.toDate
+                          {item.createdAt instanceof Timestamp
                             ? item.createdAt.toDate().toLocaleDateString()
-                            : item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}
+                            : typeof item.createdAt === "number"
+                              ? new Date(item.createdAt).toLocaleDateString()
+                              : "—"}
                         </p>
                       </div>
                     </div>

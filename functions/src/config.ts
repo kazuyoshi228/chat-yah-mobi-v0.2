@@ -26,11 +26,10 @@ export const AI_RATE_LIMIT_PER_MINUTE = 6;
 
 /** データ保持期限 */
 export const RETENTION_DAYS = 365 * 2; // 2年
-// ※ メール通知（ADMIN_EMAIL / APPROVAL_EMAIL / ADMIN_BASE_URL）は廃止。
-//   エスカレーション＝CONTACTフォーム誘導、L1承認待ち＝管理画面バッジで可視化。
-
-/** Google Sheets 仕訳帳 ID */
-export const SHEETS_JOURNAL_ID = process.env.SHEETS_JOURNAL_ID || "";
+// ※ メール通知（ADMIN_EMAIL / APPROVAL_EMAIL / ADMIN_BASE_URL）と
+//   Google Sheets 連携（SHEETS_JOURNAL_ID）は廃止。
+//   エスカレーション＝CONTACTフォーム誘導、L1承認待ち＝管理画面バッジ、
+//   セッション要約＝session.summary（管理画面で閲覧）で代替。
 
 /** Firebase リージョン */
 export const REGION = "asia-northeast1"; // 東京
