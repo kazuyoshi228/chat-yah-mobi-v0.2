@@ -96,7 +96,7 @@ export function SurveyView({ onSubmit }: SurveyViewProps) {
                 onChange={(e) => setFreeComment(e.target.value)}
                 placeholder={t("survey_improve_placeholder")}
                 rows={2}
-                className="w-full text-xs border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
+                className="w-full text-base border border-gray-200 rounded-lg px-2.5 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-black/20"
               />
             </div>
           )}

@@ -99,14 +99,14 @@ export function LoginPanel({
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder={pick(AUTH_LABELS.email, language)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black"
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-black"
       />
       <input
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder={pick(AUTH_LABELS.password, language)}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-black"
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-black"
       />
 
       {error && <p className="text-[11px] text-red-500">{error}</p>}

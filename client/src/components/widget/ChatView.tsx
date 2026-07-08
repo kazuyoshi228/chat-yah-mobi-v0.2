@@ -133,7 +133,7 @@ export function ChatView({ messages, typing, onSend, onEndSession }: ChatViewPro
           onKeyDown={handleKeyDown}
           placeholder={t("widget_placeholder")}
           rows={1}
-          className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[36px] max-h-[80px] py-2 text-xs"
+          className="flex-1 resize-none border-gray-200 focus:border-black focus:ring-black min-h-[36px] max-h-[80px] py-2 text-base"
         />
         <Button
           onClick={handleSend}

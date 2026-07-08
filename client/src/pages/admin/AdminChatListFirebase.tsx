@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import {
-  collection, query, orderBy, onSnapshot, limit,
+  collection, query, orderBy, onSnapshot, limit, doc, updateDoc, serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useChatSessions, type ChatSessionDoc } from "@/hooks/useFirestoreAdmin";
@@ -35,6 +35,27 @@ export default function AdminChatListFirebase() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [customerName, setCustomerName] = useState<string>("");
+  const [endingSession, setEndingSession] = useState(false);
+
+  // アクティブなセッションを管理者が手動終了（status→ended。ルールで許可済みの
+  // 限定更新。onSessionEnded トリガーが発火してサマリーも自動生成される）
+  const handleEndSession = async () => {
+    if (!selectedId) return;
+    if (!confirm("このセッションを終了しますか？（訪問者は送信できなくなります）"))
+      return;
+    setEndingSession(true);
+    try {
+      await updateDoc(doc(db, "chat_sessions", selectedId), {
+        status: "ended",
+        endedAt: serverTimestamp(),
+      });
+    } catch (e) {
+      console.error("セッション終了エラー:", e);
+      alert("終了に失敗しました");
+    } finally {
+      setEndingSession(false);
+    }
+  };
 
   // ディープリンク（失敗分析の「会話を見る」→ ?session=<id>）
   useEffect(() => {
@@ -218,13 +239,30 @@ export default function AdminChatListFirebase() {
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedId(null)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {selectedSession?.status === "active" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEndSession}
+                      disabled={endingSession}
+                      className="text-xs text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      {endingSession ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        "セッションを終了"
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedId(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
               {/* メッセージ */}

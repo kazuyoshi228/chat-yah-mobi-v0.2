@@ -68,8 +68,10 @@ service cloud.firestore {
       // 読取: セッションオーナー or Admin
       allow read: if isAdmin() || isOwner(resource.data.visitorId);
 
-      // 更新: オーナーは終了（status→ended ＋ endedAt）のみ
-      allow update: if isOwner(resource.data.visitorId)
+      // 更新: オーナー or 管理者が「終了（status→ended ＋ endedAt）」のみ可
+      //   （管理画面からアクティブなセッションを手動終了できるようにする。
+      //     それ以外のフィールド変更は誰であっても不可）
+      allow update: if (isOwner(resource.data.visitorId) || isAdmin())
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'endedAt'])
         && request.resource.data.status == 'ended'
         && request.resource.data.endedAt == request.time;

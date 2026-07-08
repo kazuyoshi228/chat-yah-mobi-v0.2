@@ -136,6 +136,36 @@ describe("chat_sessions", () => {
     const other = anon("u2");
     await assertFails(getDoc(doc(other, "chat_sessions/s3")));
   });
+
+  it("管理者はセッションを終了（status→ended）できる", async () => {
+    await seedSession("s4", "u1");
+    const db = googleAdmin("kazuyoshi@bonfire.co.jp");
+    await assertSucceeds(
+      updateDoc(doc(db, "chat_sessions/s4"), {
+        status: "ended",
+        endedAt: serverTimestamp(),
+      })
+    );
+  });
+
+  it("管理者でも visitorId 等の改変はできない（終了フィールド限定）", async () => {
+    await seedSession("s5", "u1");
+    const db = googleAdmin("kazuyoshi@bonfire.co.jp");
+    await assertFails(
+      updateDoc(doc(db, "chat_sessions/s5"), { visitorId: "hijack" })
+    );
+  });
+
+  it("偽@yah.mobi（未確認/パスワード）はセッションを終了できない", async () => {
+    await seedSession("s6", "u1");
+    const db = fakeAdmin("attacker@yah.mobi");
+    await assertFails(
+      updateDoc(doc(db, "chat_sessions/s6"), {
+        status: "ended",
+        endedAt: serverTimestamp(),
+      })
+    );
+  });
 });
 
 describe("chat_messages", () => {
