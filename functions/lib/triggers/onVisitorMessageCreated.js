@@ -272,16 +272,16 @@ async function checkDailyRateLimit(visitorId) {
  * - 参照: users/{uid} / orders(userId==uid) / esim_links(userId==uid)
  * - 🚨 機微情報（決済ID・メール等）は AI コンテキストに載せない
  * - (default) に複合インデックスを要求しないよう orderBy は使わず、メモリ内でソート
- * - TODO(要確認): orders / esim_links の表示用フィールド実キー（planName/status/期限/データ量）
- *   は yah.mobi 実データで確認して調整する
+ * - フィールド実キーは yah.mobi 実データで確認済み（orders.userId/planName/status、
+ *   esim_links.userId/iccid/status/planName/dataRemainingMb/dataTotalMb/expiryDate、users.name）
  */
 async function buildCustomerContext(visitorId) {
     const parts = [];
     // 顧客プロファイル（(default)/users/{uid}）
     const userSnap = await db_1.defaultDb.doc(`users/${visitorId}`).get();
     const uname = userSnap.exists
-        ? (userSnap.data()?.displayName ||
-            userSnap.data()?.name ||
+        ? (userSnap.data()?.name ||
+            userSnap.data()?.displayName ||
             "")
         : "";
     // ラベルは言語中立（英語）で。値が日本語でも回答言語は訪問者言語に固定（システムプロンプト参照）。
@@ -307,13 +307,16 @@ async function buildCustomerContext(visitorId) {
                 : 0;
         const orders = ordersSnap.docs
             .map((doc) => doc.data())
+            .filter((d) => d.hiddenByUser !== true) // ユーザーが非表示にした注文は参照しない
             .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
             .slice(0, 5)
             .map((d) => {
             const plan = d.planName || d.planId || "unknown plan";
             return `- ${plan} (${d.status || "unknown"})`;
         });
-        parts.push(`\nPurchase history:\n${orders.join("\n")}`);
+        if (orders.length > 0) {
+            parts.push(`\nPurchase history:\n${orders.join("\n")}`);
+        }
     }
     // eSIM状態（(default)/esim_links where userId == uid）
     const esimSnap = await db_1.defaultDb
@@ -322,11 +325,36 @@ async function buildCustomerContext(visitorId) {
         .limit(5)
         .get();
     if (!esimSnap.empty) {
+        // ms(number) / 秒(number) / Timestamp を安全に ms へ
+        const toMs = (v) => {
+            if (typeof v === "number")
+                return v < 1e12 ? v * 1000 : v;
+            if (v instanceof admin.firestore.Timestamp)
+                return v.toMillis();
+            return null;
+        };
+        // MB(number) → GB表示（十進・キャリア標準 1GB=1000MB）
+        const toGb = (mb) => typeof mb === "number" ? `${(mb / 1000).toFixed(1)}GB` : null;
         const statuses = esimSnap.docs.map((doc) => {
             const d = doc.data();
             // ICCID は機微なため下4桁のみ（本人確認の言及用・全桁は載せない）
             const iccid = d.iccid ? `****${String(d.iccid).slice(-4)}` : "unknown";
-            return `- ICCID: ${iccid} / status: ${d.status || "unknown"}`;
+            const bits = [`ICCID ${iccid}`, `status: ${d.status || "unknown"}`];
+            if (d.planName)
+                bits.push(`plan: ${d.planName}`);
+            const remain = toGb(d.dataRemainingMb);
+            const total = toGb(d.dataTotalMb);
+            if (remain)
+                bits.push(`data remaining: ~${remain}${total ? ` / ${total}` : ""}`);
+            const ms = toMs(d.expiryDate);
+            if (ms) {
+                const y = new Date(ms).getUTCFullYear();
+                // 妥当な範囲の日付のみ（誤フォーマットを載せない）
+                if (y >= 2024 && y <= 2032) {
+                    bits.push(`expires: ${new Date(ms).toISOString().slice(0, 10)}`);
+                }
+            }
+            return `- ${bits.join(" / ")}`;
         });
         parts.push(`\neSIM status:\n${statuses.join("\n")}`);
     }
