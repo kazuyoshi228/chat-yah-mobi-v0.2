@@ -23,6 +23,8 @@ interface UseChatSessionReturn {
     initialMessage?: string;
   }) => Promise<string>;
   endSession: () => Promise<void>;
+  /** ローカル状態のみ破棄（サインアウト時など。サーバのセッションは残る） */
+  resetSession: () => void;
 }
 
 export function useChatSession(): UseChatSessionReturn {
@@ -65,10 +67,17 @@ export function useChatSession(): UseChatSessionReturn {
     });
   }, [sessionId]);
 
+  // ローカル状態のみ破棄（サインアウト時: 新しい匿名uidは旧セッションの権限を
+  // 持たないため、参照し続けると読取/送信が全て拒否される。共有端末の閲覧防止も兼ねる）
+  const resetSession = useCallback(() => {
+    setSessionId(null);
+  }, []);
+
   return {
     sessionId,
     creating,
     createSession,
     endSession,
+    resetSession,
   };
 }

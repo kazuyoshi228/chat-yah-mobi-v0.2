@@ -55,6 +55,7 @@ export default function ChatWidgetFirebase() {
     creating: sessionCreating,
     createSession,
     endSession,
+    resetSession,
   } = useChatSession();
 
   // ログイン/所有者付け替え後にメッセージ購読を張り直すためのキー
@@ -168,6 +169,24 @@ export default function ChatWidgetFirebase() {
     setCurrentNodeId(node.id);
   };
 
+  // ── サインアウト ──
+  //   サインアウトすると新しい匿名uidに切り替わり、進行中セッションへの権限を失う
+  //   （送信が全て拒否される）。共有端末での前アカウント会話の閲覧防止も兼ねて、
+  //   会話をリセットして最初の3分岐へ戻す。
+  const handleSignOut = async () => {
+    try {
+      await signOutUser();
+    } catch (error) {
+      console.error("[ChatWidgetFirebase] サインアウトエラー:", error);
+    }
+    resetSession();
+    setWidgetState("flow");
+    setCurrentNodeId("root");
+    setBreadcrumb([]);
+    setShowQrGuide(false);
+    setShowLogin(false);
+  };
+
   // ── セッション終了 ──
   const handleEndSession = async () => {
     if (!sessionId) return;
@@ -250,7 +269,7 @@ export default function ChatWidgetFirebase() {
                 </button>
               ) : (
                 <button
-                  onClick={signOutUser}
+                  onClick={handleSignOut}
                   title={user?.email ?? undefined}
                   className="text-xs text-white/70 hover:text-white px-2 py-1 rounded-md transition-colors flex items-center gap-1"
                 >
