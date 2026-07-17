@@ -29,6 +29,7 @@ import {
 } from "../utils/ai";
 import { checkBurstRateLimit, checkDailyRateLimit } from "../utils/rateLimits";
 import { buildCustomerContext } from "../utils/customerContext";
+import { getPlanCatalog } from "../utils/planCatalog";
 import { classifyFailure } from "../utils/classifyFailure";
 import { REGION, MAX_MESSAGES_PER_SESSION } from "../config";
 
@@ -107,6 +108,9 @@ export const onVisitorMessageCreated = onDocumentCreated(
       const ragResults = await searchRAG(data.content);
       const ragContext = ragResults.map((r) => r.content).join("\n\n---\n\n");
 
+      // ── Step 2.5: 料金プランの正本を取得（(default)/plans・5分キャッシュ） ──
+      const planCatalog = await getPlanCatalog();
+
       // ── Step 3: 顧客コンテキスト構築（(default) read-only） ──
       //   ＋ 冒頭デシジョンツリーで選ばれた相談メニュー（session.initialMessage）を前置し、
       //     最初の回答が分岐意図に沿うようにする（widget変更なし・非履行）。
@@ -142,6 +146,7 @@ export const onVisitorMessageCreated = onDocumentCreated(
         ragContext,
         customerContext,
         hospitalityPrompt,
+        planCatalog,
         conversationHistory,
       });
 

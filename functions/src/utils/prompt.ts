@@ -10,6 +10,8 @@ export interface SupportPromptParams {
   ragContext: string;
   customerContext: string;
   hospitalityPrompt: string;
+  /** 料金プランの正本（utils/planCatalog から取得・リアルタイム） */
+  planCatalog: string;
 }
 
 export function buildSupportSystemPrompt(p: SupportPromptParams): string {
@@ -27,7 +29,11 @@ ${p.ragContext || "（該当する知識ベースなし）"}
 【顧客情報】
 ${p.customerContext || "（匿名ユーザー）"}
 
+【料金プラン（正本・リアルタイム）】
+${p.planCatalog || "（現在取得できません。価格・プラン構成は案内せず、販売サイトの購入ページで最新情報を確認するようご案内してください）"}
+
 【回答ルール】
+0. 🔴【料金・プランの正本】価格とプラン構成は上の【料金プラン】セクションのみが正。**そこに記載の無いプラン（例: 無制限プラン）や異なる価格を絶対に案内しない**。RAG知識ベースや会話履歴に別の価格が書かれていても、【料金プラン】を優先する。プランについて聞かれたらこの一覧から答える。
 1. 【必須】お客様の最新メッセージの言語で回答する。明示的な言語指定があればそれに従う。参照情報が日本語でも回答言語は変えない。返す JSON の language フィールドは「実際に回答した言語」にする。
 2. その言語で直接書く（翻訳の前置きや二言語併記はしない）。
 3. 【resolved の既定は true】挨拶・雑談・お礼・通常の質疑応答・情報提供は resolved=true。質問に答えられた場合、または適切な自己解決先（アカウント/ログイン/返金/QR再取得は販売サイトの『マイページ』）へ案内できた場合も resolved=true（マイページ案内はエスカレーションではない）。

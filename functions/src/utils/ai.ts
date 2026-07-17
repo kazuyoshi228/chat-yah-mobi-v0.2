@@ -220,6 +220,8 @@ export async function generateAIResponse(params: {
   ragContext: string;
   customerContext: string;
   hospitalityPrompt: string;
+  /** 料金プランの正本（utils/planCatalog・リアルタイム） */
+  planCatalog: string;
   conversationHistory: { role: string; content: string }[];
 }): Promise<AIResponse> {
   const systemPrompt = buildSupportSystemPrompt(params);
