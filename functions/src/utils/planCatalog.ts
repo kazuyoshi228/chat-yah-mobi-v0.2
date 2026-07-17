@@ -18,13 +18,15 @@ interface PlanDoc {
   name?: string;
   dataGb?: number | string;
   validityDays?: number;
-  amountJpy?: number;
+  /** plans の価格フィールドは priceJpy（orders の amountJpy とは別名なので注意） */
+  priceJpy?: number;
   planType?: string;
+  sortOrder?: number;
 }
 
 function fmt(p: PlanDoc): string {
   const price =
-    typeof p.amountJpy === "number" ? `¥${p.amountJpy.toLocaleString("en-US")}` : "?";
+    typeof p.priceJpy === "number" ? `¥${p.priceJpy.toLocaleString("en-US")}` : "?";
   return `- ${p.name ?? "unknown"}: ${p.dataGb ?? "?"}GB / ${p.validityDays ?? "?"} days / ${price}`;
 }
 
@@ -36,10 +38,11 @@ export async function getPlanCatalog(): Promise<string> {
       .where("isActive", "==", true)
       .get();
     const plans = snap.docs.map((d) => d.data() as PlanDoc);
-    const byPrice = (a: PlanDoc, b: PlanDoc) =>
-      (a.amountJpy ?? 0) - (b.amountJpy ?? 0);
-    const initial = plans.filter((p) => p.planType === "initial").sort(byPrice);
-    const topup = plans.filter((p) => p.planType === "topup").sort(byPrice);
+    // 並びは管理画面（/admin/plans）の sortOrder 準拠（無ければ価格順）
+    const byOrder = (a: PlanDoc, b: PlanDoc) =>
+      (a.sortOrder ?? a.priceJpy ?? 0) - (b.sortOrder ?? b.priceJpy ?? 0);
+    const initial = plans.filter((p) => p.planType === "initial").sort(byOrder);
+    const topup = plans.filter((p) => p.planType === "topup").sort(byOrder);
 
     const lines: string[] = [
       "[Live from the official plan catalog (single source of truth). Prices in JPY.]",
