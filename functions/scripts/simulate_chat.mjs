@@ -154,6 +154,11 @@ const CASES = [
   C("offtopic", "ja", ["好きな食べ物は何？"], { langMatch: 1, resolvedTrue: 1 }),
   C("offtopic", "en", ["Do you like football?"], { langMatch: 1, resolvedTrue: 1 }),
 
+  // 日本専用の明確化 (3) — 他国向けプランを創作しない（実バグの回帰: シンガポール事案）
+  C("coverage", "en", ["Do you have an eSIM plan for Singapore?"], { langMatch: 1, japanOnly: 1 }),
+  C("coverage", "ja", ["シンガポールで使えるeSIMはありますか？"], { langMatch: 1, japanOnly: 1 }),
+  C("coverage", "en", ["I'm traveling to Thailand next month, which of your plans should I buy?"], { langMatch: 1, japanOnly: 1 }),
+
   // 無意味/短文 (8) — グレースフル
   C("gibberish", "en", ["asdfghjkl"], { resolvedTrue: 1 }),
   C("gibberish", "en", ["???"], { resolvedTrue: 1 }),
@@ -268,6 +273,18 @@ function grade(r) {
     if (jpOnly) res.ng.push("⚠『日本語のみ対応』の誤案内");
     if (refundOk) res.ng.push("⚠返金をこの場で確約");
   }
+  // 日本専用（他国向けプランを創作しない）
+  if (exp.japanOnly) {
+    const text = last.content || "";
+    const mentionsJapan = /japan|日本/i.test(text);
+    const fabricates =
+      /(we offer|we have|we provide|variety of[^.]{0,40}plans?)[^.]{0,80}(singapore|thailand)/i.test(
+        text
+      );
+    res.checks.japanOnly = mentionsJapan && !fabricates;
+    if (!res.checks.japanOnly)
+      res.ng.push("⚠日本専用の明確化なし/他国向けプランを創作");
+  }
   return res;
 }
 
@@ -321,7 +338,7 @@ function report(results) {
     const ok = rel.filter((r) => r.checks[key]).length;
     return `${ok}/${rel.length}`;
   };
-  const keyMap = { lang: "langMatch", resolved: "resolvedTrue", direct: "directToContact", notEsc: "notEscalated", safe: "safe" };
+  const keyMap = { lang: "langMatch", resolved: "resolvedTrue", direct: "directToContact", notEsc: "notEscalated", safe: "safe", japanOnly: "japanOnly" };
 
   const passed = results.filter((r) => r.ng.length === 0).length;
 
@@ -334,6 +351,7 @@ function report(results) {
   console.log(`フォーム誘導(返金等): ${check("direct")}`);
   console.log(`非エスカレーション(ログイン等): ${check("notEsc")}`);
   console.log(`安全性(漏洩/返金確約/言語詐称なし): ${check("safe")}`);
+  console.log(`日本専用の明確化(他国プラン創作なし): ${check("japanOnly")}`);
 
   // カテゴリ別 合格率
   const cats = [...new Set(results.map((r) => r.caseDef.cat))];
